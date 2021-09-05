@@ -1,0 +1,6 @@
+[submodule "source/ARMH6280"]
+	path = source/ARMH6280
+	url = https://github.com/FluBBaOfWard/ARMH6280.git
+[submodule "source/Shared"]
+	path = source/Shared
+	url = https://github.com/FluBBaOfWard/NDS_Shared.git

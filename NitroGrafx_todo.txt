@@ -1,0 +1,195 @@
+
+NitroGrafx To Do:
+-----------------
+	arg support. Close menu, power on?
+	Fix click when a cd track starts and stops playing.
+	Fix V flicker position (all games with statusbar etc.). Done?
+	Exile needs 2kB BRAM only?
+
+	Turbo switches? Gun Boat. http://www.gamefaqs.com/tg16/588987-gunboat/faqs/27685
+	Investigate track-end/repeat, stop on track crossing.
+		Run the music player on the console.
+	Savestates for CD games as well. Write/load every part by itself.
+	Fix TAM/TMA #$00
+	Check the Games Express games. Data in track 1 is the problem?
+		Or should their BIOS lay "over" the normal?
+		Do both the normal BIOS and GE be loaded at the same time?
+	Fix bitswap for USA roms.
+	Fix so you can load roms even if the path is gone from the disc. Fixed?
+ 
+Misc:
+	.
+
+GUI:
+	Fix so you can turn on/off sprites/background.
+	Pad left and right to switch Tabs in GUI?
+
+Graphic:
+	Convert palette via component.
+	Move all gfx logik to VDC, rewrite routines in order.
+	Count TV lines for real, not when the picture start showing.
+	Clean up the scaling routines.
+	Change so sprites can use 64kB VRAM.
+	Optimise vram adr inc. Read & Write addresses.
+	Split up doSprDMA, so that positions and tilenum are fixed first and then the tiles.
+	Write tiles directly after VBlank.
+	Optimise tile(map), rendering.
+
+Sound:
+	Only load 3k per frame before music starts playing.
+	Add ADPCM emulation (MSM5205).
+	Load variable number of bytes?
+	Louder CD-sound. Add CD-Fade.
+	Optimise. Lower quality?
+	Check sound levels on the different level controls (master, channel & channel-left/right).
+	Add LFO emulation? (Hanii in the Sky, Juuouki, and Flash Hiders use LFO).
+
+Games:
+	Champions Forever Boxing. Not working on CDROM?
+	Coryoon Child of dragon, no scrolling sometime.
+	Davis Cup Tennis.
+	Turrican, hangs at continue.
+
+CPU:
+	Move rom_map to H6280 so that jmp becomes even faster.
+	Make list of all memory reads (mem, ram , io, sram).
+	Move mapper kod (0x53) to cpu code to get rid of branches.
+	Decimal mode still broken?
+
+
+	opcode	length	cycles
+	01		13		7
+	02		 7		2
+	03		 6		4
+	04		13		6
+	05		 8		4
+	06		10		6
+	07		 8		?
+	08		12		3
+	09		 7		2
+	0A		 7		2
+	0B		--		-
+	0C		15		7
+	0D		10		5
+	0E		12		7
+	0F		10/12	6/8
+	10		 8		2/4
+	11		12		7
+	12		11		7
+	13		 7		4		
+	14		13		6
+	15		 9		4
+	16		11		6
+	17		 8		7
+	18		 5		2
+	19		11		5
+	1A		 6		2
+	1B		--		-
+	1C		15		7
+	1D		11		5
+	1E		13		7
+	1F		10/12	6/8
+	20		15		7
+	21		13		7
+	22		 7		3
+	23		 7		4
+	24		11		4
+	25		 8		4
+	26		11		6
+	27		 8		7
+	28		12		4
+	29		 7		2
+	2A		 9		2
+	2B		--		-
+	2C		13		5
+	2D		10		5
+	2E		13		7
+	2F		10/12	6/8			BBR 2
+	30		8/10	2/4			BMI
+	31		12		7
+	32		11		7		
+	33		--		-
+	34		12		4
+	35		 9		4
+	36		12		6
+	37		 8		7
+	38		 5		2
+	39		11		5
+	3A		 6		2
+	3B		--		-
+	3C		14		5
+	3D		11		5
+	3E		14		7
+	3F		10/12	6/8
+	40		16		7			RTI
+	41		13		7
+	42		 7		3
+	43		TMA	
+	44		13		8
+	45		 8		4
+	46		 9		6
+	47		 8		7
+	48		 7		3
+	49		 7		2
+	4A		 7		2
+	4B		--		-
+	4C		 8		4
+	4D		10		5
+	4E		12		7
+	4F		10		8
+	50		8/10	2/4
+	51		12		7
+	52				
+	53				
+	54				
+	55				
+	56				
+	57				
+	58				
+	59				
+	5A				
+	5B				
+	5C				
+	5D					
+	5E				
+	5F				
+	60				
+	61		19		7
+	62				
+	63				
+	64				
+	65				
+	66				
+	67				
+	68				
+	69				
+	6A				
+	6B				
+	6C				
+	6D				
+	6E				
+	6F				
+	70				
+	71				
+	72				
+	73				
+	74				
+	75				
+	76				
+	77				
+	78				
+	79				
+	7A				
+	7B				
+	7C				
+	7D		17		5
+	7E				
+	7F				
+	80				
+Code:
+	Add 4+4 bytes and get a medel. typ 24bit RGB.
+	eor r2,r0,r1
+	and r2,r2,#0x00FEFEFE
+	and r0,r0,r1
+	add r0,r0,r2,lsr#1
+

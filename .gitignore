@@ -1,0 +1,7 @@
+*.pce
+NitroGrafx.xcodeproj/project.xcworkspace/xcuserdata
+*.iso
+Valis2.tcd
+build
+*.elf
+*.nds
