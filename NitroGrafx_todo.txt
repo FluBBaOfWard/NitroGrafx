@@ -187,7 +187,7 @@ CPU:
 	7F				
 	80				
 Code:
-	Add 4+4 bytes and get a medel. typ 24bit RGB.
+	Add 4+4 bytes and get an average. ex. 24bit RGB.
 	eor r2,r0,r1
 	and r2,r2,#0x00FEFEFE
 	and r0,r0,r1

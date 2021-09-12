@@ -27,10 +27,8 @@ static void setupGraphics(void);
 static void setupStream(void);
 
 bool enableExit = false;
-int pauseEmulation = 0;
 int powerButton = 0;
 bool gameInserted = false;
-int sleepTime = 0x7FFFFFFF;				// 5min
 static int sleepTimer = 0x7FFFFFFF;		// 5min
 static bool vBlankOverflow = false;
 

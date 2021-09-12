@@ -2,6 +2,7 @@
 
 #include "Gui.h"
 #include "Shared/EmuMenu.h"
+#include "Shared/EmuSettings.h"
 #include "Shared/AsmExtra.h"
 #include "Main.h"
 #include "FileHandling.h"
@@ -13,7 +14,7 @@
 #include "io.h"
 #include "ARMH6280/Version.h"
 
-#define EMUVERSION "V0.8.1 2021-03-21"
+#define EMUVERSION "V0.9.0 2021-09-12"
 
 //asm functions
 extern void paletteTxAll(void);		// VCE.s
@@ -36,7 +37,6 @@ u8 menuXitems[] = {ARRSIZE(fnList0), ARRSIZE(fnList1), ARRSIZE(fnList2), ARRSIZE
 const fptr drawuiX[] = {uiNullNormal, uiFile, uiOptions, uiAbout, uiController, uiDisplay, uiMachine, uiSettings, uiYesNo, uiDummy};
 const u8 menuXback[] = {0,0,0,0,2,2,2,2,1,8};
 
-int emuSettings = 0x0031;
 u8 g_gammaValue = 0;
 
 static const char *const autoTxt[]={"Off","On","With R"};
@@ -45,7 +45,6 @@ static const char *const sleepTxt[]={"5min","10min","30min","Off"};
 static const char *const brighTxt[]={"I","II","III","IIII","IIIII"};
 static const char *const ctrlTxt[]={"P1","P2","P3","P4","P5"};
 static const char *const joypadTxt[]={"2 button","6 button"};
-static const char *const bordTxt[]={"Black","Border Color","None"};
 static const char *const dispTxt[]={"Scaled 1:1","Scaled to fit","Scaled to aspect"};
 static const char *const flickTxt[]={"No Flicker","Flicker"};
 static const char *const cntrTxt[]={"US","Japan"};
@@ -55,6 +54,7 @@ static const char *const rgbTxt[]={"RGB","Composite"};
 
 
 void setupGUI() {
+	emuSettings = AUTOPAUSE_EMULATION | AUTOSLEEP_OFF;
 	keysSetRepeat(25, 4);	// Delay, repeat.
 	menuXitems[1] = ARRSIZE(fnList1) - (enableExit?0:1);
 	openMenu();

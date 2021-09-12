@@ -6,9 +6,7 @@ extern "C" {
 #endif
 
 extern bool enableExit;
-extern int pauseEmulation;
 extern int powerButton;
-extern int sleepTime;
 extern uint16 *map0sub;
 
 void waitVBlank(void);
@@ -19,6 +17,7 @@ void waitVBlank(void);
  * @deprecated Don't use, solve it some other way.
  */
 void pausVBlank(int count);
+
 void setEmuSpeed(int speed);
 void setupMenuPalette(void);
 

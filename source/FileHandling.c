@@ -12,6 +12,7 @@
 #include "Emubase.h"
 #include "Main.h"
 #include "Shared/EmuMenu.h"
+#include "Shared/EmuSettings.h"
 #include "Gui.h"
 #include "Equates.h"
 #include "cueparser/cue2toc.h"
@@ -64,12 +65,12 @@ int loadSettings() {
 	}
 
 	sprCollision  = cfg.sprites;
-	g_configSet  = cfg.config;
-	g_scalingSet = cfg.scaling & 3;
+	g_configSet   = cfg.config;
+	g_scalingSet  = cfg.scaling & 3;
 	g_flicker     = cfg.flicker & 1;
 	g_gammaValue  = cfg.gammaValue & 0x7;
 	g_colorValue  = (cfg.gammaValue>>4) & 0x7;
-	emuSettings   = cfg.emuSettings &~ 0xC0;			// Clear speed setting.
+	emuSettings   = cfg.emuSettings & ~EMUSPEED_MASK;	// Clear speed setting.
 	sleepTime     = cfg.sleepTime;
 	joyCfg        = (joyCfg &~ 0x04000400) | ((cfg.controller & 1)<<10) | ((cfg.controller & 2)<<25);		// SwapAB & multitap.
 	strlcpy(currentDir, cfg.currentPath, sizeof(currentDir));
@@ -88,7 +89,7 @@ void saveSettings() {
 	cfg.scaling     = g_scalingSet&3;
 	cfg.flicker     = g_flicker&1;
 	cfg.gammaValue  = (g_gammaValue&0x7)|((g_colorValue&0x7)<<4);
-	cfg.emuSettings = emuSettings &~ 0xC0;			// Clear speed setting.
+	cfg.emuSettings = emuSettings & ~EMUSPEED_MASK;		// Clear speed setting.
 	cfg.sleepTime   = sleepTime;
 	cfg.controller  = ((joyCfg>>10)&1) | ((joyCfg>>25)&2);
 	strlcpy(cfg.currentPath, currentDir, sizeof(cfg.currentPath));
@@ -221,7 +222,7 @@ void loadGame(const char *gameName) {
 			hucardLoaded = 1;
 			setEmuSpeed(0);
 			loadCart();
-			if (emuSettings & 4) {
+			if (emuSettings & AUTOLOAD_STATE) {
 				loadState();
 			}
 			powerButton = 1;
@@ -316,7 +317,7 @@ void selectCDROM() {
 				g_ROM_Size = sizeof(BIOS_Space);
 				setEmuSpeed(0);
 				loadCart();
-				if (emuSettings & 4) {
+				if (emuSettings & AUTOLOAD_STATE) {
 					loadState();
 				}
 				powerButton = 1;

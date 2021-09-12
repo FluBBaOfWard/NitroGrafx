@@ -2,7 +2,7 @@ NitroGrafx revision history
 -=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 
-V0.9.0 - 2021-03-21 (FluBBa)
+V0.9.0 - 2021-09-12 (FluBBa)
 	Cleaned up code.
 
 V0.8.1 - 2018-07-20 (FluBBa)
