@@ -1,11 +1,10 @@
 #include <nds.h>
-#include <fat.h>
 
 #include <maxmod9.h>
 
-#include "Emubase.h"
 #include "Main.h"
 #include "Shared/EmuMenu.h"
+#include "Shared/FileHelper.h"
 #include "Shared/AsmExtra.h"
 #include "Gui.h"
 #include "FileHandling.h"
@@ -26,9 +25,8 @@ static void checkTimeOut(void);
 static void setupGraphics(void);
 static void setupStream(void);
 
-bool enableExit = false;
-int powerButton = 0;
-bool gameInserted = false;
+bool powerButton = false;
+//bool gameInserted = false;
 static int sleepTimer = 0x7FFFFFFF;		// 5min
 static bool vBlankOverflow = false;
 
@@ -86,7 +84,7 @@ int main(int argc, char **argv) {
 		drawText("fatInitDefault() failure.", 23, 0);
 	}
 //	loadCart();
-//	powerButton = 1;
+//	powerButton = true;
 	getInput();
 
 	while (1) {
@@ -103,7 +101,6 @@ int main(int argc, char **argv) {
 			antWars();
 			waitVBlank();
 		}
-//		mmStreamUpdate();
 	}
 	return 0;
 }

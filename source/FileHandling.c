@@ -13,6 +13,7 @@
 #include "Main.h"
 #include "Shared/EmuMenu.h"
 #include "Shared/EmuSettings.h"
+#include "Shared/FileHelper.h"
 #include "Gui.h"
 #include "Equates.h"
 #include "cueparser/cue2toc.h"
@@ -26,16 +27,17 @@ static const char *const folderName = "nitrografx";
 static const char *const settingName = "settings.cfg";
 static const char *const bramName = "nitrografx.brm";
 
-int biosLoaded = 0;
-int hucardLoaded = 0;
+bool biosLoaded = false;
+bool hucardLoaded = false;
 
-FILE *cdFile = NULL;
-int cdWritePtr;
 int cdReadPtr;
-int cdDataLeft;
-int cdDatatrackMode;
 int cdIsBinCue;
 char cdBuffer[0x4000];
+
+static FILE *cdFile = NULL;
+static int cdWritePtr;
+static int cdDataLeft;
+static int cdDatatrackMode;
 
 configdata cfg;
 
@@ -70,9 +72,9 @@ int loadSettings() {
 	g_flicker     = cfg.flicker & 1;
 	g_gammaValue  = cfg.gammaValue & 0x7;
 	g_colorValue  = (cfg.gammaValue>>4) & 0x7;
-	emuSettings   = cfg.emuSettings & ~EMUSPEED_MASK;	// Clear speed setting.
+	emuSettings   = cfg.emuSettings & ~EMUSPEED_MASK; // Clear speed setting.
 	sleepTime     = cfg.sleepTime;
-	joyCfg        = (joyCfg &~ 0x04000400) | ((cfg.controller & 1)<<10) | ((cfg.controller & 2)<<25);		// SwapAB & multitap.
+	joyCfg        = (joyCfg &~ 0x04000400) | ((cfg.controller & 1)<<10) | ((cfg.controller & 2)<<25); // SwapAB & multitap.
 	strlcpy(currentDir, cfg.currentPath, sizeof(currentDir));
 
 	infoOutput("Settings loaded.");
@@ -86,12 +88,12 @@ void saveSettings() {
 //	cfg.dipswitch0  = g_dipswitch0;
 	cfg.sprites     = sprCollision;
 	cfg.config      = g_configSet;
-	cfg.scaling     = g_scalingSet&3;
-	cfg.flicker     = g_flicker&1;
-	cfg.gammaValue  = (g_gammaValue&0x7)|((g_colorValue&0x7)<<4);
-	cfg.emuSettings = emuSettings & ~EMUSPEED_MASK;		// Clear speed setting.
+	cfg.scaling     = g_scalingSet & 3;
+	cfg.flicker     = g_flicker & 1;
+	cfg.gammaValue  = (g_gammaValue & 0x7)|((g_colorValue & 0x7)<<4);
+	cfg.emuSettings = emuSettings & ~EMUSPEED_MASK; // Clear speed setting.
 	cfg.sleepTime   = sleepTime;
-	cfg.controller  = ((joyCfg>>10)&1) | ((joyCfg>>25)&2);
+	cfg.controller  = ((joyCfg>>10) & 1) | ((joyCfg>>25) & 2);
 	strlcpy(cfg.currentPath, currentDir, sizeof(cfg.currentPath));
 
 	if (findFolder(folderName)) {
@@ -217,15 +219,15 @@ void loadGame(const char *gameName) {
 		g_ROM_Size = loadPCEROM(ROM_Space, gameName, sizeof(ROM_Space));
 		cls(0);
 		if (g_ROM_Size) {
-			biosLoaded = 0;
+			biosLoaded = false;
 			cdInserted = 0;
-			hucardLoaded = 1;
+			hucardLoaded = true;
 			setEmuSpeed(0);
 			loadCart();
 			if (emuSettings & AUTOLOAD_STATE) {
 				loadState();
 			}
-			powerButton = 1;
+			powerButton = true;
 			closeMenu();
 		}
 	}
@@ -245,7 +247,7 @@ void selectBios() {
 		strlcpy(cfg.biosPath, currentDir, sizeof(cfg.biosPath));
 		strlcat(cfg.biosPath, "/", sizeof(cfg.biosPath));
 		strlcat(cfg.biosPath, biosName, sizeof(cfg.biosPath));
-		biosLoaded = 0;
+		biosLoaded = false;
 	}
 }
 
@@ -278,7 +280,7 @@ int loadBIOS(void *dest, const char *fPath, const int maxSize) {
 int loadUSBIOS(void) {
 	if (loadBIOS(BIOS_Space, cfg.biosPath, sizeof(BIOS_Space))) {
 		g_BIOSBASE = BIOS_Space;
-		biosLoaded = 1;
+		biosLoaded = true;
 		return 1;
 	}
 	g_BIOSBASE = 0;
@@ -320,7 +322,7 @@ void selectCDROM() {
 				if (emuSettings & AUTOLOAD_STATE) {
 					loadState();
 				}
-				powerButton = 1;
+				powerButton = true;
 				closeMenu();
 			}
 		} else {

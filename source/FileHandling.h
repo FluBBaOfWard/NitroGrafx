@@ -5,12 +5,10 @@
 extern "C" {
 #endif
 
-#include "Shared/FileHelper.h"
-
 #define FILEEXTENSIONS ".pce.sgx"
 
-extern int hucardLoaded;
-extern int biosLoaded;
+extern bool biosLoaded;
+extern bool hucardLoaded;
 
 int loadSettings(void);
 void saveSettings(void);

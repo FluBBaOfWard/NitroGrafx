@@ -3,10 +3,8 @@
 #include "Gui.h"
 #include "Shared/EmuMenu.h"
 #include "Shared/EmuSettings.h"
-#include "Shared/AsmExtra.h"
 #include "Main.h"
 #include "FileHandling.h"
-#include "Emubase.h"
 #include "Equates.h"
 #include "Cart.h"
 #include "cdrom.h"
@@ -16,7 +14,7 @@
 
 #define EMUVERSION "V0.9.0 2021-09-12"
 
-//asm functions
+// Asm functions
 extern void paletteTxAll(void);		// VCE.s
 extern void calcVBL(void);			// vdc.s
 
