@@ -118,7 +118,7 @@ xPalLoop:
 
 ;@----------------------------------------------------------------------------
 antSeed:
-	.long 0x8000
+	.long 0x800000
 ;@----------------------------------------------------------------------------
 antWars:
 	.type   antWars STT_FUNC
@@ -146,7 +146,7 @@ tmLoop:
 	bic r1,r1,#0x3FC00
 	strh r1,[r4],#2
 	add r0,r0,#1
-	cmp r0,#512*7
+	cmp r0,#1024*4
 	bne tmLoop
 
 	mov r0,r4
@@ -161,7 +161,7 @@ antLoop0:
 	mov r2,#4
 antLoop1:
 	movs r3,r3,lsr#1
-	eorcs r3,r3,#0x90000
+	eorcs r3,r3,#0xE10000
 	mov r4,r4,lsl#8
 	orrcs r4,r4,#0x0F
 	subs r2,r2,#1

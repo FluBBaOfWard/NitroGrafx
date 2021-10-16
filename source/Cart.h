@@ -12,7 +12,6 @@ extern u8 g_scalingSet;
 extern u8 g_machineSet;
 extern u8 g_machine;
 extern u8 g_region;
-extern u8 cdInserted;
 extern u8 g_bramChanged;
 
 extern u8 EMU_SRAM[0x2000];

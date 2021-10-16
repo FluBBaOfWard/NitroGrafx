@@ -306,6 +306,7 @@
 		A45BB8CA1618FB840009569D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				DEVKITPRO = /opt/devkitpro_old;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;

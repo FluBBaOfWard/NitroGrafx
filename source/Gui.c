@@ -12,7 +12,7 @@
 #include "io.h"
 #include "ARMH6280/Version.h"
 
-#define EMUVERSION "V0.9.0 2021-09-12"
+#define EMUVERSION "V0.9.0 2021-10-16"
 
 // Asm functions
 extern void paletteTxAll(void);		// VCE.s
@@ -31,9 +31,9 @@ const fptr fnList7[] = {speedSet, autoStateSet, autoSettingsSet, autoNVRAMSet, a
 const fptr fnList8[] = {exitEmulator, backOutOfMenu};
 const fptr fnList9[] = {uiDummy};
 const fptr *const fnListX[] = {fnList0, fnList1, fnList2, fnList3, fnList4, fnList5, fnList6, fnList7, fnList8, fnList9};
-u8 menuXitems[] = {ARRSIZE(fnList0), ARRSIZE(fnList1), ARRSIZE(fnList2), ARRSIZE(fnList3), ARRSIZE(fnList4), ARRSIZE(fnList5), ARRSIZE(fnList6), ARRSIZE(fnList7), ARRSIZE(fnList8), ARRSIZE(fnList9)};
-const fptr drawuiX[] = {uiNullNormal, uiFile, uiOptions, uiAbout, uiController, uiDisplay, uiMachine, uiSettings, uiYesNo, uiDummy};
-const u8 menuXback[] = {0,0,0,0,2,2,2,2,1,8};
+u8 menuXItems[] = {ARRSIZE(fnList0), ARRSIZE(fnList1), ARRSIZE(fnList2), ARRSIZE(fnList3), ARRSIZE(fnList4), ARRSIZE(fnList5), ARRSIZE(fnList6), ARRSIZE(fnList7), ARRSIZE(fnList8), ARRSIZE(fnList9)};
+const fptr drawUIX[] = {uiNullNormal, uiFile, uiOptions, uiAbout, uiController, uiDisplay, uiMachine, uiSettings, uiYesNo, uiDummy};
+const u8 menuXBack[] = {0,0,0,0,2,2,2,2,1,8};
 
 u8 g_gammaValue = 0;
 
@@ -54,7 +54,7 @@ static const char *const rgbTxt[]={"RGB","Composite"};
 void setupGUI() {
 	emuSettings = AUTOPAUSE_EMULATION | AUTOSLEEP_OFF;
 	keysSetRepeat(25, 4);	// Delay, repeat.
-	menuXitems[1] = ARRSIZE(fnList1) - (enableExit?0:1);
+	menuXItems[1] = ARRSIZE(fnList1) - (enableExit?0:1);
 	openMenu();
 }
 
@@ -157,7 +157,7 @@ void uiSettings() {
 	drawSubItem("Autopause Game: ", autoTxt[emuSettings&1]);
 	drawSubItem("Powersave 2nd Screen: ", autoTxt[(emuSettings>>1)&1]);
 	drawSubItem("Emulator on Bottom: ", autoTxt[(emuSettings>>8)&1]);
-	drawSubItem("Debug Output: ", autoTxt[g_debugSet&1]);
+	drawSubItem("Debug Output: ", autoTxt[gDebugSet&1]);
 	drawSubItem("Autosleep: ", sleepTxt[(emuSettings>>4)&3]);
 }
 
@@ -246,7 +246,7 @@ void swapABSet() {
 /// Use R for FastForward
 void rffSet() {
 	g_configSet ^= 0x10;
-	settingsChanged = 1;
+	settingsChanged = true;
 }
 
 void joypadButtonSet() {			// See io.s: refreshEMUjoypads
@@ -256,7 +256,7 @@ void joypadButtonSet() {			// See io.s: refreshEMUjoypads
 void multiTapSet() {				// See io.s: refreshEMUjoypads
 	joyCfg ^= 0x04000000;
 	joyCfg &= ~0x70000000;
-	settingsChanged = 1;
+	settingsChanged = true;
 }
 
 
@@ -266,7 +266,7 @@ void scalingSet(){
 		g_scalingSet = 0;
 	}
 	calcVBL();
-	settingsChanged = 1;
+	settingsChanged = true;
 }
 
 /// Change gamma (brightness).
@@ -278,7 +278,7 @@ void gammaSet() {
 	paletteInit(g_gammaValue);
 	paletteTxAll();					// Make new palette visible
 	setupMenuPalette();
-	settingsChanged = 1;
+	settingsChanged = true;
 }
 
 /// Change color saturation.
@@ -289,7 +289,7 @@ void colorSet() {
 	}
 	paletteInit(g_gammaValue);
 	paletteTxAll();					// Make new palette visible
-	settingsChanged = 1;
+	settingsChanged = true;
 }
 
 void ycbcrSet() {

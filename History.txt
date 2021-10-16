@@ -2,21 +2,21 @@ NitroGrafx revision history
 -=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 
-V0.9.0 - 2021-09-12 (FluBBa)
+V0.9.0 - 2021-10-16 (FluBBa)
 	Cleaned up code.
 
 V0.8.1 - 2018-07-20 (FluBBa)
 	Moved Timer code from cpu to H6280.
 	Cleaned up code.
 
-V0.7 - 2013-03-23 (FluBBa)
+V0.7.0 - 2013-03-23 (FluBBa)
 	Added multitap emulation.
 	Added 6 button joypad emulation.
 	Added support for arguments (for cards that support it).
 	Added exit to flashcard menu (for cards that support it).
 	Fixed a few things with savestate loading.
 
-V0.6 - 2010-11-06 (FluBBa)
+V0.6.0 - 2010-11-06 (FluBBa)
 	Fixed graphics rendering.
 	 Support for all 2048 tiles.
 	 Support for 1024 wide tilemaps.
@@ -24,11 +24,11 @@ V0.6 - 2010-11-06 (FluBBa)
 	 Better caching of tiles/sprites, less flickering
 	Optimised everything.
 
-V0.5 - 2010-05-06 (FluBBa)
+V0.5.0 - 2010-05-06 (FluBBa)
 	Added support for CD-ROM images in .bin/.cue format.
 	Added support CD audio playing.
 
-V0.4 - 2010-04-16 (FluBBa)
+V0.4.0 - 2010-04-16 (FluBBa)
 	Fixed CPU cycles per scanline (455, confirmed on hardware).
 	Fixed timing of scroll register writes.
 	Fixed Sprite DMA IRQ handling.
@@ -38,21 +38,21 @@ V0.4 - 2010-04-16 (FluBBa)
 	Better timing of ADPCM playing (still no sound though).
 	Debug output now optional, also more info is written.
 
-V0.3 - 2010-04-10 (FluBBa)
+V0.3.0 - 2010-04-10 (FluBBa)
 	Fixed cache for 16x64 sprites.
 	Fixed sprite DMA flag.
 	Fixed more CD-ROM emulation issues.
 
-V0.2 - 2010-03-23 (FluBBa)
+V0.2.0 - 2010-03-23 (FluBBa)
 	Added support for the SF2 mapper.
 	Fixed loading of roms with headers.
 	Fixed sprite scaling when switching modes.
 	Fixed directory cache misses.
 	Fixed some CD-ROM emulation issues.
 
-V0.1 - 2010-03-19 (FluBBa)
+V0.1.0 - 2010-03-19 (FluBBa)
 	Initial release, allmost everything from PCEAdvance seems to work.
 
-V0.0 - 2010-01-19 (FluBBa)
+V0.0.0 - 2010-01-19 (FluBBa)
 	Started Coding.
 
