@@ -17,13 +17,13 @@
 	.global midFrame
 	.global endFrame
 	.global gfxState
-	.global g_gammaValue
-	.global g_colorValue
-	.global g_twitch
-	.global g_flicker
-	.global g_gfxMask
-	.global g_scalingSet
-	.global g_rgb_ycbcr
+	.global gGammaValue
+	.global gColorValue
+	.global gTwitch
+	.global gFlicker
+	.global gGfxMask
+	.global gScalingSet
+	.global gRgbYcbcr
 	.global sprCollision
 	.global waitMaskIn
 	.global waitMaskOut
@@ -126,7 +126,7 @@ antWars:
 	stmfd sp!,{r4,lr}
 
 	mov r0,#0x00
-	ldr r1,=g_gfxMask
+	ldr r1,=gGfxMask
 	strb r0,[r1]
 
 	ldr r1,=EMUPALBUFF			;@ Setup palette for antWars.
@@ -190,9 +190,8 @@ gfxInit:					;@ (called from main.c) only need to call once
 	mov r2,#0xffffff00			;@ Build chr decode tbl
 	ldr r3,=SPR_DECODE			;@ 0x400
 ppi0:
-	mov r0,#0
-	tst r2,#0x01
-	orrne r0,r0,#0x10000000
+	ands r0,r2,#0x01
+	movne r0,#0x10000000
 	tst r2,#0x02
 	orrne r0,r0,#0x01000000
 	tst r2,#0x04
@@ -214,18 +213,16 @@ ppi0:
 	mov r2,#0xffffff00			;@ Build chr decode tbl
 	ldr r3,=BGR_DECODE			;@ 0x400*2
 ppi1:
-	mov r0,#0
-	mov r1,#0
-	tst r2,#0x01
-	orrne r1,r1,#0x01000000
+	ands r1,r2,#0x01
+	movne r1,#0x01000000
 	tst r2,#0x02
 	orrne r1,r1,#0x00010000
 	tst r2,#0x04
 	orrne r1,r1,#0x00000100
 	tst r2,#0x08
 	orrne r1,r1,#0x00000001
-	tst r2,#0x10
-	orrne r0,r0,#0x01000000
+	ands r0,r2,#0x10
+	movne r0,#0x01000000
 	tst r2,#0x20
 	orrne r0,r0,#0x00010000
 	tst r2,#0x40
@@ -347,7 +344,7 @@ clearTileMaps:
 ;@----------------------------------------------------------------------------
 setupScaling:		;@ r0-r3, r12 modified.
 ;@----------------------------------------------------------------------------
-	ldrb r1,g_scalingSet
+	ldrb r1,gScalingSet
 
 	adr r0,BG_SCALING_1_1
 //	cmp r1,#SCALED_1_1
@@ -422,13 +419,13 @@ paletteInit:		;@ r0-r3 modified.
 	.type   paletteInit STT_FUNC
 ;@ Called by ui.c:  void paletteInit(u8 gammaVal);
 ;@----------------------------------------------------------------------------
-	ldrb r1,g_rgb_ycbcr
+	ldrb r1,gRgbYcbcr
 	cmp r1,#0
 	bne vceInitPaletteMap
 	stmfd sp!,{r4-r9,lr}
 	ldr r6,=MAPPED_RGB
 	mov r7,r0					;@ Gamma value = 0 -> 4
-	ldrb r8,g_colorValue		;@ Color value = 0 -> 4
+	ldrb r8,gColorValue			;@ Color value = 0 -> 4
 	mov r4,#512*2
 	sub r4,r4,#2
 noMap:							;@ Map 0000000gggrrrbbb  ->  0bbbbbgggggrrrrr
@@ -546,10 +543,10 @@ vblIrqHandler:
 	mov r4,r4,lsr#17
 	ldr r1,=0x20000001			;@ yScale, 1.14 Ypixel per Y
 
-	ldrb r0,g_flicker
-	ldrb r2,g_twitch
+	ldrb r0,gFlicker
+	ldrb r2,gTwitch
 	eors r2,r2,r0
-	strb r2,g_twitch
+	strb r2,gTwitch
 	mov r9,#0
 	orrne r9,r9,#0x56			;@ H flicker.
 	addne r4,r4,r1
@@ -642,13 +639,13 @@ displayControl:
 windowVValue:
 	.long 0x00C0
 ;@----------------------------------------------------------------------------
-bg_yScaleValue:	.long 0x0000FFFF			;@ was 0xE2AB
-ob_xScaleValue:	.long 0x00010000
-g_twitch:		.byte 0
-g_flicker:		.byte 1
-g_colorValue:	.byte 4
-g_gfxMask:		.byte 0
-g_rgb_ycbcr:	.byte 0
+bgYScaleValue:	.long 0x0000FFFF			;@ was 0xE2AB
+obXScaleValue:	.long 0x00010000
+gTwitch:		.byte 0
+gFlicker:		.byte 1
+gColorValue:	.byte 4
+gGfxMask:		.byte 0
+gRgbYcbcr:		.byte 0
 				.byte 0,0,0
 
 ;@----------------------------------------------------------------------------
@@ -673,7 +670,7 @@ midFrame:					;@ Called at line 96
 	rsb r0,r0,#0x10000
 	add r0,r0,#0x01
 	str r0,scaleParms+12
-	str r2,ob_xScaleValue
+	str r2,obXScaleValue
 	bl buildSpriteScaling
 
 	bl sprDMADo
@@ -735,7 +732,7 @@ vdcRet:
 //	ldr r1,=BG_PALETTE_SUB		;@ Background palette
 //	strh r0,[r1]				;@ Background palette
 
-	ldr r1,=g_configSet
+	ldr r1,=gConfigSet
 	ldrb r1,[r1]
 	ldr r2,=EMUinput
 	ldr r2,[r2]
@@ -777,7 +774,7 @@ skipVBlWait:
 setVDPMode:
 ;@----------------------------------------------------------------------------
 	mov r0,#0
-	ldrb r1,g_scalingSet
+	ldrb r1,gScalingSet
 	cmp r1,#SCALED_FIT
 	moveq r0,#1
 	cmp r1,#SCALED_ASPECT
@@ -785,7 +782,7 @@ setVDPMode:
 
 	ldr r2,=BG_SCALING_TBL
 	ldr r1,[r2,r0,lsl#2]
-	str r1,bg_yScaleValue
+	str r1,bgYScaleValue
 	ldr r2,=BG_SCALING_OFS
 	ldr r1,[r2,r0,lsl#2]
 	str r1,yStart
@@ -843,7 +840,7 @@ noReload:
 	ldr r2,tmpOamBuffer			;@ Destination
 
 	ldr r8,=DIRTYTILES
-//	ldr r1,g_emuFlags
+//	ldr r1,gEmuFlags
 	mov r1,#0
 	and r5,r1,#0x00
 //	and r5,r1,#0x300
@@ -887,7 +884,7 @@ dm2:
 //	add r4,r4,r0
 //	adrl r5,yScaleLookup
 //	sub r5,r5,r4
-	ldr r5,bg_yScaleValue
+	ldr r5,bgYScaleValue
 	add r5,r5,#1				;@ 1:1 scaling is 0xFFFF
 
 	adr lr,ret01
@@ -908,7 +905,7 @@ dm11:
 	moveq r7,#8
 	movne r7,#16
 	add r3,r3,r7				;@ Add half of sprite width
-	ldr r1,ob_xScaleValue
+	ldr r1,obXScaleValue
 	mul r3,r1,r3				;@ x = scaled x
 	mov r3,r3,asr#16
 	sub r3,r3,r7				;@ Sub half of sprite width
@@ -977,7 +974,7 @@ VRAM_spr_16:		;@ Takes tilenumber in r1, returns new tilenumber in r0
 	ldr r0,[r9,r1,lsl#2]
 	cmp r7,r0,lsr#16
 	ble lutHit16
-noluthit16:
+noLutHit16:
 	ldrb r0,sprMemAlloc
 	orr r0,r0,r7,lsl#16
 	str r0,[r9,r1,lsl#2]
@@ -1389,7 +1386,7 @@ tiLoop:
 	subs r8,r8,#4
 	bpl tiLoop
 
-;@ remap tile 1024 to 1.
+;@ Remap tile 1024 to 1.
 
 	add r4,r4,#0x8000
 	sub r4,r4,#0x0020
@@ -1509,7 +1506,7 @@ waitMaskOut:		.byte 0
 	.byte 0
 	.byte 0
 
-g_scalingSet:
+gScalingSet:
 	.byte SCALED_ASPECT		;@ scalemode(saved display type), default scale to fit
 sprCollision:		.byte 0x20
 

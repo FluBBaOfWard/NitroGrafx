@@ -11,19 +11,19 @@
 	.global packState
 	.global unpackState
 	.global enableSuperCDRAM
-	.global g_hwFlags
+	.global gHwFlags
 	.global romStart
-	.global g_cartFlags
-	.global g_hackFlags
-	.global g_machine
-	.global g_machineSet
-//	.global g_config
-	.global g_configSet
-	.global g_region
-	.global g_bramChanged
-	.global g_dipSwitch0
-	.global g_dipSwitch1
-	.global g_dipSwitch2
+	.global gCartFlags
+	.global gHackFlags
+	.global gMachine
+	.global gMachineSet
+//	.global gConfig
+	.global gConfigSet
+	.global gRegion
+	.global gBramChanged
+	.global gDipSwitch0
+	.global gDipSwitch1
+	.global gDipSwitch2
 	.global romMask
 	.global MEMMAPTBL_
 
@@ -118,8 +118,8 @@ loadCart: 		;@ called from C:
 	ldr r1,=isoBase
 	str r3,[r1]
 
-	ldrb r0,g_configSet
-	strb r0,g_config
+	ldrb r0,gConfigSet
+	strb r0,gConfig
 	bl checkMachine
 
 	ldr r3,=ROM_Space
@@ -190,7 +190,7 @@ tbLoop2:
 	cmp r0,#0x100
 	bne tbLoop2
 
-	ldrb r9,g_hwFlags
+	ldrb r9,gHwFlags
 	tst r9,#CD_DEVICE
 	blne enableCDRAM
 	tst r9,#SCD_CARD
@@ -240,7 +240,7 @@ memL3:
 checkMachine:
 ;@----------------------------------------------------------------------------
 	stmfd sp!,{r2-r4}
-	ldrb r0,g_machineSet
+	ldrb r0,gMachineSet
 	cmp r0,#HW_AUTO
 	bne setHWBits
 
@@ -251,10 +251,10 @@ checkMachine:
 	moveq r0,#HW_SCD_ACDUO
 
 setHWBits:
-	strb r0,g_machine
+	strb r0,gMachine
 	adr r1,hwTable
 	ldrb r0,[r1,r0]
-	strb r0,g_hwFlags
+	strb r0,gHwFlags
 
 	ldmfd sp!,{r2-r4}
 	bx lr
@@ -380,7 +380,7 @@ memReset:
 	mov r2,#0x2000/4
 	bl memset_
 
-	ldrb r11,g_machineSet
+	ldrb r11,gMachineSet
 	cmp r11,#HW_AUTO
 	moveq r6,#0
 	movne r6,#-1
@@ -523,27 +523,27 @@ g_ROM_Size:
 romMask:	.long 0
 
 romInfo:						;@ keep emuflags/BGmirror together for savestate/loadstate
-g_hwFlags:
+gHwFlags:
 	.byte 0						;@ emuflags      (label this so UI.C can take a peek) see equates.h for bitfields
 //scaling:
 	.byte SCALED_FIT			;@ (display type)
 	.byte 0,0					;@ (sprite follow val)
-g_cartFlags:
+gCartFlags:
 	.byte 0 					;@ cartflags
-g_machine:
+gMachine:
 	.byte 0
-g_machineSet:
+gMachineSet:
 	.byte 0
-g_config:
+gConfig:
 	.byte 0						;@ config, bit 7=BIOS on/off, bit 6=X as GG Start, bit 5=Select as Reset, bit 4=R as FastForward
-g_configSet:
+gConfigSet:
 	.byte 0x80
-g_region:
+gRegion:
 	.byte 0						;@ 0=USA, 1=Japan.
-g_bramChanged:
+gBramChanged:
 	.byte 0						;@ indicates if BRAM has been modified.
 	.byte 0
-g_hackFlags:
+gHackFlags:
 	.long 0
 
 	.pool

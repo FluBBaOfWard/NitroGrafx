@@ -26,7 +26,7 @@ V0.6.0 - 2010-11-06 (FluBBa)
 
 V0.5.0 - 2010-05-06 (FluBBa)
 	Added support for CD-ROM images in .bin/.cue format.
-	Added support CD audio playing.
+	Added support for CD audio playing.
 
 V0.4.0 - 2010-04-16 (FluBBa)
 	Fixed CPU cycles per scanline (455, confirmed on hardware).

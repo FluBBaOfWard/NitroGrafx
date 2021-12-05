@@ -30,7 +30,7 @@ ioReset:
 
 	str r0,ioState
 
-	ldr r12,=g_hwFlags
+	ldr r12,=gHwFlags
 	ldrb r12,[r12]
 
 	tst r12,#AC_CARD
@@ -51,7 +51,7 @@ ioReset:
 
 	mov r0,#0xFF
 	bicne r0,r0,#0x80			;@ CD-ROM
-	ldr r1,=g_region
+	ldr r1,=gRegion
 	ldrb r1,[r1]
 	tst r1,#USCOUNTRY
 	biceq r0,r0,#0x40			;@ US/Japan
@@ -75,7 +75,7 @@ refreshEMUjoypads:			;@ Call every frame
 		tstcs r1,r1,lsr#9		;@ R?
 		andcs r1,r1,r2,lsr#16
 	adr addy,dulr2ldru
-	ldrb r0,[addy,r0,lsr#4]		;@ downupleftright
+	ldrb r0,[addy,r0,lsr#4]		;@ DownUpLeftRight
 
 
 	ands r3,r1,#3

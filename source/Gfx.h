@@ -5,11 +5,11 @@
 extern "C" {
 #endif
 
-extern u8 g_flicker;
-extern u8 g_twitch;
-extern u8 g_gfxMask;
-extern u8 g_colorValue;
-extern u8 g_rgb_ycbcr;
+extern u8 gFlicker;
+extern u8 gTwitch;
+extern u8 gGfxMask;
+extern u8 gColorValue;
+extern u8 gRgbYcbcr;
 extern u8 sprCollision;
 
 extern u16 EMUPALBUFF[200];

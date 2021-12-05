@@ -22,6 +22,6 @@
 #define SGX_DEVICE		0x40	// 1=Super Grafx unit
 
 
-#define SCALED_1_1		0		// display types
+#define SCALED_1_1		0		// Display types
 #define SCALED_FIT		1
 #define SCALED_ASPECT	2

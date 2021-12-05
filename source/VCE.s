@@ -47,14 +47,14 @@ vceInit:					;@ Called from gfxInit
 	stmfd sp!,{lr}
 //	bl setupYUV					;@ Calculate VCE YUV ROM
 
-	ldr r0,=g_gammaValue
+	ldr r0,=gGammaValue
 	ldrb r0,[r0]
 	bl paletteInit				;@ Do palette mapping
 	bl vceReset
 	ldmfd sp!,{lr}
 	bx lr
 ;@----------------------------------------------------------------------------
-vceReset:					;@ called from GFX reset
+vceReset:					;@ Called from GFX reset
 	.type vceReset STT_FUNC
 ;@----------------------------------------------------------------------------
 	stmfd sp!,{lr}
@@ -62,9 +62,9 @@ vceReset:					;@ called from GFX reset
 	ldr r0,=vceState
 	mov r1,#0
 	mov r2,#vceRegSize/4
-	bl memset_					;@ clear VCE regs
+	bl memset_					;@ Clear VCE regs
 	bl resetPaletteRam
-	bl paletteTxAll				;@ transfer PCE palette to NDS
+	bl paletteTxAll				;@ Transfer PCE palette to NDS
 
 	ldmfd sp!,{lr}
 	bx lr
@@ -112,7 +112,7 @@ _0404R:						;@ VCE CTD L
 ;@----------------------------------------------------------------------------
 	ldr r0,vceAddress
 	ldr r1,=vcePaletteRam
-	ldrb r0,[r1,r0,lsr#22]		;@ load from pce palette
+	ldrb r0,[r1,r0,lsr#22]		;@ Load from pce palette
 	bx lr
 ;@----------------------------------------------------------------------------
 _0405R:						;@ VCE CTD H
@@ -121,8 +121,8 @@ _0405R:						;@ VCE CTD H
 	add r1,r0,#0x00800000
 	str r1,vceAddress
 	ldr r1,=vcePaletteRam+1
-	ldrb r0,[r1,r0,lsr#22]		;@ load from pce palette
-	orr r0,r0,#0xfe				;@ only on TG16, SGX return random data.
+	ldrb r0,[r1,r0,lsr#22]		;@ Load from pce palette
+	orr r0,r0,#0xfe				;@ Only on TG16, SGX return random data.
 	bx lr
 ;@----------------------------------------------------------------------------
 _0400W:						;@ VCE CR - dotclock, interlace, color.
@@ -164,7 +164,7 @@ _0404W:						;@ VCE Color Table Data L
 ;@----------------------------------------------------------------------------
 	ldr r1,vceAddress
 	ldr r2,=vcePaletteRam
-	strb r0,[r2,r1,lsr#22]		;@ store in VCE palette
+	strb r0,[r2,r1,lsr#22]		;@ Store in VCE palette
 	bx lr
 ;@----------------------------------------------------------------------------
 _0405W:						;@ VCE Color Table Data H
@@ -174,7 +174,7 @@ _0405W:						;@ VCE Color Table Data H
 	add r2,r1,#0x00800000
 	str r2,vceAddress
 	ldr r2,=vcePaletteRam+1
-	strb r0,[r2,r1,lsr#22]		;@ store in VCE palette
+	strb r0,[r2,r1,lsr#22]		;@ Store in VCE palette
 	bx lr
 
 ;@----------------------------------------------------------------------------
@@ -184,7 +184,7 @@ resetPaletteRam:
 //	ldr r0,=vcePaletteRam
 //	mov r1,#0
 //	mov r2,#0x400/4				;@ 512 words
-//	bl memset_					;@ clear palette
+//	bl memset_					;@ Clear palette
 
 	bl rainbow
 
@@ -218,13 +218,13 @@ transcodePalette:				;@ r0 = destination
 	ldr r2,=vcePaletteRam
 	ldr r3,=MAPPED_RGB
 	mov r1,#0x200
-txloop:
+txLoop:
 	ldrh r12,[r2],#2
 	mov r12,r12,lsl#1
 	ldrh r12,[r3,r12]
 	strh r12,[r0],#2
 	subs r1,r1,#1
-	bhi txloop
+	bhi txLoop
 
 	bx lr
 ;@----------------------------------------------------------------------------

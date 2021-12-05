@@ -12,7 +12,7 @@
 #include "io.h"
 #include "ARMH6280/Version.h"
 
-#define EMUVERSION "V0.9.0 2021-10-16"
+#define EMUVERSION "V0.9.0 2021-12-04"
 
 // Asm functions
 extern void paletteTxAll(void);		// VCE.s
@@ -35,7 +35,7 @@ u8 menuXItems[] = {ARRSIZE(fnList0), ARRSIZE(fnList1), ARRSIZE(fnList2), ARRSIZE
 const fptr drawUIX[] = {uiNullNormal, uiFile, uiOptions, uiAbout, uiController, uiDisplay, uiMachine, uiSettings, uiYesNo, uiDummy};
 const u8 menuXBack[] = {0,0,0,0,2,2,2,2,1,8};
 
-u8 g_gammaValue = 0;
+u8 gGammaValue = 0;
 
 static const char *const autoTxt[]={"Off","On","With R"};
 static const char *const speedTxt[]={"Normal","Fast","Max","Slowmo"};
@@ -122,27 +122,27 @@ void uiController() {
 	drawSubItem("B Autofire: ", autoTxt[autoB]);
 	drawSubItem("A Autofire: ", autoTxt[autoA]);
 	drawSubItem("Swap A-B:   ", autoTxt[(joyCfg>>10)&1]);
-	drawSubItem("Use R as FastForward: ", autoTxt[(g_configSet>>4)&1]);
+	drawSubItem("Use R as FastForward: ", autoTxt[(gConfigSet>>4)&1]);
 }
 
 void uiDisplay() {
 	setupSubMenu(" Display Settings");
-	drawSubItem("Display: ", dispTxt[g_scalingSet]);
-	drawSubItem("Scaling: ", flickTxt[g_flicker]);
-	drawSubItem("Output: ", rgbTxt[g_rgb_ycbcr]);
-	drawSubItem("Gamma: ", brighTxt[g_gammaValue]);
-	drawSubItem("Color: ", brighTxt[g_colorValue]);
-	drawSubItem("Disable Background: ", autoTxt[g_gfxMask&1]);
-	drawSubItem("Disable Sprites: ", autoTxt[(g_gfxMask>>4)&1]);
+	drawSubItem("Display: ", dispTxt[gScalingSet]);
+	drawSubItem("Scaling: ", flickTxt[gFlicker]);
+	drawSubItem("Output: ", rgbTxt[gRgbYcbcr]);
+	drawSubItem("Gamma: ", brighTxt[gGammaValue]);
+	drawSubItem("Color: ", brighTxt[gColorValue]);
+	drawSubItem("Disable Background: ", autoTxt[gGfxMask&1]);
+	drawSubItem("Disable Sprites: ", autoTxt[(gGfxMask>>4)&1]);
 }
 
 void uiMachine() {
-	int machine = g_machineSet;
-	if (machine == HW_PCENGINE && g_region == REGION_US) {
+	int machine = gMachineSet;
+	if (machine == HW_PCENGINE && gRegion == REGION_US) {
 		machine = HW_TURBOGRAFX;
 	}
 	setupSubMenu(" Machine Settings");
-	drawSubItem("Region: ", cntrTxt[g_region]);
+	drawSubItem("Region: ", cntrTxt[gRegion]);
 	drawSubItem("Machine: ", machTxt[machine]);
 	drawSubItem("Select BIOS", 0);
 	drawSubItem("Fake Spritecollision: ", autoTxt[(sprCollision>>5)&1]);
@@ -245,7 +245,7 @@ void swapABSet() {
 
 /// Use R for FastForward
 void rffSet() {
-	g_configSet ^= 0x10;
+	gConfigSet ^= 0x10;
 	settingsChanged = true;
 }
 
@@ -261,9 +261,9 @@ void multiTapSet() {				// See io.s: refreshEMUjoypads
 
 
 void scalingSet(){
-	g_scalingSet++;
-	if (g_scalingSet >= 3) {
-		g_scalingSet = 0;
+	gScalingSet++;
+	if (gScalingSet >= 3) {
+		gScalingSet = 0;
 	}
 	calcVBL();
 	settingsChanged = true;
@@ -271,11 +271,11 @@ void scalingSet(){
 
 /// Change gamma (brightness).
 void gammaSet() {
-	g_gammaValue++;
-	if (g_gammaValue > 4) {
-		g_gammaValue = 0;
+	gGammaValue++;
+	if (gGammaValue > 4) {
+		gGammaValue = 0;
 	}
-	paletteInit(g_gammaValue);
+	paletteInit(gGammaValue);
 	paletteTxAll();					// Make new palette visible
 	setupMenuPalette();
 	settingsChanged = true;
@@ -283,27 +283,27 @@ void gammaSet() {
 
 /// Change color saturation.
 void colorSet() {
-	g_colorValue++;
-	if (g_colorValue > 4) {
-		g_colorValue = 0;
+	gColorValue++;
+	if (gColorValue > 4) {
+		gColorValue = 0;
 	}
-	paletteInit(g_gammaValue);
+	paletteInit(gGammaValue);
 	paletteTxAll();					// Make new palette visible
 	settingsChanged = true;
 }
 
 void ycbcrSet() {
-	g_rgb_ycbcr ^= 0x01;
-	paletteInit(g_gammaValue);
+	gRgbYcbcr ^= 0x01;
+	paletteInit(gGammaValue);
 	paletteTxAll();					// Make new palette visible
 }
 
 void bgrlayerSet() {
-	g_gfxMask ^= 0x03;
+	gGfxMask ^= 0x03;
 }
 
 void sprlayerSet() {
-	g_gfxMask ^= 0x10;
+	gGfxMask ^= 0x10;
 }
 
 
@@ -312,12 +312,12 @@ void collisionSet() {
 }
 
 void countrySet() {
-	g_region ^= 0x01;
+	gRegion ^= 0x01;
 }
 
 void machineSet() {
-	g_machineSet++;
-	if (g_machineSet > 4){
-		g_machineSet = 0;
+	gMachineSet++;
+	if (gMachineSet > 4){
+		gMachineSet = 0;
 	}
 }

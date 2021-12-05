@@ -63,7 +63,7 @@ vdcReset:					;@ Called from gfxReset
 	mov r2,#vdcStateSize/4
 	bl memset_					;@ Clear VDC regs
 
-	ldr r0,=g_machineSet
+	ldr r0,=gMachineSet
 	ldrb r0,[r11]
 	cmp r0,#HW_AUTO
 	moveq r3,#0
@@ -119,7 +119,7 @@ VDCLineStateTable:
 	.long 96, midFrame
 	.long 239, endFrame			;@ vdcEndFrameLine
 	.long 239, startVbl			;@ vdcVBlLine
-	.long 240, VBL_Hook			;@ vdcVBlEndLine
+	.long 240, vblHook			;@ vdcVBlEndLine
 //	.long 260, secondLastScanline	;@ vdc2ndLastScanline
 	.long 261, frameEndHook		;@ vdcLastScanline
 //	.long 262, frameEndHook		;@ vdcMinus1Scanline
@@ -215,14 +215,14 @@ startVbl:
 	bx lr
 
 ;@----------------------------------------------------------------------------
-VBL_Hook:							;@ 193/240
+vblHook:					;@ 193/240
 ;@----------------------------------------------------------------------------
 	mov r0,#0
 	ldrb r2,vdcPrimedVBl
 	strb r0,vdcPrimedVBl		;@ Clear byte.
 	ldrb r0,vdcStat
 	orrs r0,r0,r2				;@ VBlank bit
-	strb r0,vdcStat				;@ vbl irq.
+	strb r0,vdcStat				;@ VBL irq.
 	bxeq lr
 	setirqpin 2
 	bx lr
@@ -237,7 +237,7 @@ newFrame:					;@ Called before line 0	(r0-r9 safe to use)
 	mov r0,#0
 	str r0,vdcScrollLine
 	str r0,vdcCtrl1Line
-;@	strb r0,vdcstat				;@ vbl clear, sprite0 clear, Tatsujin needs this.
+;@	strb r0,vdcstat				;@ VBL clear, sprite0 clear, Tatsujin needs this.
 ;@	strb r0,irqPending
 
 
@@ -296,7 +296,7 @@ _VDC3R:						;@ VDC Data H
 	ldrb r1,vdcRegister			;@ What function
 	cmp r1,#2					;@ Only VRAM Read increases address.
 	bxne lr
-fillrlatch:
+fillRLatch:
 	ldr r2,vram_r_adr
 	ldrb r1,vdcAdrInc
 	add r1,r2,r1,lsl#16
@@ -436,7 +436,7 @@ MARR_L_W:					;@ 01
 MARR_H_W:					;@ 01
 ;@----------------------------------------------------------------------------
 	strb r0,vram_r_adr+3		;@ Read high address
-	b fillrlatch
+	b fillRLatch
 ;@----------------------------------------------------------------------------
 VRAM_L_W:					;@ 02
 ;@----------------------------------------------------------------------------
@@ -891,12 +891,12 @@ sprDMA_W:			;@ Sprite DMA transfer, should be called during VBlank
 	rsb r3,r2,#0x100			;@ How much is already done
 	add r1,r1,r3,lsl#1
 	add r4,r4,r3,lsl#1
-sprDMAloop:
+sprDMALoop:
 	subs r0,r0,#1
 	subspl r2,r2,#1
 	ldrhpl r3,[r1],#2
 	strhpl r3,[r4],#2
-	bhi sprDMAloop
+	bhi sprDMALoop
 	ldmfd sp!,{r3-r5}
 
 	str r2,vdcSatLen
@@ -931,7 +931,7 @@ vramDMA_W:			;@ VRAM to VRAM DMA transfer
 	ldr r2,vdcDMADst
 	ldr r3,vdcDMALen
 	mov r1,r1,lsl#17
-vramdmaLoop:
+vramDmaLoop:
 	mov r1,r1,lsr#16
 	movs r2,r2,asr#15
 	ldrhpl r9,[r5,r1]			;@ Read from virtual PCE_VRAM
@@ -942,7 +942,7 @@ vramdmaLoop:
 	add r2,r8,r2,lsl#15
 	subs r3,r3,#0x10000
 	subspl r0,r0,#1
-	bpl vramdmaLoop
+	bpl vramDmaLoop
 
 	mov r1,r1,lsr#17
 	str r1,vdcDMASrc
@@ -1045,7 +1045,7 @@ vdcZeroLine:		.long 0, newFrame
 vdcMidFrameLine:	.long 96, midFrame
 vdcEndFrameLine:	.long 239, endFrame
 vdcVBlLine:			.long 239, startVbl
-vdcVBlEndLine:		.long 240, VBL_Hook
+vdcVBlEndLine:		.long 240, vblHook
 //vdc2ndLastScanline:	.long 260, secondLastScanline
 vdcLastScanline:	.long 261, frameEndHook
 //vdcMinus1Scanline:	.long 262, frameEndHook

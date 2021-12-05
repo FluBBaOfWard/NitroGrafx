@@ -630,7 +630,7 @@ AC0A_W:						;@ Address Addition
 	bxne lr
 
 addOffsetToBase:
-	tst r0,#0x08				;@ treat as signed?
+	tst r0,#0x08				;@ Treat as signed?
 	ldr r0,[r1]					;@ Base
 	ldr r2,[r1,#acOffset]		;@ Offset
 	addeq r0,r0,r2,lsr#8

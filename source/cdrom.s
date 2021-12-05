@@ -89,7 +89,7 @@ cdReset:
 	ldr r0,=cdromState
 	mov r1,#0
 	mov r2,#(cdromStateEnd-cdromState)/4
-	bl memset_					;@ clear CD-ROM regs
+	bl memset_					;@ Clear CD-ROM regs
 //	bl copyTCD
 	ldmfd sp!,{lr}
 
@@ -106,7 +106,7 @@ cdReset:
 	ldrb r2,[r12,#0x08]			;@ Mode for this track
 	ldr r1,cdFileSize
 	sub r0,r1,r0				;@ Calculate size of track in bytes
-	cmp r2,#4					;@ sector size for track
+	cmp r2,#4					;@ Sector size for track
 	ldrne r1,=0x1BDD2B			;@ 0x100000000/2352
 	umullne r2,r0,r1,r0
 	moveq r0,r0,lsr#11
@@ -135,11 +135,11 @@ copyTCD:
 	ldr r2,=CDROM_TOC
 	str r2,tgcdBase
 	mov r12,#0x100
-ctocLoop:
+cTocLoop:
 	ldr r0,[r1],#4
 	str r0,[r2],#4
 	subs r12,r12,#1
-	bhi ctocLoop
+	bhi cTocLoop
 
 	bx lr
 ;@----------------------------------------------------------------------------
@@ -199,7 +199,7 @@ tocLoop:
 	ldmfd sp!,{r3-r6,lr}
 	bx lr
 ;@----------------------------------------------------------------------------
-updateCDROM:				;@ called every frame
+updateCDROM:				;@ Called every frame
 ;@----------------------------------------------------------------------------
 	stmfd sp!,{r0,r3,lr}
 	ldrb r0,cdAudioPlaying
@@ -276,8 +276,8 @@ CD_Check_IRQ:					;@ Don't use r0 as it may be used as return data.
 	tst r2,#0x7C
 
 	ldrb r1,[h6280optbl,#h6280IrqPending]
-	bic r1,r1,#1					;@ clear CD IRQ
-	orrne r1,r1,#1					;@ set CD IRQ if appropriate
+	bic r1,r1,#1					;@ Clear CD IRQ
+	orrne r1,r1,#1					;@ Set CD IRQ if appropriate
 	strb r1,[h6280optbl,#h6280IrqPending]
 
 	bx lr
@@ -288,7 +288,7 @@ AdpcmDMA:					;@ r0=length to transfer now.
 
 	mov r5,r0
 	ldrb r0,adpcmStatus
-	orr r0,r0,#0x04				;@ busy with last write.
+	orr r0,r0,#0x04				;@ Busy with last write.
 	strb r0,adpcmStatus
 	mov r0,#0x04				;@ ADPCM DMA busy writing.
 	strb r0,adpcmDmaOn
@@ -330,9 +330,9 @@ CDROM_R:					;@ 0x1800-0x180f
 	tst addy,#0x07F0
 	andeq r1,addy,#0x0F
 	ldreq pc,[pc,r1,lsl#2]
-	b more_CD_R					;@ anything else than 0x1800-0x180f
+	b moreCD_R					;@ Anything else than 0x1800-0x180f
 ;@---------------------------
-cd_read_tbl:
+cdReadTbl:
 	.long CD00_R				;@ CDC status
 	.long CD01_R				;@ CDC command / status / data
 	.long CD02_R				;@ ADPCM / CD control
@@ -350,14 +350,14 @@ cd_read_tbl:
 	.long CD0E_R				;@ ADPCM playback rate
 	.long CD0F_R				;@ ADPCM and CD audio fade timer
 ;@----------------------------------------------------------------------------
-more_CD_R:					;@ 0x18CX
+moreCD_R:					;@ 0x18CX
 ;@----------------------------------------------------------------------------
 	mov r11,r11					;@ No$GBA Debugg
 	and r0,addy,#0x03F8
 	cmp r0,#0xC0
 	bne emptyRead
 
-	ldr r0,=g_hwFlags
+	ldr r0,=gHwFlags
 	ldrb r0,[r0]
 	tst r0,#SCD_DEVICE+SCD_CARD
 	bxeq lr
@@ -371,8 +371,8 @@ more_CD_R:					;@ 0x18CX
 	ldrb r0,[r1,r0]
 	bx lr
 ;@----------------------------------------------------------------------------
-;@ 0x18C0 = enable SCD RAM.
-;@ 0x18C3/0x18C7 = number of 64kB blocks
+;@ 0x18C0 = Enable SCD RAM.
+;@ 0x18C3/0x18C7 = Number of 64kB blocks
 ;@----------------------------------------------------------------------------
 SCD_HW:							;@ Super CDROM unit
 		.byte 0x00,0xAA,0x55,0x03,0xFF,0xFF,0xFF,0xFF
@@ -387,9 +387,9 @@ CDROM_W:					;@ 0x1800-0x180f
 	tst addy,#0x07F0
 	andeq r1,addy,#0x0F
 	ldreq pc,[pc,r1,lsl#2]
-	b more_CD_W					;@ Anything else than 0x1800-0x180f
+	b moreCD_W					;@ Anything else than 0x1800-0x180f
 ;@---------------------------
-cd_write_tbl:
+cdWriteTbl:
 	.long CD00_W				;@ CDC status
 	.long CD01_W				;@ CDC command / status / data
 	.long CD02_W				;@ ADPCM / CD control
@@ -407,14 +407,14 @@ cd_write_tbl:
 	.long CD0E_W				;@ ADPCM playback rate
 	.long CD0F_W				;@ ADPCM and CD audio fade timer
 ;@----------------------------------------------------------------------------
-more_CD_W:					;@ 0x18C0
+moreCD_W:					;@ 0x18C0
 ;@ 0x18C0 = enable SCD RAM.
 ;@----------------------------------------------------------------------------
 	mov r11,r11					;@ No$GBA Debugg
 	bic r1,addy,#0xF800
 	cmp r1,#0xC0
 	bne emptyWrite
-	ldr r1,=g_hwFlags
+	ldr r1,=gHwFlags
 	ldrb r1,[r1]
 	tst r1,#SCD_DEVICE
 	beq emptyWrite
@@ -512,7 +512,7 @@ CD0A_R:						;@ ADPCM data read
 ;@	vbadebugg
 
 	ldrb r0,adpcmStatus
-	orr r0,r0,#0x80				;@ busy with last read.
+	orr r0,r0,#0x80				;@ Busy with last read.
 	strb r0,adpcmStatus
 
 	ldr r0,adRdPtr
@@ -635,8 +635,8 @@ CD02_W:						;@ IRQ2 Mask & SCSI ACK
 	bl CD_Check_IRQ
 	ldmfd sp!,{r1,lr}
 
-	tst r1,#0x80				;@ cd-ack?
-	bxeq lr						;@ no.
+	tst r1,#0x80				;@ CD-Ack?
+	bxeq lr						;@ No.
 
 	ldrb r1,scsiSignal
 	cmp r1,#0xD0
@@ -647,7 +647,7 @@ CD02_W:						;@ IRQ2 Mask & SCSI ACK
 	beq sendStatus
 	cmp r1,#0xF8
 	beq sendMessage
-	bx lr						;@ zero or unknown.
+	bx lr						;@ Zero or unknown.
 
 getCommand:
 	adrl r1,scsiCmd
@@ -662,7 +662,7 @@ getCommand:
 	cmp r2,r0
 	moveq r2,#0
 	strb r2,scsiPtr
-	bxne lr						;@ exit
+	bxne lr						;@ Exit
 
 	stmfd sp!,{r0-r1,lr}
 	bl printSCSICommand
@@ -743,7 +743,7 @@ CD06_W:						;@ PCM Audio high, R/O.
 ;@----------------------------------------------------------------------------
 CD07_W:						;@ BACK UP RAM Enable
 ;@----------------------------------------------------------------------------
-	ands r0,r0,#0x80			;@ unlock BRAM if bit 7 is set when writing to 0x1807
+	ands r0,r0,#0x80			;@ Unlock BRAM if bit 7 is set when writing to 0x1807
 	movne r0,#1
 	strbne r0,bramAccess
 	bx lr
@@ -766,7 +766,7 @@ CD0A_W:						;@ ADPCM-RAM write
 	add r1,r1,#0x10000
 	str r1,adWrPtr
 	ldrb r0,adpcmStatus
-	orr r0,r0,#0x04				;@ busy with last write.
+	orr r0,r0,#0x04				;@ Busy with last write.
 	strb r0,adpcmStatus
 
 	bx lr
@@ -819,13 +819,13 @@ CD0D_W:						;@ ADPCM adr control
 	bicne r1,r1,#0x0C			;@ Clear ADPCM IRQ flags
 	strb r1,cdIrqReq
 	bne CD_Check_IRQ
-	tst r0,#0x60				;@ was r1
+	tst r0,#0x60				;@ Was r1
 	bxeq lr
 	ldrb r1,cdIrqReq
 	bic r1,r1,#0x0C				;@ Clear ADPCM IRQ flags
 	strb r1,cdIrqReq
 	ldr r0,adLen
-	movs r0,r0,lsr#16			;@ just a made up number to count.
+	movs r0,r0,lsr#16			;@ Just a made up number to count.
 //	orreq r0,r0,#0x10000		;@ This should be changed depending on the shift
 	add r0,r0,#1
 	str r0,adPlayTime
@@ -861,16 +861,16 @@ AF_txt:
 
 ;@----------------------------------------------------------------------------
 cdromState:
-dmaOutPtr:	.long 0				;@ dma data byte ptr
-dataOutPtr:	.long 0				;@ scsi data byte ptr
-currentPos:	.long 0				;@ current position on disc
-currentTrack: .long 0			;@ current track
-currentSeek: .long 0			;@ current image byte position
-dataLen:	.long 0				;@ scsi data length in bytes
-sectorPtr:	.long 0				;@ audio sector pointer, shift 2 right to get real value.
-sectorEnd:	.long 0				;@ audio end sector pointer, shift 2 right to get real value.
-cddaStart:	.long 0				;@ start position for cd audio (for repeat...).
-cdSeekTime:	.long 0				;@ seek time in frames (when setting sector).
+dmaOutPtr:	.long 0				;@ DMA data byte ptr
+dataOutPtr:	.long 0				;@ SCSI data byte ptr
+currentPos:	.long 0				;@ Current position on disc
+currentTrack: .long 0			;@ Current track
+currentSeek: .long 0			;@ Current image byte position
+dataLen:	.long 0				;@ SCSI data length in bytes
+sectorPtr:	.long 0				;@ Audio sector pointer, shift 2 right to get real value.
+sectorEnd:	.long 0				;@ Audio end sector pointer, shift 2 right to get real value.
+cddaStart:	.long 0				;@ Start position for cd audio (for repeat...).
+cdSeekTime:	.long 0				;@ Seek time in frames (when setting sector).
 
 adPtr:		.long 0				;@ ADPCM ptr	($1808-1809)
 adLen:		.long 0				;@ ADPCM length
@@ -894,9 +894,9 @@ adpcmRate:		.byte 0			;@ ADPCM playback rate ($180E)
 adpcmStatus:	.byte 0			;@ ADPCM busy status.
 adpcmDmaOn:		.byte 0			;@ ADPCM -> CD DMA on?
 cdAudioFade:	.byte 0			;@ CD Audio fade ($180F)
-cdAudioPlaying:	.byte 0			;@ is cd audio playing?
-cdAudioRepeat:	.byte 0			;@ should music repeat after completion?
-scsiPtr:		.byte 0			;@ which byte of the command
+cdAudioPlaying:	.byte 0			;@ Is cd audio playing?
+cdAudioRepeat:	.byte 0			;@ Should music repeat after completion?
+scsiPtr:		.byte 0			;@ Which byte of the command
 
 scsiCmd:		.space 10
 scsiResponse:	.space 10
@@ -951,7 +951,7 @@ LBA2RealOffset:			;@ in r0=real LBA, out r0=data file offset
 	mov r5,r0					;@ Save track
 	bl Track2LBA				;@ Get first sector of this track
 
-	sub r4,r4,r0				;@ convert LBA to sector offset from track start.
+	sub r4,r4,r0				;@ Convert LBA to sector offset from track start.
 	mov r0,r5
 	bl Track2Offset
 
@@ -1012,7 +1012,7 @@ SCSI_SendData:
 
 noMoreScsiData:
 	ldrb r0,scsiData
-	mov r1,#0					;@ Scsidata should be clear if we have sent all the data, or error code if error occured.
+	mov r1,#0					;@ Scsi data should be clear if we have sent all the data, or error code if error occured.
 	strb r1,scsiData
 	mov r1,#0xD8
 	strb r1,scsiSignal
@@ -1022,8 +1022,8 @@ noMoreScsiData:
 ;@	cmpne r1,#0xD8
 ;@	cmpne r1,#0xD9
 	ldrb r2,cdIrqReq
-	orr r2,r2,#0x20			;@ CD Read finnished
-	bic r2,r2,#0x40			;@ CD Ready finnished
+	orr r2,r2,#0x20				;@ CD Read finnished
+	bic r2,r2,#0x40				;@ CD Ready finnished
 	strb r2,cdIrqReq
 	b CD_Check_IRQ
 //	bx lr
@@ -1047,7 +1047,7 @@ SCSI_SendResponse:
 	bx lr
 ;@----------------------------------------------------------------------------
 CMD_TestUnitReady:
-	mov r0,#0xD8				;@ no data only status
+	mov r0,#0xD8				;@ No data only status
 	strb r0,scsiSignal
 
 	ldrb r0,cdInserted
@@ -1111,13 +1111,13 @@ CMD_Read6:
 	mov r0,#0					;@ Audio isn't playing anymore
 	strb r0,cdAudioPlaying
 	adrl r2,scsiCmd
-	ldrb r0,[r2,#4]				;@ number of sectors
+	ldrb r0,[r2,#4]				;@ Number of sectors
 	movs r0,r0,lsl#11			;@ 0x800
 	moveq r0,#0x80000
 	str r0,dataLen
 
 	mov r0,#60
-	str r0,cdSeekTime			;@ this should probably be calculated from old pos to new pos.
+	str r0,cdSeekTime			;@ This should probably be calculated from old pos to new pos.
 	ldrb r0,[r2,#1]				;@ LBA1
 	and r0,r0,#0x1F
 	ldrb r1,[r2,#2]				;@ LBA2
@@ -1145,7 +1145,7 @@ CMD_PlayCD:
 	stmfd sp!,{r3-r5,lr}
 
 	mov r0,#60
-	str r0,cdSeekTime			;@ this should probably be calculated from old pos to new pos.
+	str r0,cdSeekTime			;@ This should probably be calculated from old pos to new pos.
 	mov r0,#0					;@ Audio must be stopped before we can seek.
 	strb r0,cdAudioPlaying
 	adrl r4,scsiCmd
@@ -1185,11 +1185,11 @@ writeSec:
 notTrack:
 	ldrb r0,[r4,#1]				;@ To play or not.
 	strb r0,cdAudioPlaying
-	cmp r0,#1					;@ repeat after completion?
-	cmpne r0,#4					;@ repeat after completion?
+	cmp r0,#1					;@ Repeat after completion?
+	cmpne r0,#4					;@ Repeat after completion?
 	movne r0,#0
 	strb r0,cdAudioRepeat
-	mov r1,#0xD8				;@ no data only status
+	mov r1,#0xD8				;@ No data only status
 	strb r1,scsiSignal
 	mov r1,#0
 	strb r1,scsiData
@@ -1281,11 +1281,11 @@ writeSec2:
 notTrack2:
 	ldrb r0,[r4,#1]				;@ To play or not.
 	strb r0,cdAudioPlaying
-	cmp r0,#1					;@ repeat after completion?
-	cmpne r0,#4					;@ repeat after completion?
+	cmp r0,#1					;@ Repeat after completion?
+	cmpne r0,#4					;@ Repeat after completion?
 	movne r0,#0
 	strb r0,cdAudioRepeat
-	mov r1,#0xD8				;@ no data only status
+	mov r1,#0xD8				;@ No data only status
 	strb r1,scsiSignal
 	mov r1,#0
 	strb r1,scsiData
@@ -1301,7 +1301,7 @@ pc2Txt:
 	.align 4
 ;@----------------------------------------------------------------------------
 CMD_PausCD:
-	mov r0,#0xD8				;@ no data only status
+	mov r0,#0xD8				;@ No data only status
 	strb r0,scsiSignal
 	mov r0,#0
 	strb r0,scsiData
@@ -1326,7 +1326,7 @@ CMD_SubQ:
 //	movne r0,#0x01
 	strb r0,[r5]				;@ CTRL & ADR, BIOS want's this to be 0 before a Pause.
 	mov r0,#0x00
-	strb r0,[r5,#1]				;@ preemphasis, digital copy, 2ch/4ch, music/data????
+	strb r0,[r5,#1]				;@ Preemphasis, digital copy, 2ch/4ch, music/data????
 
 	ldr r0,sectorPtr
 	mov r0,r0,lsr#2				;@ Throw away the lowest bits.
@@ -1423,18 +1423,18 @@ totalTime:
 
 	bl LBA2MSF
 
-	strb r0,scsiResponse+2		;@ frames
+	strb r0,scsiResponse+2		;@ Frames
 	mov r0,r0,lsr#8
-	strb r0,scsiResponse+1		;@ seconds (2=150 frames/sectors)
+	strb r0,scsiResponse+1		;@ Seconds (2=150 frames/sectors)
 	mov r0,r0,lsr#8
-	strb r0,scsiResponse		;@ total minutes
+	strb r0,scsiResponse		;@ Total minutes
 
 	ldmfd sp!,{r3,r4,lr}
 	adrl r1,gittTxt
 	b giBack
 ;@--------------------------------
 trackInfo:
-	ldrb r0,[r2,#2]				;@ track number
+	ldrb r0,[r2,#2]				;@ Track number
 	adrl r1,gitiTxt
 	and r2,r0,#0xf
 	add r2,r2,#0x30
@@ -1457,11 +1457,11 @@ trackInfo:
 	bl Track2LBA				;@ r0 in & out
 	bl LBA2MSF					;@ r0 in & out
 
-	strb r0,scsiResponse+2		;@ frames
+	strb r0,scsiResponse+2		;@ Frames
 	mov r0,r0,lsr#8
-	strb r0,scsiResponse+1		;@ seconds (2=150 frames/sectors)
+	strb r0,scsiResponse+1		;@ Seconds (2=150 frames/sectors)
 	mov r0,r0,lsr#8
-	strb r0,scsiResponse		;@ track starting minutes
+	strb r0,scsiResponse		;@ Track starting minutes
 
 	ldmfd sp!,{r3,lr}
 	adrl r1,gitiTxt
@@ -1474,21 +1474,21 @@ LBA2MSF:					;@ r0 input & output, uses r1-r3.
 
 	add r0,r0,#150				;@ MSF is 150 more than LBA
 
-	ldr r1,=4500				;@ number of frames in a minute
+	ldr r1,=4500				;@ Number of frames in a minute
 	swi 0x090000				;@ Division r0/r1, r0=result, r1=remainder.
 	mov r4,r1
 	bl Hex2Bcd
-	mov r5,r0					;@ track starting minutes
+	mov r5,r0					;@ Track starting minutes
 
 	mov r0,r4
-	mov r1,#75					;@ number of frames in a second
+	mov r1,#75					;@ Number of frames in a second
 	swi 0x090000				;@ Division r0/r1, r0=result, r1=remainder.
 	mov r4,r1
 	bl Hex2Bcd
-	orr r5,r0,r5,lsl#8			;@ seconds (2=150 frames/sectors)
+	orr r5,r0,r5,lsl#8			;@ Seconds (2=150 frames/sectors)
 	mov r0,r4
 	bl Hex2Bcd
-	orr r0,r0,r5,lsl#8			;@ frames
+	orr r0,r0,r5,lsl#8			;@ Frames
 
 	ldmfd sp!,{r4-r5,pc}
 ;@----------------------------------------------------------------------------
@@ -1496,16 +1496,16 @@ MSF2LBA:					;@ r0 input & output, uses r1-r3.
 ;@----------------------------------------------------------------------------
 	stmfd sp!,{r4,lr}
 
-	mov r4,r0					;@ save MSF to r4
+	mov r4,r0					;@ Save MSF to r4
 	mov r0,r0,lsr#16
 	bl Bcd2Hex
-	ldr r1,=4500				;@ number of frames in a minute
+	ldr r1,=4500				;@ Number of frames in a minute
 	mul r3,r1,r0
 
 	mov r0,r4,lsr#8
 	and r0,r0,#0xFF
 	bl Bcd2Hex
-	mov r1,#75					;@ number of frames in a second
+	mov r1,#75					;@ Number of frames in a second
 	mla r3,r1,r0,r3
 
 	and r0,r4,#0xFF
@@ -1567,8 +1567,8 @@ Bcd2Hex:					;@ r0 input & output, uses r1.
 ;@----------------------------------------------------------------------------
 	mov r1,r0,lsr#4
 	and r0,r0,#0xf
-	add r1,r1,r1,lsl#2			;@ multiply by 5
-	add r0,r0,r1,lsl#1			;@ multiply by 2 and add low
+	add r1,r1,r1,lsl#2			;@ Multiply by 5
+	add r0,r0,r1,lsl#1			;@ Multiply by 2 and add low
 	bx lr
 ;@----------------------------------------------------------------------------
 CMD_Unknown:

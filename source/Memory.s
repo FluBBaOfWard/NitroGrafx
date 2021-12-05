@@ -153,7 +153,7 @@ sram_W:						;@ sram write
 	bicne r2,addy,#0xfe000
 	ldrne r1,=EMU_SRAM
 	strbne r0,[r1,r2]
-	ldrne r1,=g_bramChanged
+	ldrne r1,=gBramChanged
 	movne r2,#1
 	strbne r2,[r1]
 	bx lr

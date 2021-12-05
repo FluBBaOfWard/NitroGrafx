@@ -67,11 +67,11 @@ int loadSettings() {
 	}
 
 	sprCollision  = cfg.sprites;
-	g_configSet   = cfg.config;
-	g_scalingSet  = cfg.scaling & 3;
-	g_flicker     = cfg.flicker & 1;
-	g_gammaValue  = cfg.gammaValue & 0x7;
-	g_colorValue  = (cfg.gammaValue>>4) & 0x7;
+	gConfigSet   = cfg.config;
+	gScalingSet  = cfg.scaling & 3;
+	gFlicker     = cfg.flicker & 1;
+	gGammaValue  = cfg.gammaValue & 0x7;
+	gColorValue  = (cfg.gammaValue>>4) & 0x7;
 	emuSettings   = cfg.emuSettings & ~EMUSPEED_MASK; // Clear speed setting.
 	sleepTime     = cfg.sleepTime;
 	joyCfg        = (joyCfg &~ 0x04000400) | ((cfg.controller & 1)<<10) | ((cfg.controller & 2)<<25); // SwapAB & multitap.
@@ -85,12 +85,12 @@ void saveSettings() {
 	FILE *file;
 
 	strcpy(cfg.magic,"cfg");
-//	cfg.dipswitch0  = g_dipswitch0;
+//	cfg.dipSwitch0  = gDipSwitch0;
 	cfg.sprites     = sprCollision;
-	cfg.config      = g_configSet;
-	cfg.scaling     = g_scalingSet & 3;
-	cfg.flicker     = g_flicker & 1;
-	cfg.gammaValue  = (g_gammaValue & 0x7)|((g_colorValue & 0x7)<<4);
+	cfg.config      = gConfigSet;
+	cfg.scaling     = gScalingSet & 3;
+	cfg.flicker     = gFlicker & 1;
+	cfg.gammaValue  = (gGammaValue & 0x7)|((gColorValue & 0x7)<<4);
 	cfg.emuSettings = emuSettings & ~EMUSPEED_MASK; // Clear speed setting.
 	cfg.sleepTime   = sleepTime;
 	cfg.controller  = ((joyCfg>>10) & 1) | ((joyCfg>>25) & 2);
@@ -121,11 +121,9 @@ int loadBRAM() {
 	if ( (file = fopen(bramName, "r")) ) {
 		fread(EMU_SRAM, 1, sizeof(EMU_SRAM), file);
 		fclose(file);
-	} else {
-		return 1;
+		return 0;
 	}
-
-	return 0;
+	return 1;
 }
 
 void saveNVRAM() {
@@ -134,7 +132,7 @@ void saveNVRAM() {
 void saveBRAM() {
 	FILE *file;
 
-	if (!g_bramChanged) {
+	if (!gBramChanged) {
 		return;
 	}
 	if (findFolder(folderName)) {
@@ -143,7 +141,7 @@ void saveBRAM() {
 	if ( (file = fopen(bramName, "w")) ) {
 		fwrite(EMU_SRAM, 1, sizeof(EMU_SRAM), file);
 		fclose(file);
-		g_bramChanged = 0;
+		gBramChanged = 0;
 	} else {
 		infoOutput("Couldn't open file:");
 		infoOutput(bramName);
@@ -215,7 +213,7 @@ void saveState() {
 void loadGame(const char *gameName) {
 	if (gameName) {
 		drawText("   Please wait, loading.", 12, 0);
-		g_hwFlags &= ~(SCD_DEVICE|SCD_CARD|AC_CARD|SGX_DEVICE);
+		gHwFlags &= ~(SCD_DEVICE|SCD_CARD|AC_CARD|SGX_DEVICE);
 		g_ROM_Size = loadPCEROM(ROM_Space, gameName, sizeof(ROM_Space));
 		cls(0);
 		if (g_ROM_Size) {
@@ -350,7 +348,6 @@ int CD_ReadByte() {
 
 int CD_FetchAudio(int len, char *dest) {
 	int i;
-
 	for (i = 0; i < len; i++) {
 		dest[i] = cdBuffer[(cdReadPtr & (sizeof(cdBuffer)-1))];
 		cdReadPtr++;

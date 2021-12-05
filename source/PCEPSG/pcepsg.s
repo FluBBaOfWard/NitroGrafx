@@ -36,9 +36,9 @@ pcmMixLoop:
 	mov r1,r3,lsl#18
 	subcs r3,r3,r1,asr#4
 vol0_L:
-	mov r2,#0x00				;@ volume left
+	mov r2,#0x00				;@ Volume left
 vol0_R:
-	orrs r1,r2,#0xFF0000		;@ volume right
+	orrs r1,r2,#0xFF0000		;@ Volume right
 	ldrsbne r0,[r12,r0]			;@ Channel 0
 	mulne r2,r1,r0
 	add r4,r4,#PSGADDITION
@@ -47,9 +47,9 @@ vol0_R:
 	mov r1,r4,lsl#18
 	subcs r4,r4,r1,asr#4
 vol1_L:
-	mov r1,#0x00				;@ volume left
+	mov r1,#0x00				;@ Volume left
 vol1_R:
-	orrs r1,r1,#0xFF0000		;@ volume right
+	orrs r1,r1,#0xFF0000		;@ Volume right
 	ldrsbne r0,[r12,r0]			;@ Channel 1
 	mlane r2,r1,r0,r2
 
@@ -60,9 +60,9 @@ vol1_R:
 	mov r1,r5,lsl#18
 	subcs r5,r5,r1,asr#4
 vol2_L:
-	mov r1,#0x00				;@ volume left
+	mov r1,#0x00				;@ Volume left
 vol2_R:
-	orrs r1,r1,#0xFF0000		;@ volume right
+	orrs r1,r1,#0xFF0000		;@ Volume right
 	ldrsbne r0,[r12,r0]			;@ Channel 2
 	mlane r2,r1,r0,r2
 
@@ -73,9 +73,9 @@ vol2_R:
 	mov r1,r6,lsl#18
 	subcs r6,r6,r1,asr#4
 vol3_L:
-	mov r1,#0x00				;@ volume left
+	mov r1,#0x00				;@ Volume left
 vol3_R:
-	orrs r1,r1,#0xFF0000		;@ volume right
+	orrs r1,r1,#0xFF0000		;@ Volume right
 	ldrsbne r0,[r12,r0]			;@ Channel 3
 	mlane r2,r1,r0,r2
 
@@ -96,9 +96,9 @@ vol3_R:
 	movne r0,#0x1F
 
 vol4_L:
-	mov r1,#0x00				;@ volume left
+	mov r1,#0x00				;@ Volume left
 vol4_R:
-	orrs r1,r1,#0xFF0000		;@ volume right
+	orrs r1,r1,#0xFF0000		;@ Volume right
 	mlane r2,r1,r0,r2
 
 
@@ -118,9 +118,9 @@ vol4_R:
 	movne r0,#0x1F
 
 vol5_L:
-	mov r1,#0x00				;@ volume left
+	mov r1,#0x00				;@ Volume left
 vol5_R:
-	orrs r1,r1,#0xFF0000		;@ volume right
+	orrs r1,r1,#0xFF0000		;@ Volume right
 	mlane r2,r1,r0,r2
 
 
@@ -146,8 +146,8 @@ rLoop:
 	bhi rLoop
 
 	mov r0,#0x80000000
-	str r0,[psgptr,#noise4currentaddr]
-	str r0,[psgptr,#noise5currentaddr]
+	str r0,[psgptr,#noise4CurrentAddr]
+	str r0,[psgptr,#noise5CurrentAddr]
 	bx lr
 
 ;@----------------------------------------------------------------------------
@@ -157,129 +157,129 @@ PCEPSGMixer:				;@ r0=len, r1=dest, r12=psgptr
 ;@--------------------------
 	ldr r10,=vol0_L
 
-	ldrb r1,[psgptr,#ch0balance]
-	ldrb r0,[psgptr,#ch0control]
-	bl getVolumeDS				;@ volume in r1/r2, uses r0,r3&r4.
+	ldrb r1,[psgptr,#ch0Balance]
+	ldrb r0,[psgptr,#ch0Control]
+	bl getVolumeDS				;@ Volume in r1/r2, uses r0,r3&r4.
 	strb r1,[r10],#vol0_R-vol0_L
 	strb r2,[r10],#vol1_L-vol0_R
 
-	ldrb r1,[psgptr,#ch1balance]
-	ldrb r0,[psgptr,#ch1control]
-	bl getVolumeDS				;@ volume in r1/r2, uses r0,r3&r4.
+	ldrb r1,[psgptr,#ch1Balance]
+	ldrb r0,[psgptr,#ch1Control]
+	bl getVolumeDS				;@ Volume in r1/r2, uses r0,r3&r4.
 	strb r1,[r10],#vol1_R-vol1_L
 	strb r2,[r10],#vol2_L-vol1_R
 
-	ldrb r1,[psgptr,#ch2balance]
-	ldrb r0,[psgptr,#ch2control]
-	bl getVolumeDS				;@ volume in r1/r2, uses r0,r3&r4.
+	ldrb r1,[psgptr,#ch2Balance]
+	ldrb r0,[psgptr,#ch2Control]
+	bl getVolumeDS				;@ Volume in r1/r2, uses r0,r3&r4.
 	strb r1,[r10],#vol2_R-vol2_L
 	strb r2,[r10],#vol3_L-vol2_R
 
-	ldrb r1,[psgptr,#ch3balance]
-	ldrb r0,[psgptr,#ch3control]
-	bl getVolumeDS				;@ volume in r1/r2, uses r0,r3&r4.
+	ldrb r1,[psgptr,#ch3Balance]
+	ldrb r0,[psgptr,#ch3Control]
+	bl getVolumeDS				;@ Volume in r1/r2, uses r0,r3&r4.
 	strb r1,[r10],#vol3_R-vol3_L
 	strb r2,[r10],#vol4_L-vol3_R
 
-	ldrb r1,[psgptr,#ch4balance]
-	ldrb r0,[psgptr,#ch4control]
-	bl getVolumeDS				;@ volume in r1/r2, uses r0,r3&r4.
+	ldrb r1,[psgptr,#ch4Balance]
+	ldrb r0,[psgptr,#ch4Control]
+	bl getVolumeDS				;@ Volume in r1/r2, uses r0,r3&r4.
 	strb r1,[r10],#vol4_R-vol4_L
 	strb r2,[r10],#vol5_L-vol4_R
 
-	ldrb r1,[psgptr,#ch5balance]
-	ldrb r0,[psgptr,#ch5control]
-	bl getVolumeDS				;@ volume in r1/r2, uses r0,r3&r4.
+	ldrb r1,[psgptr,#ch5Balance]
+	ldrb r0,[psgptr,#ch5Control]
+	bl getVolumeDS				;@ Volume in r1/r2, uses r0,r3&r4.
 	strb r1,[r10],#vol5_R-vol5_L
 	strb r2,[r10]
 
-	add r0,psgptr,#ch0freq		;@ original freq
+	add r0,psgptr,#ch0Freq		;@ Original freq
 	ldmia r0,{r3-r8}
 ;@--------------------------
-	ldrh r1,[psgptr,#pcm0currentaddr]
+	ldrh r1,[psgptr,#pcm0CurrentAddr]
 	and r1,r1,#0xF000
 	orr r1,r1,r3
-	strh r1,[psgptr,#pcm0currentaddr]
+	strh r1,[psgptr,#pcm0CurrentAddr]
 ;@--------------------------
-	ldrh r1,[psgptr,#pcm1currentaddr]
+	ldrh r1,[psgptr,#pcm1CurrentAddr]
 	and r1,r1,#0xF000
 	orr r1,r1,r4
-	strh r1,[psgptr,#pcm1currentaddr]
+	strh r1,[psgptr,#pcm1CurrentAddr]
 ;@--------------------------
-	ldrh r1,[psgptr,#pcm2currentaddr]
+	ldrh r1,[psgptr,#pcm2CurrentAddr]
 	and r1,r1,#0xF000
 	orr r1,r1,r5
-	strh r1,[psgptr,#pcm2currentaddr]
+	strh r1,[psgptr,#pcm2CurrentAddr]
 ;@--------------------------
-	ldrh r1,[psgptr,#pcm3currentaddr]
+	ldrh r1,[psgptr,#pcm3CurrentAddr]
 	and r1,r1,#0xF000
 	orr r1,r1,r6
-	strh r1,[psgptr,#pcm3currentaddr]
+	strh r1,[psgptr,#pcm3CurrentAddr]
 ;@--------------------------
-	ldrb r9,[psgptr,#noisectrl4]
+	ldrb r9,[psgptr,#noiseCtrl4]
 	ands r0,r9,#0x80
-	ldrb r1,[psgptr,#noise4currentaddr]
+	ldrb r1,[psgptr,#noise4CurrentAddr]
 	and r1,r1,#0x01
 	orr r1,r1,r0
-	strb r1,[psgptr,#noise4currentaddr]
+	strb r1,[psgptr,#noise4CurrentAddr]
 	and r0,r9,#0x1F
 	rsb r0,r0,#0x1F
 
-	ldrh r1,[psgptr,#pcm4currentaddr]
+	ldrh r1,[psgptr,#pcm4CurrentAddr]
 	and r1,r1,#0xF000
 	orreq r1,r1,r7
 	orrne r1,r1,r0,lsl#7
-	strh r1,[psgptr,#pcm4currentaddr]
+	strh r1,[psgptr,#pcm4CurrentAddr]
 ;@--------------------------
-	ldrb r9,[psgptr,#noisectrl5]
+	ldrb r9,[psgptr,#noiseCtrl5]
 	ands r0,r9,#0x80
-	ldrb r1,[psgptr,#noise5currentaddr]
+	ldrb r1,[psgptr,#noise5CurrentAddr]
 	and r1,r1,#0x01
 	orr r1,r1,r0
-	strb r1,[psgptr,#noise5currentaddr]
+	strb r1,[psgptr,#noise5CurrentAddr]
 	and r0,r9,#0x1F
 	rsb r0,r0,#0x1F
 
-	ldrh r1,[psgptr,#pcm5currentaddr]
+	ldrh r1,[psgptr,#pcm5CurrentAddr]
 	and r1,r1,#0xF000
 	orreq r1,r1,r8
 	orrne r1,r1,r0,lsl#7
-	strh r1,[psgptr,#pcm5currentaddr]
+	strh r1,[psgptr,#pcm5CurrentAddr]
 ;@--------------------------
 
-	add r0,psgptr,#pcm0currentaddr
+	add r0,psgptr,#pcm0CurrentAddr
 	ldmia r0,{r3-r10}
 
-	add psgptr,psgptr,#ch0waveform	;@ r12 = PCE wavebuffer
+	add psgptr,psgptr,#ch0Waveform	;@ r12 = PCE wavebuffer
 	ldmfd sp,{r11,lr}			;@ r11=len, lr=dest buffer
 ;@	mov r11,r11					;@ no$gba break
 	b pcmMix
 pcmMixReturn:
 ;@	mov r11,r11					;@ no$gba break
-	sub psgptr,psgptr,#ch0waveform	;@ get correct psgptr
-	add r0,psgptr,#pcm0currentaddr	;@ counters
+	sub psgptr,psgptr,#ch0Waveform	;@ Get correct psgptr
+	add r0,psgptr,#pcm0CurrentAddr	;@ Counters
 	stmia r0,{r3-r10}
 
 	ldmfd sp!,{r0,r1,r4-r11,pc}
 ;@----------------------------------------------------------------------------
 getVolumeDS:
 	and r2,r0,#0xc0
-	cmp r2,#0x80				;@ should channel be played?
+	cmp r2,#0x80				;@ Should channel be played?
 
-	and r0,r0,#0x1f				;@ channel master
+	and r0,r0,#0x1f				;@ Channel master
 ;@	mov r3,#103					;@ Maybe boost?
 	mov r3,#126					;@ Boost.
 	movne r3,#0
 	mul r0,r3,r0
-	ldrb r3,[psgptr,#globalbalance]
+	ldrb r3,[psgptr,#globalBalance]
 
-	and r2,r1,#0xf				;@ channel right
-	and r4,r3,#0xf				;@ main right
+	and r2,r1,#0xf				;@ Channel right
+	and r4,r3,#0xf				;@ Main right
 	mul r2,r4,r2
 	mul r2,r0,r2
 
-	mov r1,r1,lsr#4				;@ channel left
-	mov r3,r3,lsr#4				;@ main left
+	mov r1,r1,lsr#4				;@ Channel left
+	mov r3,r3,lsr#4				;@ Main left
 	mul r4,r3,r1
 	mul r1,r0,r4
 
@@ -314,18 +314,18 @@ PSGWriteTable:
 _0800W:
 ;@----------------------------------------------------------------------------
 	and r0,r0,#0x7
-	strb r0,[psgptr,#psgchannel]
+	strb r0,[psgptr,#psgChannel]
 	bx lr
 ;@----------------------------------------------------------------------------
 _0801W:						;@ Main Volume
 ;@----------------------------------------------------------------------------
-	strb r0,[psgptr,#globalbalance]
+	strb r0,[psgptr,#globalBalance]
 	bx lr
 ;@----------------------------------------------------------------------------
 _0802W:						;@ Frequency byte 0
 ;@----------------------------------------------------------------------------
-	ldrb r1,[psgptr,#psgchannel]
-	add r2,psgptr,#ch0freq
+	ldrb r1,[psgptr,#psgChannel]
+	add r2,psgptr,#ch0Freq
 	strb r0,[r2,r1,lsl#2]
 	bx lr
 ;@----------------------------------------------------------------------------
@@ -333,59 +333,59 @@ _0803W:						;@ Frequency byte 1
 ;@----------------------------------------------------------------------------
 	and r0,r0,#0xF
 	orr r0,r0,#0x20
-	ldrb r1,[psgptr,#psgchannel]
-	add r2,psgptr,#ch0freq+1
+	ldrb r1,[psgptr,#psgChannel]
+	add r2,psgptr,#ch0Freq+1
 	strb r0,[r2,r1,lsl#2]
 	bx lr
 ;@----------------------------------------------------------------------------
 _0804W:						;@ Channel Enable, DDA & Volume
 ;@----------------------------------------------------------------------------
-	ldrb r1,[psgptr,#psgchannel]
+	ldrb r1,[psgptr,#psgChannel]
 	add r2,psgptr,r1
-	strb r0,[r2,#ch0control]
+	strb r0,[r2,#ch0Control]
 	tst r0,#0x40
 	mov r0,#0
-	strbne r0,[r2,#ch0waveindx]
+	strbne r0,[r2,#ch0WaveIndx]
 	bx lr
 ;@----------------------------------------------------------------------------
 _0805W:						;@ Channel Balance
 ;@----------------------------------------------------------------------------
-	ldrb r1,[psgptr,#psgchannel]
-	add r2,psgptr,#ch0balance
+	ldrb r1,[psgptr,#psgChannel]
+	add r2,psgptr,#ch0Balance
 	strb r0,[r2,r1]
 	bx lr
 ;@----------------------------------------------------------------------------
 _0806W:						;@ Waveform Data
 ;@----------------------------------------------------------------------------
-	ldrb r1,[psgptr,#psgchannel]
-	add r2,r1,#ch0waveindx
+	ldrb r1,[psgptr,#psgChannel]
+	add r2,r1,#ch0WaveIndx
 	add r1,psgptr,r1,lsl#5
 	ldrb r2,[psgptr,r2]!		;@ Get channel X index
 	add r1,r1,r2,lsr#3
 	and r0,r0,#0x1f
 	sub r0,r0,#0x10
-	strb r0,[r1,#ch0waveform]
+	strb r0,[r1,#ch0Waveform]
 	add r2,r2,#8
 	strb r2,[psgptr]			;@ Write back channel X index
 	bx lr
 ;@----------------------------------------------------------------------------
 _0807W:						;@ Noise enable and frequency
 ;@----------------------------------------------------------------------------
-	ldrb r1,[psgptr,#psgchannel]
+	ldrb r1,[psgptr,#psgChannel]
 	cmp r1,#4
-	strbeq r0,[psgptr,#noisectrl4]
+	strbeq r0,[psgptr,#noiseCtrl4]
 	cmp r1,#5
-	strbeq r0,[psgptr,#noisectrl5]
+	strbeq r0,[psgptr,#noiseCtrl5]
 	bx lr
 ;@----------------------------------------------------------------------------
 _0808W:						;@ LFO frequency
 ;@----------------------------------------------------------------------------
-	strb r0,[psgptr,#lfofreq]
+	strb r0,[psgptr,#lfoFreq]
 	bx lr
 ;@----------------------------------------------------------------------------
 _0809W:						;@ LFO trigger and control
 ;@----------------------------------------------------------------------------
-	strb r0,[psgptr,#lfoctrl]
+	strb r0,[psgptr,#lfoCtrl]
 	bx lr
 ;@----------------------------------------------------------------------------
 
