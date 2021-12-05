@@ -41,14 +41,14 @@ ch5WaveIndx:	.byte 0
 ch6WaveIndx:	.byte 0			;@ Dummy
 ch7WaveIndx:	.byte 0			;@ Dummy
 
-ch0Freq:		.long 0
-ch1Freq:		.long 0
-ch2Freq:		.long 0
-ch3Freq:		.long 0
-ch4Freq:		.long 0
-ch5Freq:		.long 0
-ch6Freq:		.long 0			;@ Dummy
-ch7Freq:		.long 0			;@ Dummy
+ch0Freq:		.short 0
+ch1Freq:		.short 0
+ch2Freq:		.short 0
+ch3Freq:		.short 0
+ch4Freq:		.short 0
+ch5Freq:		.short 0
+ch6Freq:		.short 0		;@ Dummy
+ch7Freq:		.short 0		;@ Dummy
 
 pcm0CurrentAddr:	.long 0		;@ Current addr
 pcm1CurrentAddr:	.long 0		;@ Current addr
