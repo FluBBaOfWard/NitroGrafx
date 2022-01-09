@@ -10,6 +10,7 @@
 		746D78E114ED9A8400CC738F /* Makefile */ = {isa = PBXFileReference; explicitFileType = sourcecode.make; fileEncoding = 4; path = Makefile; sourceTree = "<group>"; };
 		9C294940260746FD00EDA7C9 /* H6280.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = H6280.h; sourceTree = "<group>"; };
 		9C294941260746FD00EDA7C9 /* H6280.i */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c.preprocessed; path = H6280.i; sourceTree = "<group>"; };
+		9C443D77278AD1B40029EE11 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		9C4C21D126E50512007D0280 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		9C4C21D226E50551007D0280 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		9C7BB95025FCE08B00EA9C9C /* EmuFont.grit */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = EmuFont.grit; sourceTree = "<group>"; };
@@ -123,7 +124,7 @@
 			isa = PBXGroup;
 			children = (
 				9C7BB94F25FCE08B00EA9C9C /* graphics */,
-				A47F093C2087673C004E1DA6 /* unzip */,
+				A47F093C2087673C004E1DA6 /* Unzip */,
 				9C8F33F0248ACAF400996E5A /* nds_asm.h */,
 				9CBEE0D026EDE1440095347A /* EmuSettings.h */,
 				A47F091F2085F2D9004E1DA6 /* EmuMenu.h */,
@@ -138,15 +139,16 @@
 			path = Shared;
 			sourceTree = "<group>";
 		};
-		A47F093C2087673C004E1DA6 /* unzip */ = {
+		A47F093C2087673C004E1DA6 /* Unzip */ = {
 			isa = PBXGroup;
 			children = (
+				9C443D77278AD1B40029EE11 /* README.md */,
 				A47F093E2087673C004E1DA6 /* puff.h */,
 				A47F09402087673C004E1DA6 /* puff.c */,
 				A47F093F2087673C004E1DA6 /* unzipnds.h */,
 				A47F093D2087673C004E1DA6 /* unzipnds.c */,
 			);
-			path = unzip;
+			path = Unzip;
 			sourceTree = "<group>";
 		};
 		A48CC01C1618E64700465E20 /* Resources */ = {
