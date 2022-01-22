@@ -1,0 +1,416 @@
+W.I.P Gamelist for NitroGrafx
+
+Remember to decrypt any encrypted US roms.
+Bgr = Background.
+Spr = Sprites.
+(spr x) = Sprite following.
+
+#
+15-in-1 Mega Collection (J) - Ok.
+1943 Kai (J) - Ok? (spr 9)
+21-Emon (J) - Ok?
+5-in-1 Fami Collection (J) - Some bgr/spr glitches.
+6-in-1 Fami Collection (J) - Some bgr/spr glitches.
+
+A
+Adventure Island (J) - Ok?
+Aero Blasters - Ok. (spr 6)
+After Burner II (J) - Ok.
+Air Zonk (U) - Ok?
+Alien Crush - Ok?
+Andre Panza Kick Boxing (U) - Ok?
+Ankoko Densetsu (J) - Ok?
+Aoi (Blue) Blink (J) - Ok?
+Appare! Gateball (J) - Few bgr glitches.
+Artist Tool (J) - Ok?
+Atomic Robokid Special (J) - Ok. (spr 0)
+AV Poker World Gambler (J) - Ok?
+
+B
+Ballistix - Ok?
+Bari Bari Densetsu (J) - Ok?
+Barunba (J) - Ok?
+Batman (J) - Ok?
+Battle Load Runner (J) - Ok?
+Battle Royale (J) - Ok?
+Be Ball (Taisang Version) (J) - Ok?
+Benkei Gaiden (J) - Ok?
+Blazing Lazers (U) - Ok?
+Blodia (J) - Ok?
+Bloody Wolf (U) - Ok?
+Body Conquest 2 (J) - Seems ok.
+Bomberman - Ok?
+Bomberman '93 - Ok?
+Bomberman '93 Special (J) - Ok?
+Bomberman '94 (J) - Ok?
+Bomberman Users Battle - Looks ok.
+Bonk 3 Bonk's Big Adventure (U) - Ok?
+Bonk's Adventure - Ok?
+Bonk's Revenge (U) - Ok?
+Bouken Danshakan Don Sunheart (J) - Ok?
+Boxy Boy (U) - Ok?
+Bravoman (U) - Some spr flickering.
+Break In (J) - Ok?
+Bubblegum Crash (J) - Ok?
+Bullfight Ring no Haja (J) - Ok?
+Burning Angels (J) - Ok?
+
+C
+Cadash - Ok?
+Champion Wrestler (J) - Ok?
+Champions Forever Boxing (U) - Ok?
+Chase HQ - Ok?
+Chew Man Fu (U) - Locks up sometimes before play.
+Chibi Marukochan Quiz de Pihyar (J) - Ok?
+Chikudenya Toubee (J) - Crashes.
+China Warrior (U) - Ok?
+Chouzetsu Rinjin (J) - Some spr flickering.
+Circus Lido (J) - Ok?
+City Hunter (J) - Ok?
+College Pro Baseball '89 (J) - Ok?
+College Pro Baseball '90 (J) - Ok?
+Columns (J) - Ok?
+Coryoon Child of Dragon (J) - Ok?
+Cratermaze (U) - Few bgr glitches.
+Cross Wiber Cyber Combat Police (J) - Ok?
+Cyber Core - Ok?
+Cyber Cross (J) - Ok?
+Cyber Dodge (J) - Ok?
+Cyber Knight (J) - Ok?
+
+D
+Daichikun Crisis Do Natural (J) - Ok?
+Darius (Alpha/Plus) - Allmost Perfect.
+Darkwing Duck (U) - Ok?
+Davis Cup Tennis (U) - Doesn't work right now.
+Dead Moon - Ok?
+Deep Blue - Ok.
+Detana!! Twinbee (J) - Ok?
+Devil Crash (J) - Ok? (spr 11)
+Devil's Crush (U) - Ok? (spr (11)
+Die Hard (J) - Ok?
+Digital Champ (J) - Ok?.
+Don Doko Don (J) - Ok?
+Doraemon Meikyu Daisakusen (J) - Ok?
+Doraemon Nobita no Dorabian Night (J) - Ok.
+Double Dungeons - Ok?
+Double Ring (J) - Ok?
+Download (J) - Ok?
+Dragon Egg! (J) - Ok?
+Dragon Fighter (J) - Status bar flickering.
+Dragon Saber (J) - Ok?
+Dragon Spirit - Ok?
+Dragon's Curse (U) - Ok?
+Drop Off (U) - Ok?
+Drop Rock Hora Hora (J) - Ok?
+Dungeon Explorer - Ok?
+
+E
+Energy (J) - Ok?
+Eternal City Toshi Tenso Keikaku (J) - Ok?
+
+F
+F1 Circus (J) - Ok?
+F1 Circus '91 - World Championship (J) - Ok?
+F1 Circus '92 - The Speed of Sound (J) - Ok?
+F-1 Dream (J) - Ok?
+F-1 Pilot (J) - Ok?
+F1 Triple Battle (J) - Glitches on the road?
+Falcon (U) - Ok?
+Fantazy Zone - Ok?
+Fighting Run (J) - Uses 2bitplane sprites, looks crap.
+Final Blaster (J) - Ok?
+Final Lap Twin - Ok?
+Final Match Tennis (J) - Ok?
+Final Soldier (Special Version) (J) - Ok?
+Fire Pro Wrestling 2nd Bout (J) - Ok?
+Fire Pro Wrestling 3 - Legend Bout (J) - Ok?
+Fire Pro Wrestling Combination Tag (J) - Ok?
+Formation Armed F (J) - Ok?
+Formation Soccer Human Cup '90 (J) - Ok?
+Formation Soccer on J.league (J) - Ok?
+Fushigi Ni Yumi No Alice (J) - Ok?
+
+G
+Gai Flame (J) - Bgr flickering in scaled mode.
+Gaia no Monsho (J) - Ok?
+Galaga '88 (J) - Ok?
+Galaga '90 - Taisang Version (U) - Ok?
+Galaga '90 (U) - Ok?
+Ganbare! Golf Boys (J) - Allmost Ok.
+Genji Tsushin Agedama (J) - Some spr flickering.
+Genpei Toumaden (J) - Few spr glitches.
+Genpei Toumaden Volume 2 (J) - Few spr glitches.
+Ghost Manor (U) - Some spr flickering.
+Gokuraku Chuka Taisen (J) - Ok?
+Gomola Speed (J) - Ok?
+Gradius (J) - Ok?
+Gun Boat (U) - Ok?
+Gunhed (J) - Ok?
+Gunhed Taikai (J) - Ok?
+
+H
+Hana Tahka Daka (J) - Ok?
+Hani in the Sky (J) - Ok?
+Hani on the Road (J) - Ok?
+Hatris (J) - Ok?
+Heavy Unit (J) - Ok?
+Hisou Kihei Serd (J) - Ok?
+Hit The Ice - Allmost Ok.
+Hono no Tataka Tamako Dodge Danpei (J) - Ok?
+Hyperdyne Sidearms - Taisang Version (J) - Ok?
+Hyperdyne Sidearms (J) - Ok?
+
+I
+Idol Hanafuda Fan Club (J) - Ok?
+Image Fight (J) - Ok?
+Impossamole (U) - Ok?
+
+J
+J. League Greatest Eleven Soccer (J) - Ok?
+Jack Nicklaus' Greatest 18 Holes of Championship Golf (J) - Ok?
+Jack Nicklaus' Turbo Golf (U) - Ok?
+Jackie Chan's Action Kung Fu - Ok?
+Jaseikin Necromancer (J) - Ok?
+Jigoku Meguri (J) - Ok?
+Jimmu Densho Yaksa (J) - Ok?
+JJ & Jeff (U) - Ok?
+Jyuohki (J)(Altered Beast) - Ok?
+
+K
+Kaiser's Quest (J) - Ok?
+Kaizou Ningen Shubibiman (J) - Ok?
+Kaizou Ningen Shubibiman 2 (J) - Ok?
+Kato Chan & Ken Chan (J) - Ok?
+Katutobi Takuhai Kun (J) - Ok?
+Keith Courage in Alpha Zones (U) - Ok?
+Kickball (J) - Ok?
+Kiki Kai Kai (J) - Ok?
+King of Casino - Ok?
+Kiyuu Kiyoku Mahjong Idol Graphics (J) - Ok?
+Kiyuu Kiyoku Mahjong Idol Graphics II (J) - Ok?
+Klax - Ok?
+Knight Rider Special (J) - Ok?
+Kung Fu, The (J) - Ok?
+Kyuukyoku Tiger (J) - Ok. (spr 3)
+
+L
+Lady Sword (J) - Ok?
+Legend of Hero Tonma - Ok?
+Legendary Axe, The (U) - Ok? (spr 14)
+Legendary Axe II, The (U) - Ok?
+Liquid Kids (J) - Ok?
+Lode Runner Ushina Wareta Maikyuu (J) - Jerky scrolling?
+
+M
+Maerchen Maze (J) - Ok?
+Magical Chase - Ok?
+Mahjong Gakuen Mild (J) - Ok?
+Mahjong Gakuen Touma Shiro Tojo (J) - Ok?
+Mahjong Goku Special (J) - Ok?
+Mahjong Shikaka Retsuden Mahjong Wars (J) - Ok?
+Maison Ikkoku (J) - Ok?
+Majin Eiyu Wataru (J) - Ok?
+Makai Hakkenden Shada (J) - Ok.
+Makai Prince Dorabo Chan (J) - Ok?
+Makyo Densetsu (J) - Ok?
+Maniac Pro Wrestling (J) - Ok?
+Mesopotamia (J) - Ok?
+Metal Stoker (J) - Ok?
+Military Madness (U) - Ok?
+Momo Tarou Densetsu Gaiden - Ok?
+Momo Tarou Densetsu Turbo (J) - Ok?
+Momo Tarou Densetsu II (J) - Ok?
+Momo Tarou Katsu Geki (J) - Ok?
+Monster Pro Wrestling (J) - Ok?
+Morita Shogi PC - Ok?
+Moto Roader - Ok?
+Moto Roader II (J) - Ok?
+Mr. Heli (J) - Ok?
+
+N
+Narazumo no Sentou Butai (J) - Ok?
+Naxat Open (J) - Ok?
+Naxat Stadium - Taisang Version (J) - Ok?
+Naxat Stadium (J) - Ok?
+Nazo no Masukare-do (J) - Ok?
+Necros no Yousai (J) - Ok?
+Nectaris (J) - Ok?
+Nekketsu Koukou Dodgeball bu PC Bangai Hen (J) - Ok?
+Nekketsu Koukou Dodgeball Bu Soccer PC Hen (J) - Ok?
+Neutopia - Ok?
+Neutopia II - Ok.
+New Adventure Island (U) - Ok?
+New Zealand Story (J) - Ok?
+NHK Taiga Drama Taiheiki (J) - Ok?
+Night Creatures (U) - Ok?
+Niko Niko Pun (J) - Ok?
+Ninja Gaiden (J) - Ok?
+Ninja Spirit - Ok.
+Ninja Warriors (J) - Ok?
+
+O
+Obocchama Kun (J) - Ok?
+Operation Wolf (J) - Ok?
+Order of The Griffon (U) - Allmost ok.
+Ordyne - Ok?
+Outlive (J) - Ok?
+Outrun (J) - Ok?
+Override (J) - Ok.
+
+P
+P-47 The Freedom Fighter (J) - Ok?
+Pachiokun Juban Shobu (J) - Ok?
+Pacland - Ok?
+Paranoia (J) - Ok?
+Parasol Stars (J) - Ok?
+Parasol Stars (U) - Ok?
+Parodius (J) - Ok?
+Pc Denjin Punkic Cyborgs (J) - Ok?
+Pc Genjin (J) - Ok?
+Pc Genjin 2 (J) - Ok?
+Pc Genjin 3 (J) - Ok?
+Pc Genjin 3 Special (J) - Ok?
+Pc Pachislot Idol Gambler (J) - Ok?
+Photograph Boy (J) - Ok?
+Populous (J) - ok?
+Power Drift (J) - Bgr/spr flickering.
+Power Eleven (J) - Ok?
+Power Gate (J) - Ok?
+Power Golf - Ok?
+Power League (J) - Ok?
+Power League '93 (J) - Ok?
+Power League All Stars GOLD (J) - Ok?
+Power League II (J) - Ok?
+Power League III (J) - Ok?
+Power League IV (J) - Ok?
+Power League V (J) - Ok?
+Power Sports (J) - Ok?
+Power Tennis (J) - Ok?
+Pro Yakyuu World Stadium (J) - Ok?
+Pro Yakyuu World Stadium '91 (J) - Ok?
+Psycho Chaser (J) - Ok?
+Psychosis (U) - Ok?
+Puzzle Boy (J) - Ok?
+Puzznic (J) - Ok?
+
+Q
+Quiz Toukou Shashin (J) - Ok?
+
+R
+Rabio Lepus Special (J) - Ok?
+Racing Damashi (J) - Ok?
+Raiden - Some spr flickering. (spr 5)
+Rastan Saga II (J) - Ok?
+Rock On (J) - Ok?
+R-Type - Ok?
+R-Type II (J) - Ok?
+Ryukyu (J) - Ok?
+
+S
+S.C.I. - Special Criminal Investigation (J) - Ok?
+Sadakichi Saban Hideyoshi no Ougon (J) - Ok?
+Salamander (J) - Ok?
+Samurai-Ghost (U) - Ok?
+Sekikehara (J) - Ok?
+Sengoku Mahjong (J) - Ok?
+Shanghai (J) - Ok?
+Shinobi (J) - Ok?
+Shiryou Sensen (J) - Ok?
+Shockman (U) - Ok?
+Shogi Shodan Icchokusen (J) - Ok?
+Shogi Shoshinsha Muyo (J) - Ok?
+Sidearms Magea Chip version (U) - Ok?
+Sidearms (U) - Ok?
+Silent Debuggers, The - Ok?
+Sindibad Chitei no Dai Makyu (J) - Ok?
+Sinistron (U) - Ok?
+Skweek (J) - Ok?
+Soldier Blade - Ok?
+Soldier Blade Special (J) - Ok?
+Somer Assault (U) - Ok?
+Son Son II (J) - Ok?
+Sonic Spike (U) - Ok?
+Soukoban World (J) - Ok?
+Space Harrier - Ok?
+Space Invaders Fukkatsu no Hi (J) - Ok?
+Spin Pair (J) - Ok?
+Spiral Wave (J) - Ok?
+Splatter House - Ok?
+Stratego (J) - Ok?
+Street Fighter II Champion Edition (J) - Ok?
+Strip Fighter II (J) - bgr glitches.
+Super Mario Bros (from 6-in-1) (J) - Some spr glitches.
+Super Metal Crusher (J) - Ok?
+Super Momo Tarou Dentetsu (J) - Ok?
+Super Momo Tarou Dentetsu II (J) - Ok?
+Super Star Soldier - Ok?
+Super Volley Ball - Ok?
+Susano Oh Densetsu (J) - Ok?
+
+T
+Takahashi Meijin no Shin Boukenjima (J) - Ok?
+Takeda Shingen (J) - Ok?
+Takin' It to The Hoop (U) - Ok?
+Talespin (U) - Ok?
+Tatsujin (J) (Prototype) - Ok?
+Tatsujin (J) - Ok?
+Tennokoe Memory Bank (J) - Missing some hardware?
+Tenseiryu Saint Dragon (J) - Ok?
+Terra Cresta II (J) - Ok?
+Thunder Blade (J) - Ok?
+Tiger Road (U) - Ok?
+Tiger Shark (J) - Ok?
+Time Cruise (U) - Ok?
+Time Cruise 2 (J) - Ok?
+Timeball (U) - Ok?
+Titan (J) - Ok?
+Toilet Kids (J) - Ok?
+Tora e no Michi (J) - Ok?
+Toriyuu Siyoujin no Jitsen Kabushiki Bai Bai Game (J) - Ok?
+Tower of Druaga, The (J) - Ok?
+Toy Shop Boys (J) - Ok?
+Tricky (J) - Ok?
+Tricky Kick (U) - Ok?
+Tsuppari Sumo Wrestling Game (J) - Ok?
+Turrican (U) - Few spr glitches.
+TV Sports Basketball - Ok?
+TV Sports Football - Ok?
+TV Sports Hockey (U) - Freezes randomly?
+TV Sports Ice Hockey (J) - Freezes randomly?
+
+U
+USA Pro Basketball (J) - Ok?
+
+V
+Valkyrie no Densetsu (J) - Ok?
+Veigues Tactical Gladiator - Ok?
+Victory Run - Ok?
+Vigilante - Ok?
+Violent Soldier (J) - Ok?
+Volfied (J) - Ok?
+
+W
+Wai Wai Mahjong (J) - Ok?
+Wallaby!! (J) - Ok?
+Winning Shot (J) - Ok?
+Wonder Momo (J) - Ok?
+Wonderboy In Monsterland (J) - Ok?
+World Beach Volley (J) - Ok?
+World Circuit (J) - Ok?
+World Class Baseball (U) - Ok?
+World Court Tennis - Ok?
+World Jockey (J) - Ok?
+World Sports Competition (U) - Ok?
+
+X
+Xevious (J) - Ok?
+
+Y
+Yo, Bro (U) - Ok?
+Youkai Douchuuki (J) - Ok?
+Yuu Yuu Jinsei (J) - Ok?
+
+Z
+Zero 4 Champ (J) Ok?
+Zipang (J) (Salomons Key?) Ok?
