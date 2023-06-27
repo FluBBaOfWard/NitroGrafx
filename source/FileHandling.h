@@ -5,6 +5,9 @@
 extern "C" {
 #endif
 
+#include "Emubase.h"
+#include "Cart.h"
+
 #define FILEEXTENSIONS ".pce.sgx"
 
 extern bool biosLoaded;

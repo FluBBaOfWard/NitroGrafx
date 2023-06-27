@@ -2,7 +2,9 @@ NitroGrafx revision history
 -=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 
-V0.9.0 - 2021-10-16 (FluBBa)
+V0.9.0 - 2023-06-27 (FluBBa)
+	Added new debug menu.
+	Better menu traversing.
 	Cleaned up code.
 
 V0.8.1 - 2018-07-20 (FluBBa)

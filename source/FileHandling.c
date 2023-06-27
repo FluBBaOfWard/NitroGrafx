@@ -1,15 +1,8 @@
 #include <nds.h>
-#include <fat.h>
-
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-#include <sys/dir.h>
-//#include <dirent.h>
 
 #include "FileHandling.h"
-#include "Emubase.h"
 #include "Main.h"
 #include "Shared/EmuMenu.h"
 #include "Shared/EmuSettings.h"
@@ -17,7 +10,6 @@
 #include "Gui.h"
 #include "Equates.h"
 #include "cueparser/cue2toc.h"
-#include "Cart.h"
 #include "cdrom.h"
 #include "Gfx.h"
 #include "io.h"
@@ -149,65 +141,13 @@ void saveBRAM() {
 }
 
 void loadState() {
-	int err = 1;
-	u32 *statePtr;
-	FILE *file;
-	char stateName[FILENAMEMAXLENGTH];
-
-	if (findFolder(folderName)) {
-		return;
-	}
-	strlcpy(stateName, currentFilename, sizeof(stateName)-4);
-	strlcat(stateName, ".sta", sizeof(stateName));
-	if ( (file = fopen(stateName, "r")) ) {
-		if ( (statePtr = malloc(STATESIZE)) ) {
-			cls(0);
-			drawText("        Loading state...", 12, 0);
-			fread(statePtr, 1, STATESIZE, file);
-			unpackState(statePtr);
-			free(statePtr);
-			err = 0;
-			cls(0);
-			infoOutput("Loaded state.");
-		} else {
-			infoOutput("Couldn't alloc mem for state.");
-		}
-		fclose(file);
-	} else {
-		infoOutput("Couldn't open file:");
-		infoOutput(stateName);
-	}
-	if (!err) {
+	if (!loadDeviceState(folderName)) {
 		closeMenu();
 	}
 }
-void saveState() {
-	u32 *statePtr;
-	FILE *file;
-	char stateName[FILENAMEMAXLENGTH];
 
-	if (findFolder(folderName)) {
-		return;
-	}
-	strlcpy(stateName, currentFilename, sizeof(stateName)-4);
-	strlcat(stateName, ".sta", sizeof(stateName));
-	if ( (file = fopen(stateName, "w")) ) {
-		if ( (statePtr = malloc(STATESIZE)) ) {
-			cls(0);
-			drawText("        Saving state...", 12, 0);
-			packState(statePtr);
-			fwrite(statePtr, 1, STATESIZE, file);
-			free(statePtr);
-			cls(0);
-			infoOutput("Saved state.");
-		} else {
-			infoOutput("Couldn't alloc mem for state.");
-		}
-		fclose(file);
-	} else {
-		infoOutput("Couldn't open file:");
-		infoOutput(stateName);
-	}
+void saveState() {
+	saveDeviceState(folderName);
 }
 
 void loadGame(const char *gameName) {

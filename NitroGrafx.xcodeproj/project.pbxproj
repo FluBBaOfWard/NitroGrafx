@@ -63,7 +63,7 @@
 		A48CC0431618E65300465E20 /* Memory.s */ = {isa = PBXFileReference; explicitFileType = sourcecode.asm; fileEncoding = 4; path = Memory.s; sourceTree = "<group>"; };
 		A48CC0461618E65300465E20 /* pcepsg.s */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm; path = pcepsg.s; sourceTree = "<group>"; };
 		A48CC04A1618E65300465E20 /* Sound.s */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm; path = Sound.s; sourceTree = "<group>"; };
-		A48CC0501618E65300465E20 /* vdc.s */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm; path = vdc.s; sourceTree = "<group>"; };
+		A48CC0501618E65300465E20 /* VDC.s */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.asm; path = VDC.s; sourceTree = "<group>"; };
 		A49024F820793BFC0086B28E /* History.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = History.txt; sourceTree = "<group>"; };
 		A49024FA207B78DA0086B28E /* pcetech_edit.txt */ = {isa = PBXFileReference; lastKnownFileType = text; lineEnding = 0; path = pcetech_edit.txt; sourceTree = "<group>"; };
 		A49024FB207B78DA0086B28E /* vdcdox.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = vdcdox.txt; sourceTree = "<group>"; };
@@ -176,6 +176,8 @@
 				A48CC0421618E65300465E20 /* Main.c */,
 				A48CC0401618E65300465E20 /* Gui.h */,
 				A48CC03F1618E65300465E20 /* Gui.c */,
+				A48CC03D1618E65300465E20 /* FileHandling.h */,
+				A48CC03C1618E65300465E20 /* FileHandling.c */,
 				A47F09162084E1A7004E1DA6 /* Cart.h */,
 				A48CC0301618E65300465E20 /* Cart.s */,
 				A47F09192084E1A7004E1DA6 /* cpu.h */,
@@ -187,14 +189,12 @@
 				A47F09182084E1A7004E1DA6 /* Gfx.h */,
 				A48CC03E1618E65300465E20 /* Gfx.s */,
 				A48CC0431618E65300465E20 /* Memory.s */,
-				A48CC0501618E65300465E20 /* vdc.s */,
+				A48CC0501618E65300465E20 /* VDC.s */,
 				A49024FE207BC1400086B28E /* VCE.s */,
 				A47F091A2084ECB6004E1DA6 /* cdrom.h */,
 				A48CC0311618E65300465E20 /* cdrom.s */,
 				A47F09142084B325004E1DA6 /* ArcadeCard.i */,
 				A48CC0261618E65200465E20 /* ArcadeCard.s */,
-				A48CC03D1618E65300465E20 /* FileHandling.h */,
-				A48CC03C1618E65300465E20 /* FileHandling.c */,
 			);
 			path = source;
 			sourceTree = "<group>";
@@ -308,7 +308,7 @@
 		A45BB8CA1618FB840009569D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVKITPRO = /opt/devkitpro_old;
+				DEVKITPRO = /opt/devkitpro;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;

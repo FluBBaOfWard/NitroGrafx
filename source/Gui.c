@@ -12,11 +12,11 @@
 #include "io.h"
 #include "ARMH6280/Version.h"
 
-#define EMUVERSION "V0.9.0 2021-12-04"
+#define EMUVERSION "V0.9.0 2023-06-27"
 
 // Asm functions
 extern void paletteTxAll(void);		// VCE.s
-extern void calcVBL(void);			// vdc.s
+extern void calcVBL(void);			// VDC.s
 
 const fptr fnMain[] = {nullUI, subUI, subUI, subUI, subUI, subUI, subUI, subUI, subUI, subUI};
 
@@ -33,22 +33,21 @@ const fptr fnList9[] = {uiDummy};
 const fptr *const fnListX[] = {fnList0, fnList1, fnList2, fnList3, fnList4, fnList5, fnList6, fnList7, fnList8, fnList9};
 u8 menuXItems[] = {ARRSIZE(fnList0), ARRSIZE(fnList1), ARRSIZE(fnList2), ARRSIZE(fnList3), ARRSIZE(fnList4), ARRSIZE(fnList5), ARRSIZE(fnList6), ARRSIZE(fnList7), ARRSIZE(fnList8), ARRSIZE(fnList9)};
 const fptr drawUIX[] = {uiNullNormal, uiFile, uiOptions, uiAbout, uiController, uiDisplay, uiMachine, uiSettings, uiYesNo, uiDummy};
-const u8 menuXBack[] = {0,0,0,0,2,2,2,2,1,8};
 
 u8 gGammaValue = 0;
 
-static const char *const autoTxt[]={"Off","On","With R"};
-static const char *const speedTxt[]={"Normal","Fast","Max","Slowmo"};
-static const char *const sleepTxt[]={"5min","10min","30min","Off"};
-static const char *const brighTxt[]={"I","II","III","IIII","IIIII"};
-static const char *const ctrlTxt[]={"P1","P2","P3","P4","P5"};
-static const char *const joypadTxt[]={"2 button","6 button"};
-static const char *const dispTxt[]={"Scaled 1:1","Scaled to fit","Scaled to aspect"};
-static const char *const flickTxt[]={"No Flicker","Flicker"};
-static const char *const cntrTxt[]={"US","Japan"};
-static const char *const machTxt[]={"Auto","PC-Engine","CD-ROM","Super CD-ROM","Arcade CD-ROM","Super Grafx","Super CD-ROM Card","TurboGrafx-16"};
-static const char *const biosTxt[]={"Off","Auto"};
-static const char *const rgbTxt[]={"RGB","Composite"};
+static const char *const autoTxt[]={"Off", "On", "With R"};
+static const char *const speedTxt[]={"Normal", "Fast", "Max", "Slowmo"};
+static const char *const brighTxt[]={"I", "II", "III", "IIII", "IIIII"};
+static const char *const sleepTxt[]={"5min", "10min", "30min", "Off"};
+static const char *const ctrlTxt[]={"P1", "P2", "P3", "P4", "P5"};
+static const char *const joypadTxt[]={"2 Button", "6 Button"};
+static const char *const dispTxt[]={"Scaled 1:1", "Scaled to fit", "Scaled to aspect"};
+static const char *const flickTxt[]={"No Flicker", "Flicker"};
+static const char *const machTxt[]={"Auto", "PC-Engine", "CD-ROM", "Super CD-ROM", "Arcade CD-ROM", "Super Grafx", "Super CD-ROM Card", "TurboGrafx-16"};
+static const char *const cntrTxt[]={"US", "Japan"};
+static const char *const biosTxt[]={"Off", "Auto"};
+static const char *const rgbTxt[]={"RGB", "Composite"};
 
 
 void setupGUI() {
@@ -101,39 +100,39 @@ void uiOptions() {
 void uiAbout() {
 	cls(1);
 	drawTabs();
-	drawText(" NitroGrafx", 4, 0);
-	drawText(" NEC PC-Engine/TurboGrafx-16 emu", 5, 0);
+	drawMenuText("NitroGrafx", 4, 0);
+	drawMenuText("NEC PC-Engine/TurboGrafx-16 emu", 5, 0);
 
-	drawText(" B:      Button 2", 7, 0);
-	drawText(" A:      Button 1", 8, 0);
-	drawText(" Start:  Start button", 9, 0);
-	drawText(" Select: Select button", 10, 0);
-	drawText(" DPad:   Move character", 11, 0);
+	drawMenuText("B:      Button 2", 7, 0);
+	drawMenuText("A:      Button 1", 8, 0);
+	drawMenuText("Start:  Start button", 9, 0);
+	drawMenuText("Select: Select button", 10, 0);
+	drawMenuText("DPad:   Move character", 11, 0);
 
-	drawText(" NitroGrafx   " EMUVERSION,21,0);
-	drawText(" ARMH6280     " ARMH6280VERSION,22,0);
+	drawMenuText("NitroGrafx   " EMUVERSION, 21,0);
+	drawMenuText("ARMH6280     " ARMH6280VERSION, 22,0);
 }
 
 void uiController() {
-	setupSubMenu(" Controller Settings");
-	drawSubItem("MultiTap:   ", autoTxt[(joyCfg>>26)&1]);
-	drawSubItem("Controller: ", ctrlTxt[(joyCfg>>28)&7]);
-	drawSubItem("Joypad:     ", joypadTxt[(joyCfg>>27)&1]);
-	drawSubItem("B Autofire: ", autoTxt[autoB]);
-	drawSubItem("A Autofire: ", autoTxt[autoA]);
-	drawSubItem("Swap A-B:   ", autoTxt[(joyCfg>>10)&1]);
-	drawSubItem("Use R as FastForward: ", autoTxt[(gConfigSet>>4)&1]);
+	setupSubMenu("Controller Settings");
+	drawSubItem("MultiTap:  ", autoTxt[(joyCfg>>26)&1]);
+	drawSubItem("Controller:", ctrlTxt[(joyCfg>>28)&7]);
+	drawSubItem("Joypad:    ", joypadTxt[(joyCfg>>27)&1]);
+	drawSubItem("B Autofire:", autoTxt[autoB]);
+	drawSubItem("A Autofire:", autoTxt[autoA]);
+	drawSubItem("Swap A-B:  ", autoTxt[(joyCfg>>10)&1]);
+	drawSubItem("Use R as FastForward:", autoTxt[(gConfigSet>>4)&1]);
 }
 
 void uiDisplay() {
-	setupSubMenu(" Display Settings");
-	drawSubItem("Display: ", dispTxt[gScalingSet]);
-	drawSubItem("Scaling: ", flickTxt[gFlicker]);
-	drawSubItem("Output: ", rgbTxt[gRgbYcbcr]);
-	drawSubItem("Gamma: ", brighTxt[gGammaValue]);
-	drawSubItem("Color: ", brighTxt[gColorValue]);
-	drawSubItem("Disable Background: ", autoTxt[gGfxMask&1]);
-	drawSubItem("Disable Sprites: ", autoTxt[(gGfxMask>>4)&1]);
+	setupSubMenu("Display Settings");
+	drawSubItem("Display:", dispTxt[gScalingSet]);
+	drawSubItem("Scaling:", flickTxt[gFlicker]);
+	drawSubItem("Output:", rgbTxt[gRgbYcbcr]);
+	drawSubItem("Gamma:", brighTxt[gGammaValue]);
+	drawSubItem("Color:", brighTxt[gColorValue]);
+	drawSubItem("Disable Background:", autoTxt[gGfxMask&1]);
+	drawSubItem("Disable Sprites:", autoTxt[(gGfxMask>>4)&1]);
 }
 
 void uiMachine() {
@@ -141,24 +140,24 @@ void uiMachine() {
 	if (machine == HW_PCENGINE && gRegion == REGION_US) {
 		machine = HW_TURBOGRAFX;
 	}
-	setupSubMenu(" Machine Settings");
-	drawSubItem("Region: ", cntrTxt[gRegion]);
-	drawSubItem("Machine: ", machTxt[machine]);
-	drawSubItem("Select BIOS", 0);
-	drawSubItem("Fake Spritecollision: ", autoTxt[(sprCollision>>5)&1]);
+	setupSubMenu("Machine Settings");
+	drawSubItem("Region:", cntrTxt[gRegion]);
+	drawSubItem("Machine:", machTxt[machine]);
+	drawSubItem("Select BIOS", NULL);
+	drawSubItem("Fake Spritecollision:", autoTxt[(sprCollision>>5)&1]);
 }
 
 void uiSettings() {
-	setupSubMenu(" Settings");
-	drawSubItem("Speed: ", speedTxt[(emuSettings>>6)&3]);
-	drawSubItem("Autoload State: ", autoTxt[(emuSettings>>2)&1]);
-	drawSubItem("Autosave Settings: ", autoTxt[(emuSettings>>9)&1]);
-	drawSubItem("Autosave BRAM: ", autoTxt[(emuSettings>>10)&1]);
-	drawSubItem("Autopause Game: ", autoTxt[emuSettings&1]);
-	drawSubItem("Powersave 2nd Screen: ", autoTxt[(emuSettings>>1)&1]);
-	drawSubItem("Emulator on Bottom: ", autoTxt[(emuSettings>>8)&1]);
-	drawSubItem("Debug Output: ", autoTxt[gDebugSet&1]);
-	drawSubItem("Autosleep: ", sleepTxt[(emuSettings>>4)&3]);
+	setupSubMenu("Settings");
+	drawSubItem("Speed:", speedTxt[(emuSettings>>6)&3]);
+	drawSubItem("Autoload State:", autoTxt[(emuSettings>>2)&1]);
+	drawSubItem("Autosave Settings:", autoTxt[(emuSettings>>9)&1]);
+	drawSubItem("Autosave BRAM:", autoTxt[(emuSettings>>10)&1]);
+	drawSubItem("Autopause Game:", autoTxt[emuSettings&1]);
+	drawSubItem("Powersave 2nd Screen:", autoTxt[(emuSettings>>1)&1]);
+	drawSubItem("Emulator on Bottom:", autoTxt[(emuSettings>>8)&1]);
+	drawSubItem("Debug Output:", autoTxt[gDebugSet&1]);
+	drawSubItem("Autosleep:", sleepTxt[(emuSettings>>4)&3]);
 }
 
 void nullUINormal(int key) {

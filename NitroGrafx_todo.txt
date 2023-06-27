@@ -1,9 +1,9 @@
 
 NitroGrafx To Do:
 -----------------
+	Add debug menu.
 	arg support. Close menu, power on?
 	Fix click when a cd track starts and stops playing.
-	Fix V flicker position (all games with statusbar etc.). Done?
 	Exile needs 2kB BRAM only?
 
 	Turbo switches? Gun Boat. http://www.gamefaqs.com/tg16/588987-gunboat/faqs/27685
@@ -16,7 +16,8 @@ NitroGrafx To Do:
 		Do both the normal BIOS and GE be loaded at the same time?
 	Fix bitswap for USA roms.
 	Fix so you can load roms even if the path is gone from the disc. Fixed?
- 
+	Fix V flicker position (all games with statusbar etc.). Done?
+
 Misc:
 	.
 

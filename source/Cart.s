@@ -10,6 +10,7 @@
 	.global ejectCart
 	.global packState
 	.global unpackState
+	.global getStateSize
 	.global enableSuperCDRAM
 	.global gHwFlags
 	.global romStart
@@ -479,7 +480,7 @@ fixCpuPCLoad:
 	bx lr
 
 ;@----------------------------------------------------------------------------
-unpackState:	;@ Called from ui.c
+unpackState:	;@ Called from C
 ;@ void unpackState(u32 *stateptr)	 (stateptr must be word aligned)
 	.type   unpackState STT_FUNC
 ;@----------------------------------------------------------------------------
@@ -510,6 +511,24 @@ ls0:
 	ldmfd sp!,{r4-r5,h6280optbl,lr}
 	bx lr
 
+;@----------------------------------------------------------------------------
+getStateSize:	;@ Called from gui.c.
+;@int getStateSize(void), return size
+	.type   getStateSize STT_FUNC
+;@----------------------------------------------------------------------------
+	stmfd sp!,{r4}
+
+	mov r0,#0					;@ r0 holds total size (return value)
+	adr r4,saveLst				;@ r4=list of stuff to copy
+	mov r3,#(lstEnd-saveLst)/8	;@ r3=items in list
+gss1:
+	ldmia r4!,{r1,r2}			;@ r1=what to copy, r2=how much to copy
+	add r0,r0,r2
+	subs r3,r3,#1
+	bne gss1
+
+	ldmfd sp!,{r4}
+	bx lr
 
 
 

@@ -77,8 +77,8 @@ PCEFrameLoop:
 	add r0,r0,#1
 	str r0,frameTotal
 
-	ldmfd sp!,{r4-r11,lr}		;@ exit here:
-	bx lr						;@ return to rommenu()
+	ldmfd sp!,{r4-r11,lr}		;@ Exit here:
+	bx lr						;@ Return to rommenu()
 
 
 ;@----------------------------------------------------------------------------
@@ -108,9 +108,9 @@ lineVBL:	;@------------------------
 vdcCheck:
 	ldr r0,=vdcCtrl1
 	ldrb r0,[r0]
-	tst r0,#0x08				;@ vbl IRQ?
+	tst r0,#0x08				;@ VBl IRQ?
 	movne r2,#0x20				;@ VBlank bit
-//	ldrne addy,=vdcStat			;@ vbl irq
+//	ldrne addy,=vdcStat			;@ VBl irq
 	strbne r2,[addy]
 
 	add cycles,cycles,#7*4*CYCLE
@@ -180,14 +180,14 @@ lineSPR_to_end: ;@------------------------
 */
 ;@----------------------------------------------------------------------------
 scanlineCycles:		.long CYCLE_PSL
-frameTotal:			;@ let ui.c see frame count for savestates
+frameTotal:			;@ Let Gui.c see frame count for savestates
 					.long 0
 
 ;@----------------------------------------------------------------------------
-cpuReset:		;@ called by loadcart/resetGame
+cpuReset:					;@ Called by loadcart/resetGame
 	.type cpuReset STT_FUNC
 ;@----------------------------------------------------------------------------
-	str lr,[sp,#-4]!
+	stmfd sp!,{lr}
 
 	ldr r0,=CYCLE_PSL			;@ 455
 	str r0,scanlineCycles
@@ -199,7 +199,7 @@ cpuReset:		;@ called by loadcart/resetGame
 //	bl h6280Hacks
 	bl h6280Reset
 
-	ldr lr,[sp],#4
+	ldmfd sp!,{lr}
 	bx lr
 ;@----------------------------------------------------------------------------
 	.end
