@@ -17,6 +17,7 @@
 		9C7BB95125FCE08B00EA9C9C /* EmuFont.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = EmuFont.png; sourceTree = "<group>"; };
 		9C8F33F0248ACAF400996E5A /* nds_asm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = nds_asm.h; sourceTree = "<group>"; };
 		9CBEE0D026EDE1440095347A /* EmuSettings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EmuSettings.h; sourceTree = "<group>"; };
+		9CF752362B6FF7BD00001220 /* EmuMenu.i */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c.preprocessed; path = EmuMenu.i; sourceTree = "<group>"; };
 		A47F09142084B325004E1DA6 /* ArcadeCard.i */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c.preprocessed; path = ArcadeCard.i; sourceTree = "<group>"; };
 		A47F09152084E1A6004E1DA6 /* Sound.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Sound.h; sourceTree = "<group>"; };
 		A47F09162084E1A7004E1DA6 /* Cart.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Cart.h; sourceTree = "<group>"; };
@@ -127,6 +128,7 @@
 				A47F093C2087673C004E1DA6 /* Unzip */,
 				9C8F33F0248ACAF400996E5A /* nds_asm.h */,
 				9CBEE0D026EDE1440095347A /* EmuSettings.h */,
+				9CF752362B6FF7BD00001220 /* EmuMenu.i */,
 				A47F091F2085F2D9004E1DA6 /* EmuMenu.h */,
 				A47F09202085F2D9004E1DA6 /* EmuMenu.c */,
 				A47F093620873FEC004E1DA6 /* FileHelper.h */,

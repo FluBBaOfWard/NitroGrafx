@@ -12,27 +12,54 @@
 #include "io.h"
 #include "ARMH6280/Version.h"
 
-#define EMUVERSION "V0.9.0 2023-06-27"
+#define EMUVERSION "V0.9.0 2024-09-11"
 
 // Asm functions
 extern void paletteTxAll(void);		// VCE.s
 extern void calcVBL(void);			// VDC.s
 
-const fptr fnMain[] = {nullUI, subUI, subUI, subUI, subUI, subUI, subUI, subUI, subUI, subUI};
+static void collisionSet(void);
+static void countrySet(void);
+static void machineSet(void);
+static void uiDebug(void);
 
-const fptr fnList0[] = {uiDummy};
-const fptr fnList1[] = {selectGame, selectCDROM, loadState, saveState, saveSettings, ejectGame, powerOnOff, resetGame, ui8};
-const fptr fnList2[] = {ui4, ui5, ui6, ui7};
-const fptr fnList3[] = {uiDummy};
-const fptr fnList4[] = {multiTapSet, controllerSet, joypadButtonSet, autoBSet, autoASet, swapABSet, rffSet};
-const fptr fnList5[] = {scalingSet, flickSet, ycbcrSet, gammaSet, colorSet, bgrlayerSet, sprlayerSet};
-const fptr fnList6[] = {countrySet, machineSet, selectBios, collisionSet};
-const fptr fnList7[] = {speedSet, autoStateSet, autoSettingsSet, autoNVRAMSet, autoPauseGameSet, powerSaveSet, screenSwapSet, debugTextSet, sleepSet};
-const fptr fnList8[] = {exitEmulator, backOutOfMenu};
-const fptr fnList9[] = {uiDummy};
-const fptr *const fnListX[] = {fnList0, fnList1, fnList2, fnList3, fnList4, fnList5, fnList6, fnList7, fnList8, fnList9};
-u8 menuXItems[] = {ARRSIZE(fnList0), ARRSIZE(fnList1), ARRSIZE(fnList2), ARRSIZE(fnList3), ARRSIZE(fnList4), ARRSIZE(fnList5), ARRSIZE(fnList6), ARRSIZE(fnList7), ARRSIZE(fnList8), ARRSIZE(fnList9)};
-const fptr drawUIX[] = {uiNullNormal, uiFile, uiOptions, uiAbout, uiController, uiDisplay, uiMachine, uiSettings, uiYesNo, uiDummy};
+const MItem fnList0[] = {{"",uiDummy}};
+const MItem fnList1[] = {
+	{"Load Hucard",selectGame},
+	{"Load CDROM",selectCDROM},
+	{"Load State",loadState},
+	{"Save State",saveState},
+	{"Save Settings",saveSettings},
+	{"Eject Game",ejectGame},
+	{"Power On/Off",powerOnOff},
+	{"Reset Game",resetGame},
+	{"Quit Emulator",ui9}};
+const MItem fnList2[] = {
+	{"Controller",ui4},
+	{"Display",ui5},
+	{"Machine",ui6},
+	{"Settings",ui7},
+	{"Debug",ui8}};
+const MItem fnList4[] = {{"",multiTapSet}, {"",controllerSet}, {"",joypadButtonSet}, {"",autoBSet}, {"",autoASet}, {"",swapABSet}, {"",rffSet}};
+const MItem fnList5[] = {{"",scalingSet}, {"",flickSet}, {"",ycbcrSet}, {"",gammaSet}, {"",colorSet}};
+const MItem fnList6[] = {{"",countrySet}, {"",machineSet}, {"",selectBios}, {"",collisionSet}};
+const MItem fnList7[] = {{"",speedSet}, {"",autoStateSet}, {"",autoNVRAMSet}, {"",autoSettingsSet}, {"",autoPauseGameSet}, {"",powerSaveSet}, {"",screenSwapSet}, {"",sleepSet}};
+const MItem fnList8[] = {{"",debugTextSet}, {"",bgrLayerSet}, {"",sprLayerSet} /*,{"",stepFrame}*/};
+const MItem fnList9[] = {{"Yes ",exitEmulator}, {"No ",backOutOfMenu}};
+
+const Menu menu0 = MENU_M("", uiNullNormal, fnList0);
+Menu menu1 = MENU_M("", uiAuto, fnList1);
+const Menu menu2 = MENU_M("", uiAuto, fnList2);
+const Menu menu3 = MENU_M("", uiAbout, fnList0);
+const Menu menu4 = MENU_M("Controller Settings", uiController, fnList4);
+const Menu menu5 = MENU_M("Display Settings", uiDisplay, fnList5);
+const Menu menu6 = MENU_M("Machine Settings", uiMachine, fnList6);
+const Menu menu7 = MENU_M("Settings", uiSettings, fnList7);
+const Menu menu8 = MENU_M("Debug", uiDebug, fnList8);
+const Menu menu9 = MENU_M("Quit Emulator?", uiAuto, fnList9);
+const Menu menu10 = MENU_M("", uiDummy, fnList0);
+
+const Menu *const menus[] = {&menu0, &menu1, &menu2, &menu3, &menu4, &menu5, &menu6, &menu7, &menu8, &menu9, &menu10 };
 
 u8 gGammaValue = 0;
 
@@ -53,7 +80,7 @@ static const char *const rgbTxt[]={"RGB", "Composite"};
 void setupGUI() {
 	emuSettings = AUTOPAUSE_EMULATION | AUTOSLEEP_OFF;
 	keysSetRepeat(25, 4);	// Delay, repeat.
-	menuXItems[1] = ARRSIZE(fnList1) - (enableExit?0:1);
+	menu1.itemCount = ARRSIZE(fnList1) - (enableExit?0:1);
 	openMenu();
 }
 
@@ -74,29 +101,6 @@ void uiNullNormal() {
 	uiNullDefault();
 }
 
-void uiFile() {
-	setupMenu();
-	drawMenuItem("Load Hucard");
-	drawMenuItem("Load CDROM");
-	drawMenuItem("Load State");
-	drawMenuItem("Save State");
-	drawMenuItem("Save Settings");
-	drawMenuItem("Eject Game");
-	drawMenuItem("Power On/Off");
-	drawMenuItem("Reset Game");
-	if (enableExit) {
-		drawMenuItem("Quit Emulator");
-	}
-}
-
-void uiOptions() {
-	setupMenu();
-	drawMenuItem("Controller");
-	drawMenuItem("Display");
-	drawMenuItem("Machine");
-	drawMenuItem("Settings");
-}
-
 void uiAbout() {
 	cls(1);
 	drawTabs();
@@ -114,7 +118,7 @@ void uiAbout() {
 }
 
 void uiController() {
-	setupSubMenu("Controller Settings");
+	setupSubMenuText();
 	drawSubItem("MultiTap:  ", autoTxt[(joyCfg>>26)&1]);
 	drawSubItem("Controller:", ctrlTxt[(joyCfg>>28)&7]);
 	drawSubItem("Joypad:    ", joypadTxt[(joyCfg>>27)&1]);
@@ -125,14 +129,12 @@ void uiController() {
 }
 
 void uiDisplay() {
-	setupSubMenu("Display Settings");
+	setupSubMenuText();
 	drawSubItem("Display:", dispTxt[gScalingSet]);
 	drawSubItem("Scaling:", flickTxt[gFlicker]);
 	drawSubItem("Output:", rgbTxt[gRgbYcbcr]);
 	drawSubItem("Gamma:", brighTxt[gGammaValue]);
 	drawSubItem("Color:", brighTxt[gColorValue]);
-	drawSubItem("Disable Background:", autoTxt[gGfxMask&1]);
-	drawSubItem("Disable Sprites:", autoTxt[(gGfxMask>>4)&1]);
 }
 
 void uiMachine() {
@@ -140,7 +142,7 @@ void uiMachine() {
 	if (machine == HW_PCENGINE && gRegion == REGION_US) {
 		machine = HW_TURBOGRAFX;
 	}
-	setupSubMenu("Machine Settings");
+	setupSubMenuText();
 	drawSubItem("Region:", cntrTxt[gRegion]);
 	drawSubItem("Machine:", machTxt[machine]);
 	drawSubItem("Select BIOS", NULL);
@@ -148,16 +150,23 @@ void uiMachine() {
 }
 
 void uiSettings() {
-	setupSubMenu("Settings");
+	setupSubMenuText();
 	drawSubItem("Speed:", speedTxt[(emuSettings>>6)&3]);
 	drawSubItem("Autoload State:", autoTxt[(emuSettings>>2)&1]);
-	drawSubItem("Autosave Settings:", autoTxt[(emuSettings>>9)&1]);
 	drawSubItem("Autosave BRAM:", autoTxt[(emuSettings>>10)&1]);
+	drawSubItem("Autosave Settings:", autoTxt[(emuSettings>>9)&1]);
 	drawSubItem("Autopause Game:", autoTxt[emuSettings&1]);
 	drawSubItem("Powersave 2nd Screen:", autoTxt[(emuSettings>>1)&1]);
 	drawSubItem("Emulator on Bottom:", autoTxt[(emuSettings>>8)&1]);
-	drawSubItem("Debug Output:", autoTxt[gDebugSet&1]);
 	drawSubItem("Autosleep:", sleepTxt[(emuSettings>>4)&3]);
+}
+
+void uiDebug() {
+	setupSubMenuText();
+	drawSubItem("Debug Output:", autoTxt[gDebugSet&1]);
+	drawSubItem("Disable Background:", autoTxt[gGfxMask&1]);
+	drawSubItem("Disable Sprites:", autoTxt[(gGfxMask>>4)&1]);
+//	drawSubItem("Step Frame", NULL);
 }
 
 void nullUINormal(int key) {
@@ -192,7 +201,6 @@ void nullUIDebug(int key) {
 		char2HexStr(&dbgtxt[8], currentPos>>11);
 		drawText(dbgtxt, 2, 0);
 	}
-
 }
 
 void setupKeyboard(void) {
@@ -297,11 +305,11 @@ void ycbcrSet() {
 	paletteTxAll();					// Make new palette visible
 }
 
-void bgrlayerSet() {
+void bgrLayerSet() {
 	gGfxMask ^= 0x03;
 }
 
-void sprlayerSet() {
+void sprLayerSet() {
 	gGfxMask ^= 0x10;
 }
 

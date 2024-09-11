@@ -1,7 +1,7 @@
 
 NitroGrafx To Do:
 -----------------
-	Add debug menu.
+	Add debug menu, "Step Frame".
 	arg support. Close menu, power on?
 	Fix click when a cd track starts and stops playing.
 	Exile needs 2kB BRAM only?

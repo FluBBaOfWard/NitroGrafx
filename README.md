@@ -1,11 +1,12 @@
 # NitroGrafx V0.9.0
+
 PC-Engine/TurboGrafx-16 emulator for NDS
 
-This is a PC-Engine/TurboGrafx-16 emulator for the NDS, it can also emulate
-some of the (Super) CD-ROM^2 & Arcade Card. All games are not perfect, (alot
-of US games doesn't work because they are encrypted, use PCEToy or the
-emulator Ootake to decrypt these before you use them). Don't use overdumps as
-these are evil on PC Engine.
+This is a PC-Engine/TurboGrafx-16 emulator for the Nintendo DS(i)/3DS, it can
+also emulate some of the (Super) CD-ROM^2 & Arcade Card. All games are not
+perfect, (alot of US games doesn't work because they are encrypted, use PCEToy
+or the emulator Ootake to decrypt these before you use them). Don't use
+overdumps as these are evil on PC Engine.
 
 ## How to use
 
@@ -76,8 +77,8 @@ Now load up a game and you should be good to go.
     * Slowmo: Slow, 50% speed.
   * Autoload State: Toggle Savestate autoloading. Automagicaly load the
     savestate associated with the selected game.
-  * Autosave Settings: Saves changed settings every time you leave GUI.
   * Autosave BRAM: Saves BRAM if it's changed when entering GUI.
+  * Autosave Settings: Saves changed settings every time you leave GUI.
   * Autopause Game: Pause game when opening GUI.
   * Powersave 2nd Screen: If graphics/light should be turned off for the GUI
     screen when menu is not active.
@@ -85,6 +86,12 @@ Now load up a game and you should be good to go.
     emulator, when menu is active emulator screen is allways on top.
   * Debug Output: Set if you want debug output or not.
   * Autosleep: Change the autosleep time, also see Sleep. !!!DoesntWork!!!
+* Debug:
+  * Debug Output: Show FPS and logged text.
+  * Disable Background: Turn on/off background rendering.
+  * Disable Sprites: Turn on/off sprite rendering.
+  * Step Frame: Emulate one frame.
+
 
 ### About
 
@@ -101,6 +108,6 @@ David Shadoff for a lot of the info on the PC-Engine.
 
 Fredrik Ahlström
 
-Twitter @TheRealFluBBa
+X/Twitter @TheRealFluBBa
 
-http://www.github.com/FluBBaOfWard
+<https://www.github.com/FluBBaOfWard>

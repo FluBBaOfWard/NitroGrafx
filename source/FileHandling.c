@@ -33,7 +33,7 @@ static int cdDatatrackMode;
 
 configdata cfg;
 
-static char cdGamePath[FILEPATHMAXLENGTH];
+static char cdGamePath[FILEPATH_MAX_LENGTH];
 
 //---------------------------------------------------------------------------------
 
@@ -95,7 +95,8 @@ void saveSettings() {
 		fwrite(&cfg, 1, sizeof(configdata), file);
 		fclose(file);
 		infoOutput("Settings saved.");
-	} else {
+	}
+	else {
 		infoOutput("Couldn't open file:");
 		infoOutput(settingName);
 	}
@@ -200,7 +201,7 @@ int loadPCEROM(void *dest, const char *fName, const int maxSize) {
 }
 
 int loadBIOS(void *dest, const char *fPath, const int maxSize) {
-	char tempString[FILEPATHMAXLENGTH];
+	char tempString[FILEPATH_MAX_LENGTH];
 	char *sPtr;
 
 	strcpy(tempString, fPath);
@@ -236,7 +237,8 @@ void selectCDROM() {
 		if (strstr(fileExt, ".cue")) {
 			CD_ConvertCueFile(cdName);
 			cdIsBinCue = 1;
-		} else {
+		}
+		else {
 			strcpy(cdGamePath, cdName);
 			cdDatatrackMode = 4;
 			cdIsBinCue = 0;
@@ -263,7 +265,8 @@ void selectCDROM() {
 				powerButton = true;
 				closeMenu();
 			}
-		} else {
+		}
+		else {
 			infoOutput("Couldn't open CD file:");
 			cdInserted = 0;
 		}
@@ -276,7 +279,8 @@ int CD_ReadByte() {
 	if (cdDataLeft == 0) {
 		if (cdDatatrackMode == 8 ) {
 			fread(cdBuffer, 1, 2352, cdFile);
-		} else {
+		}
+		else {
 			fread(&cdBuffer[16], 1, 2048, cdFile);
 		}
 		cdDataLeft = 2048;
@@ -348,7 +352,8 @@ void CD_ConvertCueFile(const char *fName) {
 	cs = read_cue(fName);
 	if ( (binName = strrchr(cs->file, '\\')) || (binName = strrchr(cs->file, '/')) ) {
 		binName += 1;
-	} else {
+	}
+	else {
 		binName = cs->file;
 	}
 	strlcpy(cdGamePath, binName, sizeof(cdGamePath));
@@ -363,9 +368,11 @@ void CD_ConvertCueFile(const char *fName) {
 	for (i = 0; i < cs->trackcount; i++) {
 		if (cs->tracklist[i].mode == AUDIO) {
 			CDROM_TOC[0x10 + i*8] = 0;
-		} else if (cs->tracklist[i].mode == MODE1_RAW) {
+		}
+		else if (cs->tracklist[i].mode == MODE1_RAW) {
 			cdDatatrackMode = CDROM_TOC[0x10 + i*8] = 8;
-		} else {
+		}
+		else {
 			cdDatatrackMode = CDROM_TOC[0x10 + i*8] = 4;
 		}
 		val = cs->tracklist[i].start * 2352;

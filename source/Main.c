@@ -16,11 +16,6 @@
 #include "io.h"
 #include "Sound.h"
 
-//#define sample_rate  32768
-//#define sample_rate  55930
-#define sample_rate  44100
-#define buffer_size  512
-
 static void checkTimeOut(void);
 static void setupGraphics(void);
 static void setupStream(void);
@@ -73,14 +68,15 @@ int main(int argc, char **argv) {
 	irqSet(IRQ_VBLANK, myVblank);
 	setupGUI();
 	ejectCart();
-	if ( initFileHelper() ) {
+	if (initFileHelper()) {
 		loadSettings();
 		loadBRAM();
 		if (argc > 1) {
 			loadGame(argv[1]);
 			setMuteSoundGUI();
 		}
-	} else {
+	}
+	else {
 		drawText("fatInitDefault() failure.", 23, 0);
 	}
 //	loadCart();
@@ -94,10 +90,12 @@ int main(int argc, char **argv) {
 		if (powerButton) {
 			if (!pauseEmulation) {
 				run();
-			} else {
+			}
+			else {
 				waitVBlank();
 			}
-		} else {
+		}
+		else {
 			antWars();
 			waitVBlank();
 		}
@@ -116,7 +114,7 @@ void pausVBlank(int count) {
 void waitVBlank() {
 //---------------------------------------------------------------------------------
 	// Workaround for bug in Bios.
-	if ( !vBlankOverflow ) {
+	if (!vBlankOverflow) {
 		swiIntrWait(1, IRQ_VBLANK);
 	}
 	vBlankOverflow = false;
@@ -127,7 +125,8 @@ static void checkTimeOut() {
 //---------------------------------------------------------------------------------
 	if (EMUinput) {
 		sleepTimer = sleepTime;
-	} else {
+	}
+	else {
 		sleepTimer--;
 		if (sleepTimer < 0) {
 			sleepTimer = sleepTime;
@@ -143,13 +142,16 @@ void setEmuSpeed(int speed) {
 	if (speed == 0) {			// Normal Speed
 		waitMaskIn = 0x00;
 		waitMaskOut = 0x00;
-	} else if (speed == 1) {	// Double speed
+	}
+	else if (speed == 1) {	// Double speed
 		waitMaskIn = 0x00;
 		waitMaskOut = 0x01;
-	} else if (speed == 2) {	// Max speed (4x)
+	}
+	else if (speed == 2) {	// Max speed (4x)
 		waitMaskIn = 0x00;
 		waitMaskOut = 0x03;
-	} else if (speed == 3) {	// 50% speed
+	}
+	else if (speed == 3) {	// 50% speed
 		waitMaskIn = 0x01;
 		waitMaskOut = 0x00;
 	}

@@ -39,13 +39,8 @@ void scalingSet(void);
 void gammaSet(void);
 void colorSet(void);
 void ycbcrSet(void);
-void bgrlayerSet(void);
-void sprlayerSet(void);
-
-void collisionSet(void);
-void countrySet(void);
-void machineSet(void);
-void biosSet(void);
+void bgrLayerSet(void);
+void sprLayerSet(void);
 
 #ifdef __cplusplus
 } // extern "C"
