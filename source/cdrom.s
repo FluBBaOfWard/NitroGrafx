@@ -1,3 +1,10 @@
+//
+//  cdrom.s
+//  NitroGrafx
+//
+//  Created by Fredrik Ahlström on 2003-01-01.
+//  Copyright © 2003-2026 Fredrik Ahlström. All rights reserved.
+//
 #ifdef __arm__
 
 #include "ARMH6280/H6280.i"
@@ -275,10 +282,10 @@ CD_Check_IRQ:					;@ Don't use r0 as it may be used as return data.
 	and r2,r2,r1
 	tst r2,#0x7C
 
-	ldrb r1,[h6280optbl,#h6280IrqPending]
-	bic r1,r1,#1					;@ Clear CD IRQ
-	orrne r1,r1,#1					;@ Set CD IRQ if appropriate
-	strb r1,[h6280optbl,#h6280IrqPending]
+	ldrb r1,[h6280ptr,#h6280IrqPending]
+	bic r1,r1,#BRKIRQ_F				;@ Clear CD IRQ
+	orrne r1,r1,#BRKIRQ_F			;@ Set CD IRQ if appropriate
+	strb r1,[h6280ptr,#h6280IrqPending]
 
 	bx lr
 ;@----------------------------------------------------------------------------

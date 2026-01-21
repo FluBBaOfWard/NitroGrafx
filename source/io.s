@@ -1,3 +1,10 @@
+//
+//  io.s
+//  NitroGrafx
+//
+//  Created by Fredrik Ahlström on 2003-01-01.
+//  Copyright © 2003-2026 Fredrik Ahlström. All rights reserved.
+//
 #ifdef __arm__
 
 #include "ARMH6280/H6280.i"
@@ -197,7 +204,7 @@ arcadeWritePtr:
 ;@----------------------------------------------------------------------------
 JOYP_W:						;@ 0x1000-0x13ff
 ;@----------------------------------------------------------------------------
-	strb r0,[h6280optbl,#h6280IoBuffer]
+	strb r0,[h6280ptr,#h6280IoBuffer]
 	and r0,r0,#3
 	ldrb r1,joyPortWrite
 	strb r0,joyPortWrite
@@ -263,17 +270,17 @@ JOYP_R:						;@ $0x1000-0x13ff
 	ldrb r0,joySerial
 	ldrb r1,joyExtra
 	eor r0,r0,r1
-	strb r0,[h6280optbl,#h6280IoBuffer]
+	strb r0,[h6280ptr,#h6280IoBuffer]
 	bx lr
 
 
 EMPTY_IO_R:
-	ldrb r0,[h6280optbl,#h6280IoBuffer]
+	ldrb r0,[h6280ptr,#h6280IoBuffer]
 	bx lr
 ;@----------------------------------------------------------------------------
 //PSG_W:
 ;@----------------------------------------------------------------------------
-//	strb r0,[h6280optbl,#h6280_ioBuffer]
+//	strb r0,[h6280ptr,#h6280_ioBuffer]
 //	bx lr
 ;@----------------------------------------------------------------------------
 ioState:

@@ -1,3 +1,10 @@
+//
+//  cpu.s
+//  NitroGrafx
+//
+//  Created by Fredrik Ahlström on 2003-01-01.
+//  Copyright © 2003-2026 Fredrik Ahlström. All rights reserved.
+//
 #ifdef __arm__
 
 #include "Shared/nds_asm.h"
@@ -21,7 +28,7 @@ run:		;@ return after 1 frame
 
 	stmfd sp!,{r4-r11,lr}
 
-	ldr h6280optbl,=h6280OpTable
+	ldr h6280ptr,=h6280OpTable
 ;@----------------------------------------------------------------------------
 runStart:
 ;@----------------------------------------------------------------------------
@@ -45,11 +52,11 @@ runStart:
 	bl updateCDROM				;@ Update CD counters and stuff
 @	bl updateSound
 
-	add r0,h6280optbl,#h6280Regs
+	add r0,h6280ptr,#h6280Regs
 	ldmia r0,{h6280nz-h6280pc,h6280zpage}	;@ Restore H6280 state
 
 //	mov r11,r11					;@ No$GBA breakpoint.
-	ldr r0,[h6280optbl,#h6280NextTimeout]
+	ldr r0,[h6280ptr,#h6280NextTimeout]
 	bx r0
 //	ldr r0,scanlineCycles
 //	b h6280RunXCycles
@@ -65,7 +72,7 @@ PCEFrameLoop:
 	beq h6280RunXCycles
 ;@----------------------------------------------------------------------------
 
-	add r0,h6280optbl,#h6280Regs
+	add r0,h6280ptr,#h6280Regs
 	stmia r0,{h6280nz-h6280pc,h6280zpage}	;@ Save H6280 state
 
 	ldr r1,=fpsValue
@@ -85,7 +92,7 @@ PCEFrameLoop:
 
 /*
 lineVBL:	;@------------------------
-	ldr r0,[h6280optbl,#h6280_cyclesPerScanline]
+	ldr r0,[h6280ptr,#h6280_cyclesPerScanline]
 	sub r0,r0,#1024*CYCLE
 	add cycles,cycles,r0
 	ldr r0,frameTotal
@@ -93,8 +100,8 @@ lineVBL:	;@------------------------
 	str r0,frameTotal
 
 	adr addy,vdcCheck
-	str addy,[h6280optbl,#h6280_nextTimeout]
-	str addy,[h6280optbl,#h6280_nextTimeout_]
+	str addy,[h6280ptr,#h6280_nextTimeout]
+	str addy,[h6280ptr,#h6280_nextTimeout_]
 
 ;@-------------------------------------------------
 	bl endFrame					;@ display update
@@ -116,29 +123,29 @@ vdcCheck:
 	add cycles,cycles,#7*4*CYCLE
 
 	adr addy,vblCheck
-	str addy,[h6280optbl,#h6280_nextTimeout]
-	str addy,[h6280optbl,#h6280_nextTimeout_]
-	b h6280CheckIrqDisable
+	str addy,[h6280ptr,#h6280_nextTimeout]
+	str addy,[h6280ptr,#h6280_nextTimeout_]
+	b h6280CheckIrqs
 
 vblCheck:
 	add cycles,cycles,#1024*CYCLE
 	sub cycles,cycles,#7*4*CYCLE
 
 	adr addy,lineVBL_to_SPR
-	str addy,[h6280optbl,#h6280_nextTimeout]
-	str addy,[h6280optbl,#h6280_nextTimeout_]
+	str addy,[h6280ptr,#h6280_nextTimeout]
+	str addy,[h6280ptr,#h6280_nextTimeout_]
 
 	ldr r0,=vdcCtrl1
 	ldrb r0,[r0]
 	tst r0,#0x08				;@ vbl IRQ?
-	beq h6280CheckIrqDisable
+	beq h6280CheckIrqs
 
-	setirqpin 2
-	b h6280CheckIrqDisable
+	setIrqPin VDCIRQ_F
+	b h6280CheckIrqs
 
 
 lineVBL_to_SPR: ;@------------------------
-	ldr r0,[h6280optbl,#h6280_cyclesPerScanline]
+	ldr r0,[h6280ptr,#h6280_cyclesPerScanline]
 	add cycles,cycles,r0
 
 	ldr r0,=scanline
@@ -151,14 +158,14 @@ lineVBL_to_SPR: ;@------------------------
 	ldrmi pc,scanlineHook
 ;@---------------------
 	adr addy,lineSPR_to_end
-	str addy,[h6280optbl,#h6280_nextTimeout]
-	str addy,[h6280optbl,#h6280_nextTimeout_]
+	str addy,[h6280ptr,#h6280_nextTimeout]
+	str addy,[h6280ptr,#h6280_nextTimeout_]
 
 //	bl sprDMA_W
 	ldr pc,scanlineHook
 
 lineSPR_to_end: ;@------------------------
-	ldr r0,[h6280optbl,#h6280_cyclesPerScanline]
+	ldr r0,[h6280ptr,#h6280_cyclesPerScanline]
 	add cycles,cycles,r0
 
 	ldr r0,=scanline
@@ -173,8 +180,8 @@ lineSPR_to_end: ;@------------------------
 //	ldr r2,lastScanline
 	cmp r1,r2
 	adrpl addy,line0
-	strpl addy,[h6280optbl,#h6280_nextTimeout]
-	strpl addy,[h6280optbl,#h6280_nextTimeout_]
+	strpl addy,[h6280ptr,#h6280_nextTimeout]
+	strpl addy,[h6280ptr,#h6280_nextTimeout_]
 
 	ldr pc,scanlineHook
 */
@@ -193,8 +200,8 @@ cpuReset:					;@ Called by loadcart/resetGame
 	str r0,scanlineCycles
 
 	adr r0,PCEFrameLoop
-	str r0,[h6280optbl,#h6280NextTimeout]
-	str r0,[h6280optbl,#h6280NextTimeout_]
+	str r0,[h6280ptr,#h6280NextTimeout]
+	str r0,[h6280ptr,#h6280NextTimeout_]
 
 //	bl h6280Hacks
 	bl h6280Reset

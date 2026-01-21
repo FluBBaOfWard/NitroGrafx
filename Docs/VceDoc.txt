@@ -1,3 +1,49 @@
+; ***************************************************************************
+; PC ENGINE VCE TIMING
+; ***************************************************************************
+;
+; 21.47727MHz VCE clock crystal / 4 ->  5.36MHz VDC clock (186ns)
+; 21.47727MHz VCE clock crystal / 3 ->  7.16MHz VDC clock (140ns)
+; 21.47727MHz VCE clock crystal / 2 -> 10.74MHz VDC clock ( 93ns)
+;
+;  63.556us /hsync to /hsync total line time, i.e. 15734.2Hz NTSC
+;
+; 	1365 VCE clocks @ 21.47727MHz
+;
+; 	 -> 341.25 VDC cycles @	 5.36MHz (42.7 chr)
+; 	 -> 455.00 VDC cycles @	 7.16MHz (56.9 chr)
+; 	 -> 682.50 VDC cycles @ 10.74MHz (85.3 chr)
+;
+;  11.035us /hsync duration
+;
+; 	 237 VCE clocks @ 21.47727MHz
+;
+; 	 ->  59.25 VDC clocks @	 5.36MHz
+; 	 ->  79.00 VDC clocks @	 7.16MHz
+; 	 -> 118.50 VDC clocks @	10.74MHz
+;
+; 	 Note : In the 5.36MHz mode, the 1st cycle in the hblank
+; 		has an extra 1/4 cycle added (1 clock @ 21.47MHz).
+;
+;  16.651ms /vsync to /vsync total frame time, if VCE CR bit2 is 0
+;
+; 	357,630 VCE clocks @ 21.47727MHz
+;
+; 	 -> 119,210 CPU clocks @ 7.16MHz
+;
+;  16.715ms /vsync to /vsync total frame time, if VCE CR bit2 is 1
+;
+; 	358,995 VCE clocks @ 21.47727MHz
+;
+; 	 -> 119,665 CPU clocks @ 7.16MHz
+;
+;   1.907ms /vsync duration
+;
+; 	  4,095 VCE clocks @ 21.47727MHz
+;
+; 	 ->   1,365 CPU clocks @ 7.16MHz
+;
+
 
 From patent 5.389.949
 ______________________________________

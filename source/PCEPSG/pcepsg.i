@@ -1,5 +1,13 @@
-;@ ASM header for the PC-Engine PSG emulator
-;@
+//
+//  pcepsg.i
+//  NitroGrafx PC-Engine PSG emulator
+//
+//  Created by Fredrik Ahlström on 2003-01-01.
+//  Copyright © 2003-2026 Fredrik Ahlström. All rights reserved.
+//
+#if !__ASSEMBLER__
+	#error This header file is only for use in assembly files!
+#endif
 
 	psgptr			.req r12
 

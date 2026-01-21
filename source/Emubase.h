@@ -1,6 +1,10 @@
 #ifndef EMUBASE
 #define EMUBASE
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct {				//(config struct)
 	char magic[4];				//="CFG",0
 	int emuSettings;
@@ -15,6 +19,10 @@ typedef struct {				//(config struct)
 	u8 dipSwitch0;				// from io.s
 	char currentPath[256];
 	char biosPath[256];
-} configdata;
+} ConfigData;
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 #endif // EMUBASE

@@ -1,7 +1,10 @@
-/*
- Hudson/NEC HuC6270 Video Display Controller emulator
-*/
-
+//
+//  VDC.s
+//  NitroGrafx Hudson/NEC HuC6270 Video Display Controller emulator
+//
+//  Created by Fredrik Ahlström on 2003-01-01.
+//  Copyright © 2003-2026 Fredrik Ahlström. All rights reserved.
+//
 #ifdef __arm__
 
 #include "Shared/nds_asm.h"
@@ -169,7 +172,7 @@ defaultScanlineHook:
 	ldrb r0,vdcStat
 	orr r0,r0,#0x04				;@ Raster compare irq
 	strb r0,vdcStat
-	setirqpin 2
+	setIrqPin VDCIRQ_F
 noRasterIrq:
 
 	mov r0,#0
@@ -224,7 +227,7 @@ vblHook:					;@ 193/240
 	orrs r0,r0,r2				;@ VBlank bit
 	strb r0,vdcStat				;@ VBL irq.
 	bxeq lr
-	setirqpin 2
+	setIrqPin VDCIRQ_F
 	bx lr
 ;@----------------------------------------------------------------------------
 newFrame:					;@ Called before line 0	(r0-r9 safe to use)
@@ -255,7 +258,7 @@ newFrame:					;@ Called before line 0	(r0-r9 safe to use)
 	bx lr
 
 ;@----------------------------------------------------------------------------
-//	.section .itcm
+//	.section .itcm, "ax", %progbits
 	.section .text
 	.align 2
 ;@----------------------------------------------------------------------------
@@ -272,7 +275,7 @@ VDC_R:
 ;@----------------------------------------------------------------------------
 _VDC0R:						;@ VDC Register
 ;@----------------------------------------------------------------------------
-	clearirqpin 2				;@ Clear VDC interrupt pending
+	clearirqpin VDCIRQ_F		;@ Clear VDC interrupt pending
 	ldrb r0,vdcStat
 	strb h6280a,vdcStat			;@ Lower 8bits allways zero
 	ldrb r1,vdcPrimedVBl
@@ -910,7 +913,7 @@ sprDMALoop:
 	ldrb r1,vdcStat
 	orr r1,r1,#0x08				;@ Spr DMA done.
 	strb r1,vdcStat
-	setirqpin 2
+	setIrqPin VDCIRQ_F
 
 	bx lr
 ;@----------------------------------------------------------------------------
@@ -959,7 +962,7 @@ vramDmaLoop:
 	ldrb r2,vdcStat
 	orr r2,r2,#0x10				;@ VRAM DMA done.
 	strb r2,vdcStat
-	setirqpin 2
+	setIrqPin VDCIRQ_F
 
 	bx lr
 ;@----------------------------------------------------------------------------

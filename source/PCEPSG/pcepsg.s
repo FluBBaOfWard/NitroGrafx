@@ -1,4 +1,12 @@
+//
+//  pcepsg.s
+//  NitroGrafx PC-Engine PSG emulator
+//
+//  Created by Fredrik Ahlström on 2003-01-01.
+//  Copyright © 2003-2026 Fredrik Ahlström. All rights reserved.
+//
 #ifdef __arm__
+
 #include "pcepsg.i"
 
 #define PSGDIVIDE 20*4
@@ -14,7 +22,7 @@
 	.syntax unified
 	.arm
 
-	.section .itcm
+	.section .itcm, "ax", %progbits
 	.align 2
 ;@----------------------------------------------------------------------------
 ;@ r0 = sample reg.
@@ -25,6 +33,7 @@
 ;@ r11 = length.
 ;@ r12 = PCE samplebuffers.
 ;@ r14 = mixerbuffer1.
+;@ Waveforms are not signed!!!
 ;@----------------------------------------------------------------------------
 pcmMix:
 // IIIIIVCCCCCCCCCCCC10FFFFFFFFFFFF
@@ -41,6 +50,7 @@ vol0_R:
 	orrs r1,r2,#0xFF0000		;@ Volume right
 	ldrsbne r0,[r12,r0]			;@ Channel 0
 	mulne r2,r1,r0
+
 	add r4,r4,#PSGADDITION
 	movs r0,r4,lsr#27
 	add r0,r0,#0x20

@@ -1,3 +1,10 @@
+//
+//  ArcadeCard.s
+//  NitroGrafx PC-Engine ArcadeCard emulator
+//
+//  Created by Fredrik Ahlström on 2005-01-01.
+//  Copyright © 2005-2026 Fredrik Ahlström. All rights reserved.
+//
 #ifdef __arm__
 
 #include "ARMH6280/H6280.i"

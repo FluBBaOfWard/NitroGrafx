@@ -1,3 +1,10 @@
+//
+//  Sound.s
+//  NitroGrafx
+//
+//  Created by Fredrik Ahlström on 2003-01-01.
+//  Copyright © 2003-2026 Fredrik Ahlström. All rights reserved.
+//
 #ifdef __arm__
 
 #include "ARMH6280/H6280.i"
@@ -188,7 +195,7 @@ fetchCDData:
 ;@----------------------------------------------------------------------------
 PSG_0_W:
 ;@----------------------------------------------------------------------------
-	strb r0,[h6280optbl,#h6280IoBuffer]
+	strb r0,[h6280ptr,#h6280IoBuffer]
 	mov r1,addy
 	ldr psgptr,=PSG_0
 	b PCEPSGWrite
@@ -210,8 +217,14 @@ muteSoundGame:
 //MixSpace:
 //	.space 0x10000
 ;@----------------------------------------------------------------------------
-	.section .dtcm, "ax", %progbits
-;@----------------------------------------------------------------------------
+#ifdef NDS
+	.section .sbss				;@ This is DTCM on NDS with devkitARM
+#elif GBA
+	.section .bss				;@ This is IWRAM on GBA with devkitARM
+#else
+	.section .bss
+#endif
+	.align 2
 soundVariables:
 PSG_0:
 	.space pcePsgSize

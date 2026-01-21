@@ -1,3 +1,10 @@
+//
+//  Memory.s
+//  NitroGrafx
+//
+//  Created by Fredrik Ahlström on 2003-01-01.
+//  Copyright © 2003-2026 Fredrik Ahlström. All rights reserved.
+//
 #ifdef __arm__
 
 #include "ARMH6280/H6280mac.h"
@@ -48,7 +55,7 @@ romWrite:					;@ Write ROM address (SF2 needs this)
 ;@----------------------------------------------------------------------------
 	mov r11,r11					;@ No$GBA debugg
 	mov r0,#0xB0
-	add r2,h6280optbl,#h6280MapperState
+	add r2,h6280ptr,#h6280MapperState
 	ldrb r0,[r2,addy,lsr#13]
 
 	ldr r1,=romMask				;@ rommask=romsize-1
@@ -65,7 +72,11 @@ romWrite:					;@ Write ROM address (SF2 needs this)
 	bx lr
 ;@----------------------------------------------------------------------------
 
-	.section .itcm
+#ifdef NDS
+	.section .itcm, "ax", %progbits		;@ For the NDS ARM9
+#elif GBA
+	.section .iwram, "ax", %progbits	;@ For the GBA
+#endif
 	.align 2
 ;@----------------------------------------------------------------------------
 mem_W8:						;@ Mem write ($0000-$FFFF)
@@ -161,14 +172,14 @@ sram_W:						;@ sram write
 ;@----------------------------------------------------------------------------
 xram_W:						;@ Memory write
 ;@----------------------------------------------------------------------------
-	add r2,h6280optbl,#h6280RomMap
+	add r2,h6280ptr,#h6280RomMap
 	ldr r1,[r2,r1,lsr#11]		;@ r1=addy & 0xe000
 	strb r0,[r1,addy]
 	bx lr
 ;@----------------------------------------------------------------------------
 mem_R:						;@ Memory read
 ;@----------------------------------------------------------------------------
-	add r2,h6280optbl,#h6280RomMap
+	add r2,h6280ptr,#h6280RomMap
 	ldr r1,[r2,r1,lsr#11]		;@ r1=addy & 0xe000
 	ldrb r0,[r1,addy]
 	bx lr

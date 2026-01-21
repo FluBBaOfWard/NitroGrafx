@@ -131,8 +131,8 @@
         $1AFF: Byte 0       Arcade Card ID = $51. Use to detect the card.
 
 
-    Desciption:
-      
+    Description:
+
       Shift register
       --------------
             
@@ -164,7 +164,7 @@
         Bank $43          Data registers 0/1 of $1A30 mirrored in the 8k bank.
 
 
-    Desciption:
+    Description:
       
       Mirrored Registers
       ------------------

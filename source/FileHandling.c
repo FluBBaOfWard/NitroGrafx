@@ -31,75 +31,92 @@ static int cdWritePtr;
 static int cdDataLeft;
 static int cdDatatrackMode;
 
-configdata cfg;
+ConfigData cfg;
 
 static char cdGamePath[FILEPATH_MAX_LENGTH];
 
 //---------------------------------------------------------------------------------
-
-int loadSettings() {
-	FILE *file;
-
-	cfg.currentPath[0] = 0;
-	cfg.biosPath[0] = 0;
-	if (findFolder(folderName)) {
-		return 1;
-	}
-	if ( (file = fopen(settingName, "r")) ) {
-		fread(&cfg, 1, sizeof(configdata), file);
-		fclose(file);
-		if (!strstr(cfg.magic,"cfg")) {
-			infoOutput("Error in settings file.");
-			return 1;
-		}
-	} else {
-		infoOutput("Couldn't open file:");
-		infoOutput(settingName);
-		return 1;
-	}
-
-	sprCollision  = cfg.sprites;
+void applyConfigData(void) {
+	emuSettings  = cfg.emuSettings & ~EMUSPEED_MASK; // Clear speed setting.
+	sprCollision = cfg.sprites;
 	gConfigSet   = cfg.config;
 	gScalingSet  = cfg.scaling & 3;
 	gFlicker     = cfg.flicker & 1;
 	gGammaValue  = cfg.gammaValue & 0x7;
-	gColorValue  = (cfg.gammaValue>>4) & 0x7;
-	emuSettings   = cfg.emuSettings & ~EMUSPEED_MASK; // Clear speed setting.
-	sleepTime     = cfg.sleepTime;
-	joyCfg        = (joyCfg &~ 0x04000400) | ((cfg.controller & 1)<<10) | ((cfg.controller & 2)<<25); // SwapAB & multitap.
+	gColorValue  = (cfg.gammaValue >> 4) & 0x7;
+	sleepTime    = cfg.sleepTime;
+	joyCfg       = (joyCfg &~ 0x04000400) | ((cfg.controller & 1) << 10) | ((cfg.controller & 2) << 25); // SwapAB & multitap.
 	strlcpy(currentDir, cfg.currentPath, sizeof(currentDir));
-
-	infoOutput("Settings loaded.");
-	return 0;
+	pauseEmulation = emuSettings & AUTOPAUSE_EMULATION;
 }
 
-void saveSettings() {
-	FILE *file;
-
-	strcpy(cfg.magic,"cfg");
+void updateConfigData(void) {
+	strcpy(cfg.magic, "cfg");
+	cfg.emuSettings = emuSettings & ~EMUSPEED_MASK; // Clear speed setting.
 //	cfg.dipSwitch0  = gDipSwitch0;
 	cfg.sprites     = sprCollision;
 	cfg.config      = gConfigSet;
 	cfg.scaling     = gScalingSet & 3;
 	cfg.flicker     = gFlicker & 1;
-	cfg.gammaValue  = (gGammaValue & 0x7)|((gColorValue & 0x7)<<4);
-	cfg.emuSettings = emuSettings & ~EMUSPEED_MASK; // Clear speed setting.
+	cfg.gammaValue  = (gGammaValue & 0x7) | ((gColorValue & 0x7) << 4);
 	cfg.sleepTime   = sleepTime;
-	cfg.controller  = ((joyCfg>>10) & 1) | ((joyCfg>>25) & 2);
+	cfg.controller  = ((joyCfg >> 10) & 1) | ((joyCfg >> 25) & 2);
 	strlcpy(cfg.currentPath, currentDir, sizeof(cfg.currentPath));
+}
 
-	if (findFolder(folderName)) {
-		return;
-	}
-	if ( (file = fopen(settingName, "w")) ) {
-		fwrite(&cfg, 1, sizeof(configdata), file);
+void initSettings() {
+	memset(&cfg, 0, sizeof(cfg));
+	cfg.emuSettings = AUTOPAUSE_EMULATION | AUTOSLEEP_OFF;
+	cfg.sprites     = 0x20;
+	cfg.config      = 0x80; // Bios on
+	cfg.scaling     = SCALED_ASPECT;
+	cfg.flicker     = 1;
+	cfg.gammaValue  = 0x40; // ColorValue = 4
+	cfg.sleepTime   = 60*60*5;
+
+	applyConfigData();
+}
+
+int loadSettings() {
+	FILE *file;
+	if (!findFolder(folderName)
+		&& (file = fopen(settingName, "r"))) {
+		int len = fread(&cfg, 1, sizeof(ConfigData), file);
 		fclose(file);
-		infoOutput("Settings saved.");
+		if (strstr(cfg.magic, "cfg") && len == sizeof(ConfigData)) {
+			applyConfigData();
+			infoOutput("Settings loaded.");
+			return 0;
+		}
+		updateConfigData();
+		infoOutput("Error in settings file.");
 	}
 	else {
 		infoOutput("Couldn't open file:");
 		infoOutput(settingName);
 	}
+	return 1;
+}
+
+int saveSettings() {
+	updateConfigData();
+
+	FILE *file;
+	if (!findFolder(folderName)
+		&& (file = fopen(settingName, "w"))) {
+		int len = fwrite(&cfg, 1, sizeof(ConfigData), file);
+		fclose(file);
+		if (len == sizeof(ConfigData)) {
+			infoOutput("Settings saved.");
+			return 0;
+		}
+		infoOutput("Couldn't save settings.");
+	}
+	else {
+		infoOutput("Couldn't open file:");
+		infoOutput(settingName);
+	}
+	return 1;
 }
 
 int loadNVRAM() {
@@ -111,7 +128,7 @@ int loadBRAM() {
 	if (findFolder(folderName)) {
 		return 1;
 	}
-	if ( (file = fopen(bramName, "r")) ) {
+	if ((file = fopen(bramName, "r"))) {
 		fread(EMU_SRAM, 1, sizeof(EMU_SRAM), file);
 		fclose(file);
 		return 0;
@@ -131,11 +148,12 @@ void saveBRAM() {
 	if (findFolder(folderName)) {
 		return;
 	}
-	if ( (file = fopen(bramName, "w")) ) {
+	if ((file = fopen(bramName, "w"))) {
 		fwrite(EMU_SRAM, 1, sizeof(EMU_SRAM), file);
 		fclose(file);
 		gBramChanged = 0;
-	} else {
+	}
+	else {
 		infoOutput("Couldn't open file:");
 		infoOutput(bramName);
 	}
@@ -151,12 +169,12 @@ void saveState() {
 	saveDeviceState(folderName);
 }
 
-void loadGame(const char *gameName) {
+bool loadGame(const char *gameName) {
 	if (gameName) {
-		drawText("   Please wait, loading.", 12, 0);
+		cls(0);
+		drawText("   Please wait, loading.", 11, 0);
 		gHwFlags &= ~(SCD_DEVICE|SCD_CARD|AC_CARD|SGX_DEVICE);
 		g_ROM_Size = loadPCEROM(ROM_Space, gameName, sizeof(ROM_Space));
-		cls(0);
 		if (g_ROM_Size) {
 			biosLoaded = false;
 			cdInserted = 0;
@@ -168,15 +186,19 @@ void loadGame(const char *gameName) {
 			}
 			powerButton = true;
 			closeMenu();
+			return false;
 		}
 	}
+	return true;
 }
 
 void selectGame() {
-	pauseEmulation = 1;
+	pauseEmulation = true;
+	ui10();
 	const char *gameName = browseForFileType(FILEEXTENSIONS".zip");
-	cls(0);
-	loadGame(gameName);
+	if (loadGame(gameName)) {
+		backOutOfMenu();
+	}
 }
 
 void selectBios() {
@@ -205,7 +227,7 @@ int loadBIOS(void *dest, const char *fPath, const int maxSize) {
 	char *sPtr;
 
 	strcpy(tempString, fPath);
-	if ( (sPtr = strrchr(tempString, '/')) ) {
+	if ((sPtr = strrchr(tempString, '/'))) {
 		sPtr[0] = 0;
 		sPtr += 1;
 		chdir("/");
@@ -247,7 +269,7 @@ void selectCDROM() {
 			fclose(cdFile);
 			cdFile = NULL;
 		}
-		if ( (cdFile = fopen(cdGamePath, "r")) ) {
+		if ((cdFile = fopen(cdGamePath, "r"))) {
 			cdInserted = 1;
 			fseek(cdFile, 0, SEEK_END);
 			cdFileSize = ftell(cdFile);
@@ -277,7 +299,7 @@ int CD_ReadByte() {
 	int i = 0;
 
 	if (cdDataLeft == 0) {
-		if (cdDatatrackMode == 8 ) {
+		if (cdDatatrackMode == 8) {
 			fread(cdBuffer, 1, 2352, cdFile);
 		}
 		else {
@@ -314,7 +336,7 @@ void CD_FillBuffer(void) {
 			len = left;
 		}
 		ptr = (cdWritePtr & (sizeof(cdBuffer)-1));
-		if ( (len+ptr) > sizeof(cdBuffer) ) {
+		if ((len+ptr) > sizeof(cdBuffer)) {
 			len = sizeof(cdBuffer) - ptr;
 		}
 		dLen = fread(&cdBuffer[ptr], 1, len, cdFile);
@@ -350,7 +372,7 @@ void CD_ConvertCueFile(const char *fName) {
 	const char *binName;
 
 	cs = read_cue(fName);
-	if ( (binName = strrchr(cs->file, '\\')) || (binName = strrchr(cs->file, '/')) ) {
+	if ((binName = strrchr(cs->file, '\\')) || (binName = strrchr(cs->file, '/'))) {
 		binName += 1;
 	}
 	else {

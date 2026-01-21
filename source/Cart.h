@@ -1,3 +1,10 @@
+//
+//  Cart.h
+//  NitroGrafx
+//
+//  Created by Fredrik Ahlström on 2003-01-01.
+//  Copyright © 2003-2026 Fredrik Ahlström. All rights reserved.
+//
 #ifndef CART_HEADER
 #define CART_HEADER
 
@@ -8,7 +15,6 @@ extern "C" {
 extern u32 g_ROM_Size;
 extern u8 gHwFlags;
 extern u8 gConfigSet;
-extern u8 gScalingSet;
 extern u8 gMachineSet;
 extern u8 gMachine;
 extern u8 gRegion;

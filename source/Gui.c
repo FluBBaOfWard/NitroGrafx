@@ -12,65 +12,121 @@
 #include "io.h"
 #include "ARMH6280/Version.h"
 
-#define EMUVERSION "V0.9.0 2024-09-11"
+#define EMUVERSION "V0.9.0 2026-01-21"
 
 // Asm functions
 extern void paletteTxAll(void);		// VCE.s
 extern void calcVBL(void);			// VDC.s
 
+static void gammaChange(void);
 static void collisionSet(void);
+static const char *getCollisionText(void);
 static void countrySet(void);
+static const char *getCountryText(void);
 static void machineSet(void);
-static void uiDebug(void);
+static const char *getMachineText(void);
+static void controllerSet(void);
+static const char *getControllerText(void);
+static void swapABSet(void);
+static const char *getSwapABText(void);
+static void joypadButtonSet(void);
+static const char *getJoypadButtonText(void);
+static void rffSet(void);
+static const char *getRFFText(void);
+static void multiTapSet(void);
+static const char *getMultiTapText(void);
+static void scalingSet(void);
+static const char *getScalingText(void);
+static void colorSet(void);
+static const char *getColorText(void);
+static void ycbcrSet(void);
+static const char *getYCbCrText(void);
+static void bgrLayerSet(void);
+static const char *getBgrLayerText(void);
+static void sprLayerSet(void);
+static const char *getSprLayerText(void);
 
-const MItem fnList0[] = {{"",uiDummy}};
-const MItem fnList1[] = {
-	{"Load Hucard",selectGame},
-	{"Load CDROM",selectCDROM},
-	{"Load State",loadState},
-	{"Save State",saveState},
-	{"Save Settings",saveSettings},
-	{"Eject Game",ejectGame},
-	{"Power On/Off",powerOnOff},
-	{"Reset Game",resetGame},
-	{"Quit Emulator",ui9}};
-const MItem fnList2[] = {
-	{"Controller",ui4},
-	{"Display",ui5},
-	{"Machine",ui6},
-	{"Settings",ui7},
-	{"Debug",ui8}};
-const MItem fnList4[] = {{"",multiTapSet}, {"",controllerSet}, {"",joypadButtonSet}, {"",autoBSet}, {"",autoASet}, {"",swapABSet}, {"",rffSet}};
-const MItem fnList5[] = {{"",scalingSet}, {"",flickSet}, {"",ycbcrSet}, {"",gammaSet}, {"",colorSet}};
-const MItem fnList6[] = {{"",countrySet}, {"",machineSet}, {"",selectBios}, {"",collisionSet}};
-const MItem fnList7[] = {{"",speedSet}, {"",autoStateSet}, {"",autoNVRAMSet}, {"",autoSettingsSet}, {"",autoPauseGameSet}, {"",powerSaveSet}, {"",screenSwapSet}, {"",sleepSet}};
-const MItem fnList8[] = {{"",debugTextSet}, {"",bgrLayerSet}, {"",sprLayerSet} /*,{"",stepFrame}*/};
-const MItem fnList9[] = {{"Yes ",exitEmulator}, {"No ",backOutOfMenu}};
+const MItem dummyItems[] = {
+	{"", uiDummy},
+};
+const MItem fileItems[] = {
+	{"Load Hucard", selectGame},
+	{"Load CDROM", selectCDROM},
+	{"Load State", loadState},
+	{"Save State", saveState},
+	{"Save Settings", saveSettings},
+	{"Eject Game", ejectGame},
+	{"Power On/Off", powerOnOff},
+	{"Reset Game", resetGame},
+	{"Quit Emulator", ui9},
+};
+const MItem optionItems[] = {
+	{"Controller", ui4},
+	{"Display", ui5},
+	{"Machine", ui6},
+	{"Settings", ui7},
+	{"Debug", ui8},
+};
+const MItem ctrlItems[] = {
+	{"MultiTap:  ", multiTapSet, getMultiTapText},
+	{"Controller:", controllerSet, getControllerText},
+	{"Joypad:    ", joypadButtonSet, getJoypadButtonText},
+	{"B Autofire:", autoBSet, getAutoBText},
+	{"A Autofire:", autoASet, getAutoAText},
+	{"Swap A-B:  ", swapABSet, getSwapABText},
+	{"Use R as FastForward:", rffSet, getRFFText},
+};
+const MItem displayItems[] = {
+	{"Display:", scalingSet, getScalingText},
+	{"Scaling:", flickSet, getFlickText},
+	{"Output:", ycbcrSet, getYCbCrText},
+	{"Gamma:", gammaChange, getGammaText},
+	{"Color:", colorSet, getColorText},
+};
+const MItem machineItems[] = {
+	{"Region:", countrySet, getCountryText},
+	{"Machine:", machineSet, getMachineText},
+	{"Select BIOS", selectBios},
+	{"Fake Spritecollision:", collisionSet, getCollisionText},
+};
+const MItem setItems[] = {
+	{"Speed:", speedSet, getSpeedText},
+	{"Autoload State:", autoStateSet, getAutoStateText},
+	{"Autoload NVRAM:", autoNVRAMSet, getAutoNVRAMText},
+	{"Autosave Settings:", autoSettingsSet, getAutoSettingsText},
+	{"Autopause Game:", autoPauseGameSet, getAutoPauseGameText},
+	{"Powersave 2nd Screen:", powerSaveSet, getPowerSaveText},
+	{"Emulator on Bottom:", screenSwapSet, getScreenSwapText},
+//	{"Autosleep:", sleepSet, getSleepText},
+};
+const MItem debugItems[] = {
+	{"Debug Output:", debugTextSet, getDebugText},
+	{"Disable Background:", bgrLayerSet, getBgrLayerText},
+	{"Disable Sprites:", sprLayerSet, getSprLayerText},
+	//{"Step Frame", stepFrame},
+};
+const MItem quitItems[] = {
+	{"Yes ", exitEmulator},
+	{"No ", backOutOfMenu},
+};
 
-const Menu menu0 = MENU_M("", uiNullNormal, fnList0);
-Menu menu1 = MENU_M("", uiAuto, fnList1);
-const Menu menu2 = MENU_M("", uiAuto, fnList2);
-const Menu menu3 = MENU_M("", uiAbout, fnList0);
-const Menu menu4 = MENU_M("Controller Settings", uiController, fnList4);
-const Menu menu5 = MENU_M("Display Settings", uiDisplay, fnList5);
-const Menu menu6 = MENU_M("Machine Settings", uiMachine, fnList6);
-const Menu menu7 = MENU_M("Settings", uiSettings, fnList7);
-const Menu menu8 = MENU_M("Debug", uiDebug, fnList8);
-const Menu menu9 = MENU_M("Quit Emulator?", uiAuto, fnList9);
-const Menu menu10 = MENU_M("", uiDummy, fnList0);
+const Menu menu0 = MENU_M("", uiNullNormal, dummyItems);
+Menu menu1 = MENU_M("", uiAuto, fileItems);
+const Menu menu2 = MENU_M("", uiAuto, optionItems);
+const Menu menu3 = MENU_M("", uiAbout, dummyItems);
+const Menu menu4 = MENU_M("Controller Settings", uiAuto, ctrlItems);
+const Menu menu5 = MENU_M("Display Settings", uiAuto, displayItems);
+const Menu menu6 = MENU_M("Machine Settings", uiAuto, machineItems);
+const Menu menu7 = MENU_M("Settings", uiAuto, setItems);
+const Menu menu8 = MENU_M("Debug", uiAuto, debugItems);
+const Menu menu9 = MENU_M("Quit Emulator?", uiAuto, quitItems);
+const Menu menu10 = MENU_M("", uiDummy, dummyItems);
 
 const Menu *const menus[] = {&menu0, &menu1, &menu2, &menu3, &menu4, &menu5, &menu6, &menu7, &menu8, &menu9, &menu10 };
 
-u8 gGammaValue = 0;
-
-static const char *const autoTxt[]={"Off", "On", "With R"};
-static const char *const speedTxt[]={"Normal", "Fast", "Max", "Slowmo"};
-static const char *const brighTxt[]={"I", "II", "III", "IIII", "IIIII"};
-static const char *const sleepTxt[]={"5min", "10min", "30min", "Off"};
 static const char *const ctrlTxt[]={"P1", "P2", "P3", "P4", "P5"};
 static const char *const joypadTxt[]={"2 Button", "6 Button"};
 static const char *const dispTxt[]={"Scaled 1:1", "Scaled to fit", "Scaled to aspect"};
-static const char *const flickTxt[]={"No Flicker", "Flicker"};
 static const char *const machTxt[]={"Auto", "PC-Engine", "CD-ROM", "Super CD-ROM", "Arcade CD-ROM", "Super Grafx", "Super CD-ROM Card", "TurboGrafx-16"};
 static const char *const cntrTxt[]={"US", "Japan"};
 static const char *const biosTxt[]={"Off", "Auto"};
@@ -78,9 +134,8 @@ static const char *const rgbTxt[]={"RGB", "Composite"};
 
 
 void setupGUI() {
-	emuSettings = AUTOPAUSE_EMULATION | AUTOSLEEP_OFF;
 	keysSetRepeat(25, 4);	// Delay, repeat.
-	menu1.itemCount = ARRSIZE(fnList1) - (enableExit?0:1);
+	menu1.itemCount = ARRSIZE(fileItems) - (enableExit?0:1);
 	openMenu();
 }
 
@@ -107,66 +162,14 @@ void uiAbout() {
 	drawMenuText("NitroGrafx", 4, 0);
 	drawMenuText("NEC PC-Engine/TurboGrafx-16 emu", 5, 0);
 
-	drawMenuText("B:      Button 2", 7, 0);
-	drawMenuText("A:      Button 1", 8, 0);
-	drawMenuText("Start:  Start button", 9, 0);
-	drawMenuText("Select: Select button", 10, 0);
-	drawMenuText("DPad:   Move character", 11, 0);
+	drawMenuText("B:      TG16 Button 2", 7, 0);
+	drawMenuText("A:      TG16 Button 1", 8, 0);
+	drawMenuText("Start:  TG16 Start button", 9, 0);
+	drawMenuText("Select: TG16 Select button", 10, 0);
+	drawMenuText("DPad:   TG16 DPad", 11, 0);
 
 	drawMenuText("NitroGrafx   " EMUVERSION, 21,0);
 	drawMenuText("ARMH6280     " ARMH6280VERSION, 22,0);
-}
-
-void uiController() {
-	setupSubMenuText();
-	drawSubItem("MultiTap:  ", autoTxt[(joyCfg>>26)&1]);
-	drawSubItem("Controller:", ctrlTxt[(joyCfg>>28)&7]);
-	drawSubItem("Joypad:    ", joypadTxt[(joyCfg>>27)&1]);
-	drawSubItem("B Autofire:", autoTxt[autoB]);
-	drawSubItem("A Autofire:", autoTxt[autoA]);
-	drawSubItem("Swap A-B:  ", autoTxt[(joyCfg>>10)&1]);
-	drawSubItem("Use R as FastForward:", autoTxt[(gConfigSet>>4)&1]);
-}
-
-void uiDisplay() {
-	setupSubMenuText();
-	drawSubItem("Display:", dispTxt[gScalingSet]);
-	drawSubItem("Scaling:", flickTxt[gFlicker]);
-	drawSubItem("Output:", rgbTxt[gRgbYcbcr]);
-	drawSubItem("Gamma:", brighTxt[gGammaValue]);
-	drawSubItem("Color:", brighTxt[gColorValue]);
-}
-
-void uiMachine() {
-	int machine = gMachineSet;
-	if (machine == HW_PCENGINE && gRegion == REGION_US) {
-		machine = HW_TURBOGRAFX;
-	}
-	setupSubMenuText();
-	drawSubItem("Region:", cntrTxt[gRegion]);
-	drawSubItem("Machine:", machTxt[machine]);
-	drawSubItem("Select BIOS", NULL);
-	drawSubItem("Fake Spritecollision:", autoTxt[(sprCollision>>5)&1]);
-}
-
-void uiSettings() {
-	setupSubMenuText();
-	drawSubItem("Speed:", speedTxt[(emuSettings>>6)&3]);
-	drawSubItem("Autoload State:", autoTxt[(emuSettings>>2)&1]);
-	drawSubItem("Autosave BRAM:", autoTxt[(emuSettings>>10)&1]);
-	drawSubItem("Autosave Settings:", autoTxt[(emuSettings>>9)&1]);
-	drawSubItem("Autopause Game:", autoTxt[emuSettings&1]);
-	drawSubItem("Powersave 2nd Screen:", autoTxt[(emuSettings>>1)&1]);
-	drawSubItem("Emulator on Bottom:", autoTxt[(emuSettings>>8)&1]);
-	drawSubItem("Autosleep:", sleepTxt[(emuSettings>>4)&3]);
-}
-
-void uiDebug() {
-	setupSubMenuText();
-	drawSubItem("Debug Output:", autoTxt[gDebugSet&1]);
-	drawSubItem("Disable Background:", autoTxt[gGfxMask&1]);
-	drawSubItem("Disable Sprites:", autoTxt[(gGfxMask>>4)&1]);
-//	drawSubItem("Step Frame", NULL);
 }
 
 void nullUINormal(int key) {
@@ -179,9 +182,10 @@ void nullUINormal(int key) {
 	if (cdInserted) {
 		if (oldCdPos != currentPos) {
 			oldCdPos = currentPos;
-			drawText("CD Access: *",0,0);
-		} else {
-			drawText("CD Access:  ",0,0);
+			drawText("CD Access: *", 0, 0);
+		}
+		else {
+			drawText("CD Access:  ", 0, 0);
 		}
 	}
 }
@@ -189,7 +193,7 @@ void nullUINormal(int key) {
 void nullUIDebug(int key) {
 	char dbgtxt[32];
 
-	if (key&KEY_TOUCH) {
+	if (key & KEY_TOUCH) {
 		openMenu();
 		return;
 	}
@@ -214,9 +218,8 @@ void setupKeyboard(void) {
 */
 }
 
-
 void powerOnOff() {
-	if ( (powerButton = !powerButton) ) {
+	if ((powerButton = !powerButton)) {
 		if (!hucardLoaded && !biosLoaded) {
 			loadUSBIOS();
 		}
@@ -245,9 +248,15 @@ void controllerSet() {				// See io.s: refreshEMUjoypads
 	}
 	joyCfg = (joyCfg & ~0x70000000) | i;
 }
+const char *getControllerText() {
+	return ctrlTxt[(joyCfg >> 28) & 7];
+}
 
 void swapABSet() {
 	joyCfg ^= 0x400;
+}
+const char *getSwapABText() {
+	return autoTxt[(joyCfg >> 10) & 1];
 }
 
 /// Use R for FastForward
@@ -255,9 +264,15 @@ void rffSet() {
 	gConfigSet ^= 0x10;
 	settingsChanged = true;
 }
+const char *getRFFText() {
+	return autoTxt[(gConfigSet >> 4) & 1];
+}
 
 void joypadButtonSet() {			// See io.s: refreshEMUjoypads
 	joyCfg ^= 0x08000000;
+}
+const char *getJoypadButtonText() {
+	return joypadTxt[(joyCfg >> 27 ) & 1];
 }
 
 void multiTapSet() {				// See io.s: refreshEMUjoypads
@@ -265,7 +280,9 @@ void multiTapSet() {				// See io.s: refreshEMUjoypads
 	joyCfg &= ~0x70000000;
 	settingsChanged = true;
 }
-
+const char *getMultiTapText() {
+	return autoTxt[(joyCfg >> 26) & 1];
+}
 
 void scalingSet(){
 	gScalingSet++;
@@ -275,13 +292,13 @@ void scalingSet(){
 	calcVBL();
 	settingsChanged = true;
 }
+const char *getScalingText() {
+	return dispTxt[gScalingSet];
+}
 
 /// Change gamma (brightness).
-void gammaSet() {
-	gGammaValue++;
-	if (gGammaValue > 4) {
-		gGammaValue = 0;
-	}
+void gammaChange() {
+	gammaSet();
 	paletteInit(gGammaValue);
 	paletteTxAll();					// Make new palette visible
 	setupMenuPalette();
@@ -298,28 +315,46 @@ void colorSet() {
 	paletteTxAll();					// Make new palette visible
 	settingsChanged = true;
 }
+const char *getColorText() {
+	return brighTxt[gColorValue];
+}
 
 void ycbcrSet() {
 	gRgbYcbcr ^= 0x01;
 	paletteInit(gGammaValue);
 	paletteTxAll();					// Make new palette visible
 }
+const char *getYCbCrText() {
+	return rgbTxt[gRgbYcbcr];
+}
 
+/// Turn on/off rendering of background
 void bgrLayerSet() {
 	gGfxMask ^= 0x03;
 }
-
+const char *getBgrLayerText() {
+	return autoTxt[gGfxMask & 1];
+}
+/// Turn on/off rendering of sprites
 void sprLayerSet() {
 	gGfxMask ^= 0x10;
 }
-
+const char *getSprLayerText() {
+	return autoTxt[(gGfxMask >> 4) & 1];
+}
 
 void collisionSet() {
 	sprCollision ^= 0x20;
 }
+const char *getCollisionText() {
+	return autoTxt[(sprCollision >> 5) & 1];
+}
 
 void countrySet() {
 	gRegion ^= 0x01;
+}
+const char *getCountryText() {
+	return cntrTxt[gRegion];
 }
 
 void machineSet() {
@@ -327,4 +362,11 @@ void machineSet() {
 	if (gMachineSet > 4){
 		gMachineSet = 0;
 	}
+}
+const char *getMachineText() {
+	int machine = gMachineSet;
+	if (machine == HW_PCENGINE && gRegion == REGION_US) {
+		machine = HW_TURBOGRAFX;
+	}
+	return machTxt[machine];
 }

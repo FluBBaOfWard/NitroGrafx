@@ -43,6 +43,7 @@ Now load up a game and you should be good to go.
 * Eject Game:
 * Power On/Off:
 * Reset Game:
+* Quit Emulator: (If supported.)
 
 ### Options
 
@@ -85,7 +86,6 @@ Now load up a game and you should be good to go.
   * Emulator on Bottom: Select if top or bottom screen should be used for
     emulator, when menu is active emulator screen is allways on top.
   * Debug Output: Set if you want debug output or not.
-  * Autosleep: Change the autosleep time, also see Sleep. !!!DoesntWork!!!
 * Debug:
   * Debug Output: Show FPS and logged text.
   * Disable Background: Turn on/off background rendering.
@@ -108,6 +108,8 @@ David Shadoff for a lot of the info on the PC-Engine.
 
 Fredrik Ahlström
 
-X/Twitter @TheRealFluBBa
+<https://bsky.app/profile/therealflubba.bsky.social>
 
 <https://www.github.com/FluBBaOfWard>
+
+X/Twitter @TheRealFluBBa

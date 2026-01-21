@@ -1,10 +1,20 @@
+//
+//  Cart.s
+//  NitroGrafx
+//
+//  Created by Fredrik Ahlström on 2003-01-01.
+//  Copyright © 2003-2026 Fredrik Ahlström. All rights reserved.
+//
 #ifdef __arm__
 
 #include "Equates.h"
 #include "ARMH6280/H6280mac.h"
 #include "PCEPSG/pcepsg.i"		// For savestates
+
 #define vdcStateSize 80
 #define vceStateSize 80
+
+//#define EMBEDDED_ROM
 
 	.global loadCart
 	.global ejectCart
@@ -44,6 +54,7 @@
 	.section .rodata
 	.align 2
 
+#ifdef EMBEDDED_ROM
 rawRom:
 //	.incbin "roms/15-in-1 Mega Collection (J).pce"
 //	.incbin "roms/1943 Kai (J).pce"
@@ -97,6 +108,7 @@ rawRom:
 //	.incbin "roms/Wonder Momo (J).pce"
 //	.incbin "roms/Youkai Douchuuki (J).pce"
 rawRomEnd:
+#endif
 isoFile:
 //	.incbin "bloCs.iso"
 //	.incbin "rayxanber3.iso"
@@ -104,7 +116,7 @@ isoFile:
 //	.incbin "valis 4.iso"
 
 
-	.section .ewram,"ax"
+	.section .ewram, "ax", %progbits
 	.align 2
 ;@----------------------------------------------------------------------------
 loadCart: 		;@ called from C:
@@ -112,9 +124,17 @@ loadCart: 		;@ called from C:
 ;@----------------------------------------------------------------------------
 	stmfd sp!,{r4-r11,lr}
 
-	ldr h6280optbl,=h6280OpTable
+	ldr h6280ptr,=h6280OpTable
 
-//	bl copyROM
+#ifdef EMBEDDED_ROM
+	stmfd sp!,{r0-r4,lr}
+	ldr r0,=ROM_Space
+	ldr r1,=rawRom
+	mov r2,#rawRomEnd-rawRom
+	str r2,g_ROM_Size
+	bl bytecopy_
+	ldmfd sp!,{r0-r4,lr}
+#endif
 	ldr r3,=isoFile
 	ldr r1,=isoBase
 	str r3,[r1]
@@ -359,17 +379,6 @@ ejectCart:
 ;@----------------------------------------------------------------------------
 	bx lr
 ;@----------------------------------------------------------------------------
-copyROM:
-;@----------------------------------------------------------------------------
-	stmfd sp!,{r0-r4,lr}
-	ldr r0,=ROM_Space
-	ldr r1,=rawRom
-	mov r2,#rawRomEnd-rawRom
-	str r2,g_ROM_Size
-	bl bytecopy_
-	ldmfd sp!,{r0-r4,lr}
-	bx lr
-;@----------------------------------------------------------------------------
 memReset:
 ;@----------------------------------------------------------------------------
 	stmfd sp!,{r4-r9,r11,lr}
@@ -427,8 +436,8 @@ packState:	;@ Called from gui.c.
 ;@int packState(u32 *statePtr), copy state to <here>, return size
 	.type   packState STT_FUNC
 ;@----------------------------------------------------------------------------
-	stmfd sp!,{r4-r5,h6280optbl,lr}
-	ldr h6280optbl,=h6280OpTable
+	stmfd sp!,{r4-r5,h6280ptr,lr}
+	ldr h6280ptr,=h6280OpTable
 
 	mov r5,r0					;@ r5=where to copy state
 	bl fixCpuPCSave				;@ adjust h6280pc so it isn't based on rombase
@@ -450,7 +459,7 @@ ss0:
 
 	bl fixCpuPCLoad
 
-	ldmfd sp!,{r4-r5,h6280optbl,lr}
+	ldmfd sp!,{r4-r5,h6280ptr,lr}
 	bx lr
 
 saveLst:
@@ -466,16 +475,16 @@ lstEnd:
 
 fixCpuPCSave:
 	loadLastBank r1
-	ldr r2,[h6280optbl,#h6280RegPC]
+	ldr r2,[h6280ptr,#h6280RegPC]
 	sub r2,r2,r1
-	str r2,[h6280optbl,#h6280RegPC]
+	str r2,[h6280ptr,#h6280RegPC]
 	bx lr
 
 fixCpuPCLoad:
 	stmfd sp!,{r0,h6280pc,lr}
-	ldr h6280pc,[h6280optbl,#h6280RegPC]
+	ldr h6280pc,[h6280ptr,#h6280RegPC]
 	encodePC
-	str h6280pc,[h6280optbl,#h6280RegPC]
+	str h6280pc,[h6280ptr,#h6280RegPC]
 	ldmfd sp!,{r0,h6280pc,lr}
 	bx lr
 
@@ -484,8 +493,8 @@ unpackState:	;@ Called from C
 ;@ void unpackState(u32 *stateptr)	 (stateptr must be word aligned)
 	.type   unpackState STT_FUNC
 ;@----------------------------------------------------------------------------
-	stmfd sp!,{r4-r5,h6280optbl,lr}
-	ldr h6280optbl,=h6280OpTable
+	stmfd sp!,{r4-r5,h6280ptr,lr}
+	ldr h6280ptr,=h6280OpTable
 
 	mov r4,#(lstEnd-saveLst)/8	;@ read entire state
 	adr r3,saveLst
@@ -500,7 +509,7 @@ ls0:
 	bne ls1
 
 	ldr r0,=PCE_RAM
-	str r0,[h6280optbl,#h6280RegZP]
+	str r0,[h6280ptr,#h6280RegZP]
 
 	bl reInitMapperData
 
@@ -508,7 +517,7 @@ ls0:
 
 	bl gfxSetupAfterLoadState
 
-	ldmfd sp!,{r4-r5,h6280optbl,lr}
+	ldmfd sp!,{r4-r5,h6280ptr,lr}
 	bx lr
 
 ;@----------------------------------------------------------------------------

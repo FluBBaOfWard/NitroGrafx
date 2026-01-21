@@ -13,13 +13,14 @@ extern "C" {
 extern bool biosLoaded;
 extern bool hucardLoaded;
 
+void initSettings(void);
 int loadSettings(void);
-void saveSettings(void);
+int saveSettings(void);
 int loadNVRAM(void);
 int loadBRAM(void);
 void saveNVRAM(void);
 void saveBRAM(void);
-void loadGame(const char *pceName);
+bool loadGame(const char *pceName);
 int loadPCEROM(void *dest, const char *fName, const int maxSize);
 int loadBIOS(void *dest, const char *fPath, const int maxSize);
 void loadState();

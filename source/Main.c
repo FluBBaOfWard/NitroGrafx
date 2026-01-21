@@ -42,7 +42,7 @@ static const u8 guiPalette[]={
 	0xED,0xED,0xED, 0xFF,0xFF,0xFF, 0x00,0x00,0x00, 0x00,0x00,0x00, 0x00,0x00,0x00, 0x00,0x00,0x00, 0x00,0x00,0x00, 0x00,0x00,0x00,
 	0x00,0x00,0x00, 0x00,0x00,0x00, 0x70,0x70,0x20, 0x88,0x88,0x40, 0xA0,0xA0,0x60, 0xB8,0xB8,0x80, 0xD0,0xD0,0x90, 0xE8,0xE8,0xA0,
 	0xF7,0xF7,0xC0, 0xFF,0xFF,0xE0, 0x00,0x00,0x60, 0x00,0x00,0x00, 0x00,0x00,0x00, 0x00,0x00,0x00, 0x00,0x00,0x00, 0x00,0x00,0x00
-	};
+};
 
 //---------------------------------------------------------------------------------
 static void myVblank(void) {
@@ -60,16 +60,18 @@ int main(int argc, char **argv) {
 		enableExit = true;
 	}
 	setupGraphics();
-	soundInit();
-	gfxInit();
-	cdInit();
-
 	setupStream();
 	irqSet(IRQ_VBLANK, myVblank);
 	setupGUI();
+	getInput();
+	initSettings();
+	bool fsOk = initFileHelper();
+	loadSettings();
+	soundInit();
+	gfxInit();
+	cdInit();
 	ejectCart();
-	if (initFileHelper()) {
-		loadSettings();
+	if (fsOk) {
 		loadBRAM();
 		if (argc > 1) {
 			loadGame(argv[1]);
@@ -81,11 +83,9 @@ int main(int argc, char **argv) {
 	}
 //	loadCart();
 //	powerButton = true;
-	getInput();
 
 	while (1) {
 //		waitVBlank();
-		checkTimeOut();
 		guiRunLoop();
 		if (powerButton) {
 			if (!pauseEmulation) {
@@ -99,6 +99,7 @@ int main(int argc, char **argv) {
 			antWars();
 			waitVBlank();
 		}
+//		checkTimeOut();
 	}
 	return 0;
 }
@@ -222,7 +223,7 @@ static void setupStream(void) {
 	sys.samp_count			= 0;
 	sys.mem_bank			= 0;
 	sys.fifo_channel		= FIFO_MAXMOD;
-	mmInit( &sys );
+	mmInit(&sys);
 
 	//----------------------------------------------------------------
 	// open stream
@@ -235,7 +236,7 @@ static void setupStream(void) {
 	myStream.format			= MM_STREAM_16BIT_STEREO;	// format = stereo 16-bit
 	myStream.timer			= MM_TIMER0;				// use hardware timer 0
 	myStream.manual			= false;					// use manual filling
-	mmStreamOpen( &myStream );
+	mmStreamOpen(&myStream);
 
 	//----------------------------------------------------------------
 	// when using 'automatic' filling, your callback will be triggered

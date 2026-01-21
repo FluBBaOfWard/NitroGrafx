@@ -1,3 +1,10 @@
+//
+//  Gfx.s
+//  NitroGrafx
+//
+//  Created by Fredrik Ahlström on 2003-01-01.
+//  Copyright © 2003-2026 Fredrik Ahlström. All rights reserved.
+//
 #ifdef __arm__
 
 #include "Shared/nds_asm.h"
@@ -17,7 +24,6 @@
 	.global midFrame
 	.global endFrame
 	.global gfxState
-	.global gGammaValue
 	.global gColorValue
 	.global gTwitch
 	.global gFlicker
@@ -46,9 +52,9 @@
 
 	.syntax unified
 	.arm
+
 	.section .text
 	.align 2
-
 ;@----------------------------------------------------------------------------
 flipsizeTable:	;@ Convert from PCE spr to GBA obj.
 ;@----------------------------------------------------------------------------
@@ -187,50 +193,43 @@ gfxInit:					;@ (called from main.c) only need to call once
 	mov r2,#0x10000
 	bl memset_					;@ Clear NDS VRAM
 
-	mov r2,#0xffffff00			;@ Build chr decode tbl
-	ldr r3,=SPR_DECODE			;@ 0x400
+	ldr r0,=SPR_DECODE			;@ Destination, 0x400
+	mov r1,#0xffffff00			;@ Build chr decode tbl
 ppi0:
-	ands r0,r2,#0x01
-	movne r0,#0x10000000
-	tst r2,#0x02
-	orrne r0,r0,#0x01000000
-	tst r2,#0x04
-	orrne r0,r0,#0x00100000
-	tst r2,#0x08
-	orrne r0,r0,#0x00010000
-	tst r2,#0x10
-	orrne r0,r0,#0x00001000
-	tst r2,#0x20
-	orrne r0,r0,#0x00000100
-	tst r2,#0x40
-	orrne r0,r0,#0x00000010
-	tst r2,#0x80
-	orrne r0,r0,#0x00000001
-	str r0,[r3],#4
-	adds r2,r2,#1
+	movs r2,r1,lsl#31
+	movne r2,#0x10000000
+	orrcs r2,r2,#0x01000000
+	tst r1,r1,lsl#29
+	orrmi r2,r2,#0x00100000
+	orrcs r2,r2,#0x00010000
+	tst r1,r1,lsl#27
+	orrmi r2,r2,#0x00001000
+	orrcs r2,r2,#0x00000100
+	tst r1,r1,lsl#25
+	orrmi r2,r2,#0x00000010
+	orrcs r2,r2,#0x00000001
+	str r2,[r0],#4
+	adds r1,r1,#1
 	bne ppi0
 
-	mov r2,#0xffffff00			;@ Build chr decode tbl
-	ldr r3,=BGR_DECODE			;@ 0x400*2
+	ldr r0,=BGR_DECODE			;@ Destination 0x400*2
+	mov r1,#0xffffff00			;@ Build chr decode tbl
 ppi1:
-	ands r1,r2,#0x01
-	movne r1,#0x01000000
-	tst r2,#0x02
-	orrne r1,r1,#0x00010000
-	tst r2,#0x04
-	orrne r1,r1,#0x00000100
-	tst r2,#0x08
-	orrne r1,r1,#0x00000001
-	ands r0,r2,#0x10
-	movne r0,#0x01000000
-	tst r2,#0x20
-	orrne r0,r0,#0x00010000
-	tst r2,#0x40
-	orrne r0,r0,#0x00000100
-	tst r2,#0x80
-	orrne r0,r0,#0x00000001
-	strd r0,r1,[r3],#8
-	adds r2,r2,#1
+	movs r3,r1,lsl#31
+	movne r3,#0x01000000
+	orrcs r3,r3,#0x00010000
+	tst r1,r1,lsl#29
+	orrmi r3,r3,#0x00000100
+	orrcs r3,r3,#0x00000001
+	ands r2,r1,#0x10
+	movne r2,#0x01000000
+	tst r1,#0x20
+	orrne r2,r2,#0x00010000
+	tst r1,r1,lsl#25
+	orrmi r2,r2,#0x00000100
+	orrcs r2,r2,#0x00000001
+	strd r2,r3,[r0],#8
+	adds r1,r1,#1
 	bne ppi1
 
 	bl resetScrollBuffers
@@ -1509,10 +1508,10 @@ waitMaskOut:		.byte 0
 gScalingSet:
 	.byte SCALED_ASPECT		;@ scalemode(saved display type), default scale to fit
 sprCollision:		.byte 0x20
-
 	.pool
+
 	.section .bss
-	.align 8
+	.align 8					;@ Align to 256 bytes for RAM
 PCE_VRAM:
 	.space 0x10000
 DELAYED_TILEMAP:
@@ -1542,8 +1541,15 @@ OAM_BUFFER1:
 OAM_BUFFER2:
 	.space 0x400
 
-	.section .dtcm, "ax", %progbits
-DIRTYTILES:					;@ bit0=mode0 bgr, bit1=mode1 bgr
+#ifdef NDS
+	.section .sbss				;@ This is DTCM on NDS with devkitARM
+#elif GBA
+	.section .bss				;@ This is IWRAM on GBA with devkitARM
+#else
+	.section .bss
+#endif
+	.align 2
+DIRTYTILES:						;@ bit0 = mode0 bgr, bit1 = mode1 bgr
 	.space 0x200
 SPR_DECODE:
 	.space 0x400

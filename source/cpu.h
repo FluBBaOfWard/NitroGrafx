@@ -1,3 +1,10 @@
+//
+//  cpu.h
+//  NitroGrafx
+//
+//  Created by Fredrik Ahlström on 2003-01-01.
+//  Copyright © 2003-2026 Fredrik Ahlström. All rights reserved.
+//
 #ifndef CPU_HEADER
 #define CPU_HEADER
 

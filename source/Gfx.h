@@ -1,3 +1,10 @@
+//
+//  Gfx.h
+//  NitroGrafx
+//
+//  Created by Fredrik Ahlström on 2003-01-01.
+//  Copyright © 2003-2026 Fredrik Ahlström. All rights reserved.
+//
 #ifndef GFX_HEADER
 #define GFX_HEADER
 
@@ -10,6 +17,7 @@ extern u8 gTwitch;
 extern u8 gGfxMask;
 extern u8 gColorValue;
 extern u8 gRgbYcbcr;
+extern u8 gScalingSet;
 extern u8 sprCollision;
 
 extern u16 EMUPALBUFF[200];
