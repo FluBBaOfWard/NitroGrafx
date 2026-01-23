@@ -540,7 +540,12 @@ vblIrqHandler:
 	ldr r4,yStart
 	mov r4,r4,lsl#17
 	mov r4,r4,lsr#17
-	ldr r1,=0x20000001			;@ yScale, 1.14 Ypixel per Y
+	ldrb r0,gScalingSet
+	mov r1,#1					;@ yScale, 1.0
+	cmp r0,#SCALED_FIT
+	ldreq r1,=0x28000001		;@ yScale, 1.25 (7/6) in Ypixel per out Y
+	cmp r0,#SCALED_ASPECT
+	ldreq r1,=0x20000001		;@ yScale, 1.14 (8/7) in Ypixel per out Y
 
 	ldrb r0,gFlicker
 	ldrb r2,gTwitch
@@ -566,7 +571,7 @@ scrolLoop2:
 
 	ldmia r3,{r6-r8}
 	and r3,r6,#0x03
-	mov r0,r7,lsr#16					;@ xScale (PA).
+	mov r0,r7,lsr#16			;@ xScale (PA).
 	and lr,r0,#0xFF
 	mla r3,lr,r3,r9
 	bic lr,r7,r0,lsl#16

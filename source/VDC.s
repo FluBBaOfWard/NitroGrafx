@@ -118,7 +118,6 @@ vramLoop:
 
 VDCLineStateTable:
 	.long 0, fakeFrame			;@ vdcZeroLine
-//	.long 0, earlyFrame			;@ vdcScrStartLine
 	.long 96, midFrame
 	.long 239, endFrame			;@ vdcEndFrameLine
 	.long 239, startVbl			;@ vdcVBlLine
@@ -155,8 +154,9 @@ borderScanlineHook:
 	cmp r1,#0
 	blne sprDMA_W
 
-	ldrb r1,vdcDoVramDMA
-	cmp r1,#0
+	cmp r0,#0
+	ldrbne r1,vdcDoVramDMA
+	cmpne r1,#0
 	blne vramDMA_W
 ;@----------------------------------------------------------------------------
 defaultScanlineHook:
@@ -262,7 +262,7 @@ newFrame:					;@ Called before line 0	(r0-r9 safe to use)
 	.section .text
 	.align 2
 ;@----------------------------------------------------------------------------
-VDC_R:
+VDC_R:						;@ 0000-03FF
 ;@----------------------------------------------------------------------------
 	eatcycles 1					;@ VDC & VCE takes 1 more cycle to access
 	ands r1,addy,#3
@@ -381,7 +381,7 @@ VDCWriteTbl:
 	.long emptyWrite			;@ 1F
 
 ;@----------------------------------------------------------------------------
-VDC_W:
+VDC_W:						;@ 0000-03FF
 ;@----------------------------------------------------------------------------
 	eatcycles 1					;@ VDC & VCE takes 1 more cycle to access
 	and r1,addy,#3
@@ -825,12 +825,12 @@ DMACtl_L_W:					;@ 0F DMA Control Reg
 ;@----------------------------------------------------------------------------
 DMASrc_L_W:					;@ 10 DMA Source Reg
 ;@----------------------------------------------------------------------------
-	strb r0,vdcDMASrc
+	strb r0,vdcDMASrc+2
 	bx lr
 ;@----------------------------------------------------------------------------
 DMASrc_H_W:					;@ 10 DMA Source Reg
 ;@----------------------------------------------------------------------------
-	strb r0,vdcDMASrc+1
+	strb r0,vdcDMASrc+3
 	bx lr
 ;@----------------------------------------------------------------------------
 DMADst_L_W:					;@ 11 DMA Destination Reg
@@ -917,41 +917,38 @@ sprDMALoop:
 
 	bx lr
 ;@----------------------------------------------------------------------------
-vramDMA_W:			;@ VRAM to VRAM DMA transfer
+vramDMA_W:			;@ VRAM to VRAM DMA transfer, r0=cycles to run
 ;@----------------------------------------------------------------------------
 	stmfd sp!,{r3-r9,lr}
 
 	ldrb r12,vdcDMACR
-	tst r12,#0x04
-	mov r7,#0x00020000			;@ Source increase
-	rsbne r7,r7,#0				;@ Source decrease
-	tst r12,#0x08
+	mov r7,#0x00010000			;@ Source increase
 	mov r8,#0x00010000			;@ Destination increase
-	rsbne r8,r8,#0				;@ Destination decrease
+	movs r1,r12,lsl#29
+	rsbmi r7,r7,#0				;@ Source decrease
+	rsbcs r8,r8,#0				;@ Destination decrease
 	ldr r5,vramPtr
 	ldr r6,=DIRTYTILES
 	ldr r1,vdcDMASrc
 	ldr r2,vdcDMADst
 	ldr r3,vdcDMALen
-	mov r1,r1,lsl#17
 vramDmaLoop:
-	mov r1,r1,lsr#16
+	mov r1,r1,lsr#15
 	movs r2,r2,asr#15
 	ldrhpl r9,[r5,r1]			;@ Read from virtual PCE_VRAM
 	strhpl r9,[r5,r2]			;@ Write to virtual PCE_VRAM
 	strbpl r3,[r6,r2,lsr#7]		;@ Write to dirtymap, r3 low byte=0.
 
-	add r1,r7,r1,lsl#16
+	add r1,r7,r1,lsl#15
 	add r2,r8,r2,lsl#15
 	subs r3,r3,#0x10000
-	subspl r0,r0,#1
-	bpl vramDmaLoop
+	subsne r0,r0,#1
+	bne vramDmaLoop
 
-	mov r1,r1,lsr#17
 	str r1,vdcDMASrc
 	str r2,vdcDMADst
 	str r3,vdcDMALen
-	cmp r3,#0xFFFF0000
+	cmp r3,#0
 	ldmfd sp!,{r3-r9,lr}
 	bxne lr
 

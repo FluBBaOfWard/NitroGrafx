@@ -26,8 +26,10 @@ GUI:
 	Pad left and right to switch Tabs in GUI?
 
 Graphic:
-	Convert palette via component. Add saturation, contrast and brightness (hue?).
 	Move all gfx logik to VDC, rewrite routines in order.
+		midrame, endframe.
+	Unscaled can't scroll vertical, scale to fit, sprites has wrong vertical pos.
+	Convert palette via component. Add saturation, contrast and brightness (hue?).
 	Count TV lines for real, not when the picture start showing.
 	Clean up the scaling routines.
 	Change so sprites can use 64kB VRAM.
@@ -198,4 +200,103 @@ Code:
 	and r2,r2,#0x00FEFEFE
 	and r0,r0,r1
 	add r0,r0,r2,lsr#1
+
+
+From old cpu.s
+
+/*
+lineVBL:	;@------------------------
+	ldr r0,[h6280ptr,#h6280_cyclesPerScanline]
+	sub r0,r0,#1024*CYCLE
+	add cycles,cycles,r0
+	ldr r0,frameTotal
+	add r0,r0,#1
+	str r0,frameTotal
+
+	adr addy,vdcCheck
+	str addy,[h6280ptr,#h6280_nextTimeout]
+	str addy,[h6280ptr,#h6280_nextTimeout_]
+
+;@-------------------------------------------------
+	bl endFrame					;@ display update
+;@-------------------------------------------------
+	ldr r0,=scanline
+	ldr r1,[r0]
+	add r1,r1,#1
+	str r1,[r0]
+	ldr pc,scanlineHook
+
+vdcCheck:
+	ldr r0,=vdcCtrl1
+	ldrb r0,[r0]
+	tst r0,#0x08				;@ VBl IRQ?
+	movne r2,#0x20				;@ VBlank bit
+//	ldrne addy,=vdcStat			;@ VBl irq
+	strbne r2,[addy]
+
+	add cycles,cycles,#7*4*CYCLE
+
+	adr addy,vblCheck
+	str addy,[h6280ptr,#h6280_nextTimeout]
+	str addy,[h6280ptr,#h6280_nextTimeout_]
+	b h6280CheckIrqs
+
+vblCheck:
+	add cycles,cycles,#1024*CYCLE
+	sub cycles,cycles,#7*4*CYCLE
+
+	adr addy,lineVBL_to_SPR
+	str addy,[h6280ptr,#h6280_nextTimeout]
+	str addy,[h6280ptr,#h6280_nextTimeout_]
+
+	ldr r0,=vdcCtrl1
+	ldrb r0,[r0]
+	tst r0,#0x08				;@ vbl IRQ?
+	beq h6280CheckIrqs
+
+	setIrqPin VDCIRQ_F
+	b h6280CheckIrqs
+
+
+lineVBL_to_SPR: ;@------------------------
+	ldr r0,[h6280ptr,#h6280_cyclesPerScanline]
+	add cycles,cycles,r0
+
+	ldr r0,=scanline
+	ldr r1,[r0]
+	add r1,r1,#1
+	str r1,[r0]
+//	ldr r2,vblScanlineCpu
+	add r2,r2,#3
+	cmp r1,r2
+	ldrmi pc,scanlineHook
+;@---------------------
+	adr addy,lineSPR_to_end
+	str addy,[h6280ptr,#h6280_nextTimeout]
+	str addy,[h6280ptr,#h6280_nextTimeout_]
+
+//	bl sprDMA_W
+	ldr pc,scanlineHook
+
+lineSPR_to_end: ;@------------------------
+	ldr r0,[h6280ptr,#h6280_cyclesPerScanline]
+	add cycles,cycles,r0
+
+	ldr r0,=scanline
+	ldr r1,[r0]
+	add r1,r1,#1
+	str r1,[r0]
+//	ldr r2,vblScanlineCpu
+	add r2,r2,#8
+	cmp r1,r2
+//	bleq vramDMA_W
+
+//	ldr r2,lastScanline
+	cmp r1,r2
+	adrpl addy,line0
+	strpl addy,[h6280ptr,#h6280_nextTimeout]
+	strpl addy,[h6280ptr,#h6280_nextTimeout_]
+
+	ldr pc,scanlineHook
+*/
 

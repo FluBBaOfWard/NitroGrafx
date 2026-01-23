@@ -9,6 +9,7 @@
 
 #include "Shared/nds_asm.h"
 #include "ARMH6280/H6280.i"
+#include "Equates.h"
 
 #define CYCLE_PSL (455)
 
@@ -19,10 +20,14 @@
 	.syntax unified
 	.arm
 
-	.section .text
+#ifdef GBA
+	.section .ewram, "ax", %progbits	;@ For the GBA
+#else
+	.section .text						;@ For anything else
+#endif
 	.align 2
 ;@----------------------------------------------------------------------------
-run:		;@ return after 1 frame
+run:						;@ Return after X frame(s)
 	.type run STT_FUNC
 ;@----------------------------------------------------------------------------
 
@@ -34,17 +39,26 @@ runStart:
 ;@----------------------------------------------------------------------------
 	ldr r0,=EMUinput
 	ldr r0,[r0]
-
+	tst r0,#0x300				;@ L or R?
+	beq skipYPan
+	ldr r1,=gScalingSet
+	ldrb r1,[r1]
+	cmp r1,#SCALED_1_1
+	bne skipYPan
 	ldr r2,=yStart
 	ldrb r1,[r2]
+	tst r0,#0x100				;@ R?
+	addne r1,#1
 	tst r0,#0x200				;@ L?
 	subsne r1,#1
 	movmi r1,#0
-	tst r0,#0x100				;@ R?
-	addne r1,#1
-	cmp r1,#224-SCREEN_HEIGHT
-	movpl r1,#224-SCREEN_HEIGHT
-//	strb r1,[r2]
+	ldr r0,=vdcEndFrameLine
+	ldr r0,[r0]
+	sub r0,r0,#SCREEN_HEIGHT
+	cmp r1,r0
+	movpl r1,r0
+	strb r1,[r2]
+skipYPan:
 
 	bl refreshEMUjoypads		;@ Z=1 if communication ok
 
@@ -90,101 +104,6 @@ PCEFrameLoop:
 
 ;@----------------------------------------------------------------------------
 
-/*
-lineVBL:	;@------------------------
-	ldr r0,[h6280ptr,#h6280_cyclesPerScanline]
-	sub r0,r0,#1024*CYCLE
-	add cycles,cycles,r0
-	ldr r0,frameTotal
-	add r0,r0,#1
-	str r0,frameTotal
-
-	adr addy,vdcCheck
-	str addy,[h6280ptr,#h6280_nextTimeout]
-	str addy,[h6280ptr,#h6280_nextTimeout_]
-
-;@-------------------------------------------------
-	bl endFrame					;@ display update
-;@-------------------------------------------------
-	ldr r0,=scanline
-	ldr r1,[r0]
-	add r1,r1,#1
-	str r1,[r0]
-	ldr pc,scanlineHook
-
-vdcCheck:
-	ldr r0,=vdcCtrl1
-	ldrb r0,[r0]
-	tst r0,#0x08				;@ VBl IRQ?
-	movne r2,#0x20				;@ VBlank bit
-//	ldrne addy,=vdcStat			;@ VBl irq
-	strbne r2,[addy]
-
-	add cycles,cycles,#7*4*CYCLE
-
-	adr addy,vblCheck
-	str addy,[h6280ptr,#h6280_nextTimeout]
-	str addy,[h6280ptr,#h6280_nextTimeout_]
-	b h6280CheckIrqs
-
-vblCheck:
-	add cycles,cycles,#1024*CYCLE
-	sub cycles,cycles,#7*4*CYCLE
-
-	adr addy,lineVBL_to_SPR
-	str addy,[h6280ptr,#h6280_nextTimeout]
-	str addy,[h6280ptr,#h6280_nextTimeout_]
-
-	ldr r0,=vdcCtrl1
-	ldrb r0,[r0]
-	tst r0,#0x08				;@ vbl IRQ?
-	beq h6280CheckIrqs
-
-	setIrqPin VDCIRQ_F
-	b h6280CheckIrqs
-
-
-lineVBL_to_SPR: ;@------------------------
-	ldr r0,[h6280ptr,#h6280_cyclesPerScanline]
-	add cycles,cycles,r0
-
-	ldr r0,=scanline
-	ldr r1,[r0]
-	add r1,r1,#1
-	str r1,[r0]
-//	ldr r2,vblScanlineCpu
-	add r2,r2,#3
-	cmp r1,r2
-	ldrmi pc,scanlineHook
-;@---------------------
-	adr addy,lineSPR_to_end
-	str addy,[h6280ptr,#h6280_nextTimeout]
-	str addy,[h6280ptr,#h6280_nextTimeout_]
-
-//	bl sprDMA_W
-	ldr pc,scanlineHook
-
-lineSPR_to_end: ;@------------------------
-	ldr r0,[h6280ptr,#h6280_cyclesPerScanline]
-	add cycles,cycles,r0
-
-	ldr r0,=scanline
-	ldr r1,[r0]
-	add r1,r1,#1
-	str r1,[r0]
-//	ldr r2,vblScanlineCpu
-	add r2,r2,#8
-	cmp r1,r2
-//	bleq vramDMA_W
-
-//	ldr r2,lastScanline
-	cmp r1,r2
-	adrpl addy,line0
-	strpl addy,[h6280ptr,#h6280_nextTimeout]
-	strpl addy,[h6280ptr,#h6280_nextTimeout_]
-
-	ldr pc,scanlineHook
-*/
 ;@----------------------------------------------------------------------------
 scanlineCycles:		.long CYCLE_PSL
 frameTotal:			;@ Let Gui.c see frame count for savestates

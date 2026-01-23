@@ -700,7 +700,7 @@ NO.     MODE    DETAILS
   Explanation: 
   The background display area (in it's most often used setting) is 256x216.
   The display width of a television may be adjusted to squash the screen 
-  vertically, or horizontally. Even normal TVs show a little more that 256 
+  vertically, or horizontally. Even normal TVs show a little more than 256 
   TG-16 dots wide, leaving a black border on the sides. This border colour is 
   actually controlled by sprite colour 0. The programmer can actually set the 
   screen width more narrow or vertically shorter, showing more of this area. 

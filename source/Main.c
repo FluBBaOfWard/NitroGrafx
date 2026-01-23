@@ -75,11 +75,10 @@ int main(int argc, char **argv) {
 		loadBRAM();
 		if (argc > 1) {
 			loadGame(argv[1]);
-			setMuteSoundGUI();
 		}
 	}
 	else {
-		drawText("fatInitDefault() failure.", 23, 0);
+		infoOutput("fatInitDefault() failure.");
 	}
 //	loadCart();
 //	powerButton = true;
