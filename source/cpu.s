@@ -13,9 +13,12 @@
 
 #define CYCLE_PSL (455)
 
+	.global waitMaskIn
+	.global waitMaskOut
+	.global frameTotal
+
 	.global cpuReset
 	.global run
-	.global frameTotal
 
 	.syntax unified
 	.arm
@@ -30,7 +33,11 @@
 run:						;@ Return after X frame(s)
 	.type run STT_FUNC
 ;@----------------------------------------------------------------------------
-
+	ldrh r0,waitCountIn
+	add r0,r0,#1
+	ands r0,r0,r0,lsr#8
+	strb r0,waitCountIn
+	bxne lr
 	stmfd sp!,{r4-r11,lr}
 
 	ldr h6280ptr,=h6280OpTable
@@ -98,9 +105,21 @@ PCEFrameLoop:
 	add r0,r0,#1
 	str r0,frameTotal
 
-	ldmfd sp!,{r4-r11,lr}		;@ Exit here:
-	bx lr						;@ Return to rommenu()
+	ldr r1,=gConfigSet
+	ldrb r1,[r1]
+	ldr r2,=EMUinput
+	ldr r2,[r2]
+	and r1,r1,r2,lsr#4			;@ R button and config FF
+	ands r1,r1,#0x10
 
+	ldrh r0,waitCountOut
+	orrne r0,r0,#0x0300
+	add r0,r0,#1
+	ands r0,r0,r0,lsr#8
+	strb r0,waitCountOut
+	ldmfdeq sp!,{r4-r11,lr}		;@ Exit here if doing single frame:
+	bxeq lr						;@ Return to rommenu()
+	b runStart
 
 ;@----------------------------------------------------------------------------
 
@@ -108,6 +127,10 @@ PCEFrameLoop:
 scanlineCycles:		.long CYCLE_PSL
 frameTotal:			;@ Let Gui.c see frame count for savestates
 					.long 0
+waitCountIn:		.byte 0
+waitMaskIn:			.byte 0
+waitCountOut:		.byte 0
+waitMaskOut:		.byte 0
 
 ;@----------------------------------------------------------------------------
 cpuReset:					;@ Called by loadcart/resetGame

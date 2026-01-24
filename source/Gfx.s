@@ -31,8 +31,6 @@
 	.global gScalingSet
 	.global gRgbYcbcr
 	.global sprCollision
-	.global waitMaskIn
-	.global waitMaskOut
 	.global vblIrqHandler
 	.global yStart
 
@@ -736,28 +734,6 @@ vdcRet:
 //	ldr r1,=BG_PALETTE_SUB		;@ Background palette
 //	strh r0,[r1]				;@ Background palette
 
-	ldr r1,=gConfigSet
-	ldrb r1,[r1]
-	ldr r2,=EMUinput
-	ldr r2,[r2]
-	and r1,r1,r2,lsr#4			;@ R button and config FF
-	ands r1,r1,#0x10
-
-	ldrb r0,waitCountOut
-	ldrb r1,waitMaskOut
-	orrne r1,r1,#0x03
-	add r0,r0,#1
-	ands r0,r0,r1
-	strb r0,waitCountOut
-	bne skipVBlWait
-doVBlWait:
-	blx waitVBlank
-	ldrb r0,waitCountIn
-	ldrb r1,waitMaskIn
-	add r0,r0,#1
-	ands r0,r0,r1
-	strb r0,waitCountIn
-	bne doVBlWait
 skipVBlWait:
 //	mov r0,#0x7C00
 //	ldr r1,=BG_PALETTE_SUB		;@ Background palette
@@ -1502,10 +1478,7 @@ minPan:
 	.byte 0
 maxPan:
 	.byte 0
-waitCountIn:		.byte 0
-waitMaskIn:			.byte 0
-waitCountOut:		.byte 0
-waitMaskOut:		.byte 0
+	.skip 4
 ;@align
 	.byte 0
 	.byte 0

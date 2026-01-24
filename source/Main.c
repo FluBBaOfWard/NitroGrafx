@@ -20,7 +20,7 @@ static void checkTimeOut(void);
 static void setupGraphics(void);
 static void setupStream(void);
 
-bool powerButton = false;
+bool powerIsOn = false;
 //bool gameInserted = false;
 static int sleepTimer = 0x7FFFFFFF;		// 5min
 static bool vBlankOverflow = false;
@@ -81,22 +81,18 @@ int main(int argc, char **argv) {
 		infoOutput("fatInitDefault() failure.");
 	}
 //	loadCart();
-//	powerButton = true;
+//	powerIsOn = true;
 
 	while (1) {
-//		waitVBlank();
+		waitVBlank();
 		guiRunLoop();
-		if (powerButton) {
+		if (powerIsOn) {
 			if (!pauseEmulation) {
 				run();
-			}
-			else {
-				waitVBlank();
 			}
 		}
 		else {
 			antWars();
-			waitVBlank();
 		}
 //		checkTimeOut();
 	}

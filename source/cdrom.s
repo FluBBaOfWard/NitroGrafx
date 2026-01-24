@@ -2,8 +2,8 @@
 //  cdrom.s
 //  NitroGrafx
 //
-//  Created by Fredrik Ahlström on 2003-01-01.
-//  Copyright © 2003-2026 Fredrik Ahlström. All rights reserved.
+//  Created by Fredrik Ahlström on 2004-04-23.
+//  Copyright © 2004-2026 Fredrik Ahlström. All rights reserved.
 //
 #ifdef __arm__
 

@@ -184,7 +184,7 @@ bool loadGame(const char *gameName) {
 			if (emuSettings & AUTOLOAD_STATE) {
 				loadState();
 			}
-			powerButton = true;
+			powerIsOn = true;
 			closeMenu();
 			return false;
 		}
@@ -284,7 +284,7 @@ void selectCDROM() {
 				if (emuSettings & AUTOLOAD_STATE) {
 					loadState();
 				}
-				powerButton = true;
+				powerIsOn = true;
 				closeMenu();
 			}
 		}

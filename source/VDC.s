@@ -230,7 +230,7 @@ vblHook:					;@ 193/240
 	setIrqPin VDCIRQ_F
 	bx lr
 ;@----------------------------------------------------------------------------
-newFrame:					;@ Called before line 0	(r0-r9 safe to use)
+newFrame:					;@ Called before line 0
 ;@----------------------------------------------------------------------------
 	stmfd sp!,{lr}
 

@@ -10,6 +10,9 @@
 #include "ARMH6280/H6280.i"
 #include "PCEPSG/pcepsg.i"
 
+	.extern pauseEmulation
+	.extern powerIsOn
+
 	.global soundInit
 	.global soundReset
 	.global soundSetFrequency
@@ -19,9 +22,6 @@
 	.global soundVariables
 	.global setMuteSoundGUI
 	.global setMuteSoundGame
-
-	.extern pauseEmulation
-	.extern powerButton
 
 
 	.syntax unified
@@ -61,7 +61,7 @@ setMuteSoundGUI:
 ;@----------------------------------------------------------------------------
 	ldr r1,=pauseEmulation		;@ Output silence when emulation paused.
 	ldrb r0,[r1]
-	ldr r1,=powerButton			;@ Output silence when power off.
+	ldr r1,=powerIsOn			;@ Output silence when power off.
 	ldrb r1,[r1]
 	cmp r1,#0
 	orreq r0,r0,#0xFF

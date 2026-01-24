@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-extern bool powerButton;
+extern bool powerIsOn;
 extern uint16 *map0sub;
 
 void waitVBlank(void);
