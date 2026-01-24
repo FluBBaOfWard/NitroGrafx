@@ -541,9 +541,10 @@ vblIrqHandler:
 	ldrb r0,gScalingSet
 	mov r1,#1					;@ yScale, 1.0
 	cmp r0,#SCALED_FIT
-	ldreq r1,=0x28000001		;@ yScale, 1.25 (7/6) in Ypixel per out Y
+	ldreq r1,scaleSprParam
+	moveq r1,r1,ror#8
 	cmp r0,#SCALED_ASPECT
-	ldreq r1,=0x20000001		;@ yScale, 1.14 (8/7) in Ypixel per out Y
+	ldreq r1,=0x24930001		;@ yScale, 1.14 (8/7) in Ypixel per out Y
 
 	ldrb r0,gFlicker
 	ldrb r2,gTwitch
@@ -586,7 +587,7 @@ scrolLoop2:
 	stmia r2!,{r0,r1,r6,r7,r8,r10,lr}	;@ BG3-(PA,PB),(PC,PD), BG3X & BG3Y. WINxH & WINxV. WININOUT
 
 	adds r4,r4,r1
-	addcs r4,r4,r1
+	addcs r4,r4,#1
 	subs r12,r12,#1
 	bne scrolLoop2
 

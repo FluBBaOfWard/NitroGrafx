@@ -301,8 +301,7 @@ _VDC3R:						;@ VDC Data H
 	bxne lr
 fillRLatch:
 	ldr r2,vram_r_adr
-	ldrb r1,vdcAdrInc
-	add r1,r2,r1,lsl#16
+	add r1,r2,r2,lsl#16
 	str r1,vram_r_adr
 
 	movs r2,r2,asr#15
@@ -750,11 +749,13 @@ calcVBL:
 	mov r1,r1,asr#16
 	strb r1,[r4,#0x15]			;@ WIN
 
-	cmp r0,#193
-	mov r3,#224
+	mov r3,r0
+	cmp r3,#SCREEN_HEIGHT
 	movmi r3,#SCREEN_HEIGHT
+	cmp r3,#224
+	movpl r3,#224
 	subs r1,r0,r3				;@ Max screen size in scale to fit.
-	movpl r0,r3
+	mov r0,r3
 	movs r1,r1,asr#1
 	str r1,[r4,#0x1C]			;@ OFS, for centering in scaled to fit mode.vertical
 	movpl r1,#0
@@ -976,6 +977,7 @@ vdcNextLineChange:
 scanline:
 	.long 0
 vram_w_adr:
+vdcAdrInc:
 	.long 0						;@ vram_w_adr
 vram_r_adr:
 	.long 0						;@ vram_r_adr (temp)
@@ -1008,8 +1010,8 @@ vdcWriteLatch:
 	.byte 0		;@ 
 vdcRegister:
 	.byte 0		;@ 
-vdcAdrInc:
-	.byte 1		;@ 
+vdcAdrIncOld:
+	.byte 1		;@
 vdcStat:
 	.byte 0						;@ 
 vdcMWReg:
