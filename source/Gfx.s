@@ -685,7 +685,6 @@ endFrame:					;@ Called just before screen end (~line 192)	(r0-r2 safe to use)
 	stmfd sp!,{r1,r3-r9,r11,lr}
 
 	bl newX
-	bl newY
 
 	ldr r1,=vdcBurst
 	ldrb r0,[r1]

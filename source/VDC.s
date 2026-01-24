@@ -12,6 +12,20 @@
 #include "ARMH6280/H6280mac.h"
 #define vdcStateSize (vdcStateEnd-vdcState)
 
+	.global vdcState
+	.global scanline
+	.global hCenter
+	.global vdcRegister
+	.global vdcAdrInc
+	.global vram_w_adr
+	.global vdcCtrl1
+	.global vdcMWReg
+	.global vdcScroll
+	.global vdcBurst
+	.global vdcEndFrameLine
+	.global vdcLastScanline
+	.global vdcSpriteRam
+
 	.global vdcReset
 	.global VDCDoScanline
 
@@ -27,26 +41,12 @@
 
 	.global newFrame
 	.global newX
-	.global newY
 	.global newVDCCR
 	.global vdcCtrl1Finish
 	.global calcVBL
 	.global calcHDW
 	.global mirrorPCE
 
-
-	.global vdcState
-	.global scanline
-	.global hCenter
-	.global vdcRegister
-	.global vdcAdrInc
-	.global vram_w_adr
-	.global vdcCtrl1
-	.global vdcMWReg
-	.global vdcBurst
-	.global vdcEndFrameLine
-	.global vdcLastScanline
-	.global vdcSpriteRam
 
 
 ;@----------------------------------------------------------------------------
@@ -248,9 +248,9 @@ newFrame:					;@ Called before line 0
 	and r0,r0,#0xC0				;@ Burst mode?
 	strb r0,vdcBurst
 
-	ldr r0,vdcScrollY
+	ldr r0,vdcScroll
 	ldr r1,=scrollOld
-	strh r0,[r1,#2]
+	str r0,[r1]
 
 	bl paletteTxAll
 
@@ -532,40 +532,39 @@ rasterfix:
 ;@----------------------------------------------------------------------------
 ScrolX_L_W:					;@ 07
 ;@----------------------------------------------------------------------------
-	strb r0,vdcScrollX
-	b newX						;@ "Toy Shop Boys" requires this.
-;@	bx lr
+	strb r0,vdcScroll
+	b newX
 ;@----------------------------------------------------------------------------
 ScrolX_H_W:					;@ 07
 ;@----------------------------------------------------------------------------
 	and r0,r0,#3
-	strb r0,vdcScrollX+1
+	strb r0,vdcScroll+1
 newX:							;@ ctrl0_W, loadstate jumps here
-	ldr r0,scrollOld			;@ r0=lastval
-	ldr r1,vdcScrollX
-	ldr r2,hCenter
-	add r1,r1,r2
-	ldr r2,scrollMask
-	and r1,r1,r2
-	strh r1,scrollOld
-
-	ldr addy,scanline
-
+	ldr r1,scanline
 	cmp cycles,#1552*CYCLE		;@ 1552
-	addmi addy,addy,#1
+	addmi r1,r1,#1
+scrollCont:
+	ldr r2,vdcScroll
+	add r2,r2,#0x10000			;@ Extra Y
+	sub r2,r2,r1,lsl#16			;@ y -= scanline
+	ldr r0,hCenter
+	add r2,r2,r0
+	ldr r0,scrollMask
+	and addy,r2,r0
+	ldr r2,scrollOld			;@ r2 = lastval
+	str addy,scrollOld
 
-	cmp addy,#260
-	movhi addy,#260
-	adr r2,vdcScrollLine
-	swp r1,addy,[r2]			;@ r1=lastline, lastline=scanline
-scrollXFinish:					;@ newframe jumps here
-	ldr r2,=scrollBuff
-	ldr r2,[r2]
-	add r1,r2,r1,lsl#4			;@ r1=end
-	add r2,r2,addy,lsl#4		;@ r2=base
+	cmp r1,#260
+	movhi r1,#260
+	ldr r0,vdcScrollLine
+	subs r0,r1,r0
+	strhi r1,vdcScrollLine
+	ldr addy,=scrollBuff
+	ldr addy,[addy]
+	add r1,addy,r1,lsl#4		;@ r1 = base
 sx1:
-	cmp r2,r1
-	strhi r0,[r2,#-16]!			;@ Fill backwards from scanline to lastline
+	strhi r2,[r1,#-16]!			;@ Fill backwards from scanline to lastline
+	subshi r0,r0,#1
 	bhi sx1
 	bx lr
 
@@ -576,42 +575,18 @@ vdcScrollLine:	.long 0			;@ ..was when?
 ;@----------------------------------------------------------------------------
 ScrolY_L_W:					;@ 08
 ;@----------------------------------------------------------------------------
-	strb r0,vdcScrollY
-	b newY						;@ "Youkai Douchuuki" requires this.
-;@	bx lr
+	strb r0,vdcScroll+2
+	b newY
 ;@----------------------------------------------------------------------------
 ScrolY_H_W:					;@ 08
 ;@----------------------------------------------------------------------------
 	and r0,r0,#0x1
-	strb r0,vdcScrollY+1
+	strb r0,vdcScroll+3
 newY:
-	ldr r1,vdcScrollY
-	add r1,r1,#1				;@ Extra
-	ldr r0,scrollOld			;@ r0=lastval
-
-	ldr addy,scanline
-
+	ldr r1,scanline
 	cmp cycles,#1552*CYCLE		;@ 1552
-	addmi addy,addy,#1
-
-	sub r1,r1,addy				;@ y-=scanline
-	strh r1,scrollOld+2
-
-	cmp addy,#260
-	movhi addy,#260
-	adr r2,vdcScrollLine
-	swp r1,addy,[r2]			;@ r1=lastline, lastline=scanline
-scrollYFinish:					;@ newframe jumps here
-	ldr r2,=scrollBuff
-	ldr r2,[r2]
-	add r1,r2,r1,lsl#4			;@ r1=end
-	add r2,r2,addy,lsl#4		;@ r2=base
-sy1:
-	cmp r2,r1
-	strhi r0,[r2,#-16]!			;@ Fill backwards from scanline to lastline
-	bhi sy1
-	bx lr
-
+	addmi r1,r1,#1
+	b scrollCont
 ;@----------------------------------------------------------------------------
 MemWid_L_W:					;@ 09 Memory Width (Bgr virtual size)
 ;@----------------------------------------------------------------------------
@@ -987,10 +962,9 @@ vdcRasterCompare:
 	.long 0						;@ 
 vdcRasterCompareCPU:
 	.long -1					;@ 
-vdcScrollX:
+vdcScroll:
 	.long 0						;@ 
-vdcScrollY:
-	.long 0						;@ 
+	.long 0						;@
 vdcSatAdr:
 	.long 0						;@ Sprite Attribute Table address
 vdcSatLen:
@@ -1018,8 +992,7 @@ vdcMWReg:
 	.byte 0						;@ Memory width register
 vdcBurst:
 	.byte 0						;@ 
-vdcCtrl0Frame:
-	.byte 0						;@ state of $2000 at frame start
+	.byte 0
 vdcCtrl1:
 	.byte 0						;@ 
 vdcHDW:
