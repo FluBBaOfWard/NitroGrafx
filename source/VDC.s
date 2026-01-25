@@ -10,6 +10,7 @@
 #include "Shared/nds_asm.h"
 #include "Equates.h"
 #include "ARMH6280/H6280mac.h"
+
 #define vdcStateSize (vdcStateEnd-vdcState)
 
 	.global vdcState
@@ -36,8 +37,6 @@
 	.global VDC_R
 	.global VDC_W
 	.global VDC0W
-	.global vdcRegPtrL_
-	.global vdcRegPtrH_
 
 	.global newFrame
 	.global newX
@@ -115,6 +114,12 @@ vramLoop:
 
 	ldmfd sp!,{lr}
 	bx lr
+;@----------------------------------------------------------------------------
+vdcSaveState:
+;@----------------------------------------------------------------------------
+;@----------------------------------------------------------------------------
+vdcLoadState:
+;@----------------------------------------------------------------------------
 
 VDCLineStateTable:
 	.long 0, fakeFrame			;@ vdcZeroLine
@@ -322,10 +327,10 @@ VDCWriteTbl:
 	.long MARR_H_W				;@ 01 Mem Adr Read Reg
 	.long VRAM_L_W				;@ 02 VRAM write
 	.long VRAM_H_W				;@ 02 VRAM write
-	.long emptyWrite			;@ 03
-	.long emptyWrite			;@ 03
-	.long emptyWrite			;@ 04
-	.long emptyWrite			;@ 04
+	.long emptyIOW				;@ 03
+	.long emptyIOW				;@ 03
+	.long emptyIOW				;@ 04
+	.long emptyIOW				;@ 04
 	.long VDC_CR_L_W			;@ 05 Interuppt, sync, increment width...
 	.long VDC_CR_H_W			;@ 05 Interuppt, sync, increment width...
 	.long RstCmp_L_W			;@ 06 Raster compare
@@ -356,30 +361,30 @@ VDCWriteTbl:
 	.long DMALen_H_W			;@ 12 DMA Length Reg
 	.long DMAOAM_L_W			;@ 13 DMA Sprite Attribute Table
 	.long DMAOAM_H_W			;@ 13 DMA Sprite Attribute Table
-	.long emptyWrite			;@ 14
-	.long emptyWrite			;@ 14
-	.long emptyWrite			;@ 15
-	.long emptyWrite			;@ 15
-	.long emptyWrite			;@ 16
-	.long emptyWrite			;@ 16
-	.long emptyWrite			;@ 17
-	.long emptyWrite			;@ 17
-	.long emptyWrite			;@ 18
-	.long emptyWrite			;@ 18
-	.long emptyWrite			;@ 19
-	.long emptyWrite			;@ 19
-	.long emptyWrite			;@ 1A
-	.long emptyWrite			;@ 1A
-	.long emptyWrite			;@ 1B
-	.long emptyWrite			;@ 1B
-	.long emptyWrite			;@ 1C
-	.long emptyWrite			;@ 1C
-	.long emptyWrite			;@ 1D
-	.long emptyWrite			;@ 1D
-	.long emptyWrite			;@ 1E
-	.long emptyWrite			;@ 1E
-	.long emptyWrite			;@ 1F
-	.long emptyWrite			;@ 1F
+	.long emptyIOW				;@ 14
+	.long emptyIOW				;@ 14
+	.long emptyIOW				;@ 15
+	.long emptyIOW				;@ 15
+	.long emptyIOW				;@ 16
+	.long emptyIOW				;@ 16
+	.long emptyIOW				;@ 17
+	.long emptyIOW				;@ 17
+	.long emptyIOW				;@ 18
+	.long emptyIOW				;@ 18
+	.long emptyIOW				;@ 19
+	.long emptyIOW				;@ 19
+	.long emptyIOW				;@ 1A
+	.long emptyIOW				;@ 1A
+	.long emptyIOW				;@ 1B
+	.long emptyIOW				;@ 1B
+	.long emptyIOW				;@ 1C
+	.long emptyIOW				;@ 1C
+	.long emptyIOW				;@ 1D
+	.long emptyIOW				;@ 1D
+	.long emptyIOW				;@ 1E
+	.long emptyIOW				;@ 1E
+	.long emptyIOW				;@ 1F
+	.long emptyIOW				;@ 1F
 
 ;@----------------------------------------------------------------------------
 VDC_W:						;@ 0000-03FF
@@ -389,13 +394,11 @@ VDC_W:						;@ 0000-03FF
 	ldr pc,[pc,r1,lsl#2]		;@ VDC, what function
 	.long 0
 	.long VDC0W					;@ VDC0
-	.long empty_IO_W			;@ VDC1
-vdcRegPtrL_:
+	.long emptyIOW				;@ VDC1
 vdcRegPtrL:						;@ VDC2
-	.long empty_IO_W
-vdcRegPtrH_:
+	.long emptyIOW
 vdcRegPtrH:						;@ VDC3
-	.long empty_IO_W
+	.long emptyIOW
 
 ;@----------------------------------------------------------------------------
 VDC0W:						;@ VDC Register
@@ -406,21 +409,9 @@ VDC0W:						;@ VDC Register
 	ldr r0,[r2,r0,lsl#3]!
 	ldr r1,[r2,#4]
 	strd r0,r1,vdcRegPtrL
+	add r2,h6280ptr,#h6280ST1Func
+	strd r0,r1,[r2]
 	bx lr
-;@----------------------------------------------------------------------------
-//_13:						;@ ST1 #$nn store immediate value at VDC2
-;@----------------------------------------------------------------------------
-//	readmemimm
-//	adr lr,ST_ret
-//	ldr pc,vdcRegPtrL			;@ What function
-;@----------------------------------------------------------------------------
-//_23:						;@ ST2 #$nn store immediate value at VDC3
-;@----------------------------------------------------------------------------
-//	readmemimm
-//	adr lr,ST_ret
-//	ldr pc,vdcRegPtrH			;@ What function
-//ST_ret:
-//	fetch 5						;@ 4+1
 ;@----------------------------------------------------------------------------
 MAWR_L_W:					;@ 00
 ;@----------------------------------------------------------------------------

@@ -11,7 +11,7 @@
 
 	.global emptyRead
 	.global emptyWrite
-	.global empty_IO_W
+	.global emptyIOW
 	.global romWrite
 	.global ram_R
 	.global ram_W
@@ -45,7 +45,7 @@ emptyRead:					;@ Read bad (IO) address, error.
 	bx lr
 ;@----------------------------------------------------------------------------
 emptyWrite:					;@ Write bad address (error)
-empty_IO_W:
+emptyIOW:
 ;@----------------------------------------------------------------------------
 	mov r11,r11					;@ No$GBA debug
 	mov r0,#0xBA
