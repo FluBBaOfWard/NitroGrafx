@@ -367,7 +367,7 @@ BG_SCALING_TO_FIT:	;@ 1:1, 7:6, 5:4
 	.long 0x0150,0xFEB6,0x0080
 
 BG_SCALING_TBL:
-	.long 0xFFFF,0xFFFF,0xE000				;@ 0xE2AB, 0xDB6D=7:6, 224->192
+	.long 0xFFFF,0xFFFF,0xE000	;@ 0xE2AB, 0xDB6D=7:6, 224->192
 BG_SCALING_WIN:
 	.long 0x00C0,0x00C0,0x00C0
 BG_SCALING_OFS:
@@ -578,8 +578,7 @@ scrolLoop2:
 	mov r7,r6,lsr#16
 	mul r7,r1,r7
 	adds r7,r7,r4
-	addscs r7,r7,r1
-	subcc r7,r7,r1
+	addcs r7,r7,#1
 
 	add r6,r3,r6,lsl#8
 	and r7,r11,r7,lsl#8
@@ -641,7 +640,7 @@ displayControl:
 windowVValue:
 	.long 0x00C0
 ;@----------------------------------------------------------------------------
-bgYScaleValue:	.long 0x0000FFFF			;@ was 0xE2AB
+bgYScaleValue:	.long 0x0000FFFF	;@ was 0xE2AB
 obXScaleValue:	.long 0x00010000
 gTwitch:		.byte 0
 gFlicker:		.byte 1
@@ -843,7 +842,7 @@ dm11:
 	ldmia addy!,{r3,r4}			;@ PCE OBJ, r3=Y & X, r4=Pattern, flip, palette, prio & size.
 	ands r0,r3,r7				;@ Mask Y
 	beq dm10					;@ Skip if sprite Y=0
-	sub r0,r0,#0x3F				;@ 0x40 - 1
+	sub r0,r0,#0x40
 	ldr r1,sHeight
 	cmp r0,r1
 	bpl dm10					;@ Skip if sprite Y>=ScreenHeight
@@ -1229,7 +1228,7 @@ dTTest:
 	bne dTTest
 	b dtiRet
 ;@----------------------------------------------------------------------------
-tileMapFinish:					;@ End of frame...  finish up BGxCNTBUFF
+tileMapFinish:				;@ End of frame...  finish up BGxCNTBUFF
 ;@----------------------------------------------------------------------------
 	stmfd sp!,{r3-r11,lr}
 
@@ -1274,7 +1273,7 @@ tileMapCont:
 	mov r6,#-1
 
 ;@----------------------------------------------------------------------------
-;@chrFinish2	;End of frame...  finish up BGxCNTBUFF
+;@chrFinish2				;End of frame...  finish up BGxCNTBUFF
 ;@----------------------------------------------------------------------------
 tslo2:
 	ldr r0,[r8],#16				;@ X & Y offset
@@ -1448,7 +1447,7 @@ sprMemReload:
 	.skip 8
 
 gScalingSet:
-	.byte SCALED_ASPECT		;@ scalemode(saved display type), default scale to fit
+	.byte SCALED_ASPECT			;@ scalemode(saved display type), default scale to fit
 sprCollision:		.byte 0x20
 	.pool
 

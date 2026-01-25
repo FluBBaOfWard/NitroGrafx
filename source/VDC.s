@@ -539,10 +539,11 @@ newX:							;@ ctrl0_W, loadstate jumps here
 	ldr r2,vdcLatchTime			;@ 1552
 	cmp r2,cycles
 	addcs r1,r1,#1
-scrollCont:
 	ldr r2,vdcScroll
-	add r2,r2,#0x10000			;@ Extra Y
-	sub r2,r2,r1,lsl#16			;@ y -= scanline
+	ldrh r0,scrollOld+2			;@ r2 = lastval
+	orr r2,r0,r2,lsl#16
+	mov r2,r2,ror#16
+scrollCont:
 	ldr r0,hCenter
 	add r2,r2,r0
 	ldr r0,scrollMask
@@ -583,6 +584,9 @@ newY:
 	ldr r2,vdcLatchTime			;@ 1552
 	cmp r2,cycles
 	addcs r1,r1,#1
+	ldr r2,vdcScroll
+	add r2,r2,#0x10000			;@ Extra Y
+	sub r2,r2,r1,lsl#16			;@ y -= scanline
 	b scrollCont
 ;@----------------------------------------------------------------------------
 MemWid_L_W:					;@ 09 Memory Width (Bgr virtual size)
@@ -1009,7 +1013,7 @@ vdcDoVramDMA:
 vdcPrimedVBl:
 	.byte 0						;@
 vdcLatchTime:
-	.long 1552*CYCLE
+	.long 1504*CYCLE			;@ 1552
 vdcScanlineHook:	.long 0
 
 vdcStateTable:
