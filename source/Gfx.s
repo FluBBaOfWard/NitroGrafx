@@ -367,7 +367,7 @@ BG_SCALING_TO_FIT:	;@ 1:1, 7:6, 5:4
 	.long 0x0150,0xFEB6,0x0080
 
 BG_SCALING_TBL:
-	.long 0xFFFF,0xFFFF,0xE38F				;@ 0xE2AB, 0xDB6D=7:6, 224->192
+	.long 0xFFFF,0xFFFF,0xE000				;@ 0xE2AB, 0xDB6D=7:6, 224->192
 BG_SCALING_WIN:
 	.long 0x00C0,0x00C0,0x00C0
 BG_SCALING_OFS:
@@ -592,7 +592,6 @@ scrolLoop2:
 	bne scrolLoop2
 
 
-
 	mov r9,#REG_BASE
 	strh r9,[r9,#REG_DMA0CNT_H]	;@ DMA0 stop
 	strh r9,[r9,#REG_DMA3CNT_H]	;@ DMA3 stop
@@ -770,16 +769,6 @@ setVDPMode:
 	ldr r1,[r2,r0,lsl#2]
 	str r1,windowVValue
 
-
-	moveq r1,#32				;@ maxpan
-	movne r1,#64
-
-	mov r0,#0
-	movne r0,r1,lsr#1
-	movne r1,r1,lsr#1
-	strb r0,minPan
-	strb r1,maxPan
-
 	bx lr
 ;@----------------------------------------------------------------------------
 sprDMADo:					;@ Called from midframe. YATX
@@ -820,51 +809,32 @@ noReload:
 	ldr r2,tmpOamBuffer			;@ Destination
 
 	ldr r8,=DIRTYTILES
-//	ldr r1,gEmuFlags
-	mov r1,#0
-	and r5,r1,#0x00
-//	and r5,r1,#0x300
-//	cmp r5,#SCALED_SPRITES*256
-	cmp r5,#4*256
-	moveq r6,#2					;@ r6=ypos scale diff
-	movne r6,#0
 
-	mov r0,#0
-//	ldr r4,yStart				;@ First scanline?
-	mov r4,#0
-	cmp r5,#12*256				;@ Do autoscroll
+//	cmp r5,#12*256				;@ Do autoscroll
 //	cmp r5,#UNSCALED_AUTO*256	;@ Do autoscroll
-	bhi dm2
-//	movle r4,#0
-	bne dm0
-//	ldr r3,AGBjoypad
-	mov r3,#0
-	ands r3,r3,#0x300
-	eorsne r3,r3,#0x300
-	bne dm0						;@ Stop if L or R pressed (manual scroll)
-	mov r3,r1,lsr#16			;@ r3=follow value
+//	bhi dm2
+//	bne dm0
+//	mov r3,r1,lsr#16			;@ r3=follow value
 //	tst r1,#FOLLOWMEM
-	ldrbne r0,[h6280zpage,r3]	;@ Follow memory
-	moveq r3,r3,lsl#3
-	ldrheq r0,[addy,r3]			;@ Follow sprite
-	bic r0,r0,#0xfe00
-	subs r0,r0,#104				;@ Something like that
-	movmi r0,#0
-	add r0,r0,r0,lsl#3
-	mov r0,r0,lsr#4
+//	ldrbne r0,[h6280zpage,r3]	;@ Follow memory
+//	moveq r3,r3,lsl#3
+//	ldrheq r0,[addy,r3]			;@ Follow sprite
+//	bic r0,r0,#0xfe00
+//	subs r0,r0,#104				;@ Something like that
+//	movmi r0,#0
+//	add r0,r0,r0,lsl#3
+//	mov r0,r0,lsr#4
 //	ldr r5,vblscanlinecpu		;@ <240
-	sub r5,r5,#SCREEN_HEIGHT
-	mov r5,#0
-	cmp r0,r5
-	movhi r0,r5
-	str r0,windowTop+4
-dm0:
-	ldr r0,windowTop+8
-dm2:
-//	add r4,r4,r0
-//	adrl r5,yScaleLookup
-//	sub r5,r5,r4
+//	sub r5,r5,#SCREEN_HEIGHT
+//	mov r5,#0
+//	cmp r0,r5
+//	movhi r0,r5
+//	str r0,windowTop+4
+//dm0:
+//	ldr r0,windowTop+8
+//dm2:
 	ldr r5,bgYScaleValue
+	ldr r6,obXScaleValue
 	add r5,r5,#1				;@ 1:1 scaling is 0xFFFF
 
 	adr lr,ret01
@@ -873,7 +843,7 @@ dm11:
 	ldmia addy!,{r3,r4}			;@ PCE OBJ, r3=Y & X, r4=Pattern, flip, palette, prio & size.
 	ands r0,r3,r7				;@ Mask Y
 	beq dm10					;@ Skip if sprite Y=0
-	sub r0,r0,#0x40
+	sub r0,r0,#0x3F				;@ 0x40 - 1
 	ldr r1,sHeight
 	cmp r0,r1
 	bpl dm10					;@ Skip if sprite Y>=ScreenHeight
@@ -885,8 +855,7 @@ dm11:
 	moveq r7,#8
 	movne r7,#16
 	add r3,r3,r7				;@ Add half of sprite width
-	ldr r1,obXScaleValue
-	mul r3,r1,r3				;@ x = scaled x
+	mul r3,r6,r3				;@ x = scaled x
 	mov r3,r3,asr#16
 	sub r3,r3,r7				;@ Sub half of sprite width
 	cmp r3,#256
@@ -904,7 +873,7 @@ dm11:
 	mul r0,r5,r0				;@ y = scaled y
 	mov r0,r0,asr#16
 	sub r0,r0,r7,lsl#3			;@ Sub half of sprite height
-	cmp r0,#0xC0
+	cmp r0,#SCREEN_HEIGHT
 	bpl dm10
 	and r0,r0,#0xFF
 
@@ -918,7 +887,8 @@ dm11:
 	ldr r3,=flipsizeTable
 	ldr r1,[r3,r1,lsl#2]
 	orrcc r1,r1,#0x00000400		;@ Set Transp OBJ.
-	cmp r5,#0x10000
+	cmp r5,#0x10000				;@ Vertical scaling?
+	cmppl r6,#0x10000			;@ Horizontal scaling?
 	orrmi r0,r0,#0x100			;@ Scaled sprites.
 	orr r0,r0,r1
 	str r0,[r2],#4				;@ Store OBJ Atr 0,1. Xpos, ypos, flip, scale/rot, size, shape, prio(transp).
@@ -1299,7 +1269,7 @@ tileMapCont:
 	add r9,r9,r0,lsl#3
 	str r9,tMapAdr
 
-	mov r6,#-1					;@ oldTileRow
+	mov r6,#-1
 
 ;@----------------------------------------------------------------------------
 ;@chrFinish2	;End of frame...  finish up BGxCNTBUFF
@@ -1450,7 +1420,7 @@ dmaScrollBuff:		.long SCROLLBUFF2
 oamBufferReady:		.long 0
 ;@----------------------------------------------------------------------------
 
-oldTileRow:		.long 0
+				.long 0
 sHeight:		.long 0
 tMapAdr:		.long BG_GFX
 sprCenter:		.long 0
@@ -1473,15 +1443,7 @@ sprMemAlloc:
 	.byte 0
 sprMemReload:
 	.byte 0
-
-minPan:
-	.byte 0
-maxPan:
-	.byte 0
-	.skip 4
-;@align
-	.byte 0
-	.byte 0
+	.skip 8
 
 gScalingSet:
 	.byte SCALED_ASPECT		;@ scalemode(saved display type), default scale to fit

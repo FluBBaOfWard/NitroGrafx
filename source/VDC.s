@@ -249,8 +249,9 @@ newFrame:					;@ Called before line 0
 	strb r0,vdcBurst
 
 	ldr r0,vdcScroll
+	mov r0,r0,lsr#16
 	ldr r1,=scrollOld
-	str r0,[r1]
+	strh r0,[r1,#2]
 
 	bl paletteTxAll
 
@@ -301,7 +302,8 @@ _VDC3R:						;@ VDC Data H
 	bxne lr
 fillRLatch:
 	ldr r2,vram_r_adr
-	add r1,r2,r2,lsl#16
+	ldrb r1,vdcAdrInc
+	add r1,r2,r1,lsl#16
 	str r1,vram_r_adr
 
 	movs r2,r2,asr#15
@@ -451,8 +453,7 @@ VRAM_H_W:					;@ 02
 	orr r0,r1,r0,lsl#8
 
 	ldr r2,vram_w_adr
-	ldrb r1,vdcAdrInc
-	add r1,r2,r1,lsl#16
+	add r1,r2,r2,lsl#16
 	str r1,vram_w_adr
 
 	movs r2,r2,asr#15
@@ -479,6 +480,8 @@ newVDCCR:
 	strh r1,vdcCtrl1Old
 
 	ldr addy,scanline
+	cmp cycles,#1552*CYCLE		;@ 1552
+	addmi addy,addy,#1
 	cmp addy,#260
 	movhi addy,#260
 	adr r2,vdcCtrl1Line

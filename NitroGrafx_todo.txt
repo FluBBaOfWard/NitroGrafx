@@ -28,12 +28,10 @@ GUI:
 Graphic:
 	Move all gfx logik to VDC, rewrite routines in order.
 		midrame, endframe.
-	Unscaled can't scroll vertical, scale to fit, sprites has wrong vertical pos.
 	Convert palette via component. Add saturation, contrast and brightness (hue?).
 	Count TV lines for real, not when the picture start showing.
 	Clean up the scaling routines.
 	Change so sprites can use 64kB VRAM.
-	Optimise vram adr inc. Read & Write addresses.
 	Split up doSprDMA, so that positions and tilenum are fixed first and then the tiles.
 	Write tiles directly after VBlank.
 	Optimise tile(map), rendering.
