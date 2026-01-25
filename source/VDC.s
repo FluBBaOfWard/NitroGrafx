@@ -632,7 +632,7 @@ calcHDW:
 //newVCECR:
 	mov r1,#0x0100				;@ 1 Xpixel per X
 	cmp r2,#1					;@ vcePixelClock
-	orreq r1,#0x0056			;@ 1.1/3 Xpixel per X
+	orreq r1,#0x0054			;@ 1.1/3 Xpixel per X
 	movhi r1,#0x0200			;@ 2 Xpixel per X
 
 	ldr r2,=vdcCtrl1Old
