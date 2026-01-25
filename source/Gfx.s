@@ -875,6 +875,8 @@ dm11:
 	sub r0,r0,r7,lsl#3			;@ Sub half of sprite height
 	cmp r0,#SCREEN_HEIGHT
 	bpl dm10
+	cmn r0,#0x40
+	bmi dm10
 	and r0,r0,#0xFF
 
 	and r1,r4,#0x29000000
@@ -911,7 +913,7 @@ dm9:
 	bne dm11
 	ldr pc,[sp],#4
 dm10:
-	mov r0,#0x2C0				;@ Double, y=192
+	mov r0,#0x200+SCREEN_HEIGHT	;@ Double, y=SCREEN_HEIGHT
 	str r0,[r2],#8
 	b dm9
 

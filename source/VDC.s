@@ -18,7 +18,7 @@
 	.global hCenter
 	.global vdcRegister
 	.global vdcAdrInc
-	.global vram_w_adr
+	.global vdcWriteAdr
 	.global vdcCtrl1
 	.global vdcMWReg
 	.global vdcScroll
@@ -28,12 +28,10 @@
 	.global vdcSpriteRam
 
 	.global vdcReset
+	.global vdcSaveState
+	.global vdcLoadState
 	.global VDCDoScanline
 
-//	.global _13
-//	.global _23
-//	.global VCE_R
-//	.global VCE_W
 	.global VDC_R
 	.global VDC_W
 	.global VDC0W
@@ -117,9 +115,11 @@ vramLoop:
 ;@----------------------------------------------------------------------------
 vdcSaveState:
 ;@----------------------------------------------------------------------------
+	bx lr
 ;@----------------------------------------------------------------------------
 vdcLoadState:
 ;@----------------------------------------------------------------------------
+	bx lr
 
 VDCLineStateTable:
 	.long 0, fakeFrame			;@ vdcZeroLine
@@ -306,10 +306,10 @@ _VDC3R:						;@ VDC Data H
 	cmp r1,#2					;@ Only VRAM Read increases address.
 	bxne lr
 fillRLatch:
-	ldr r2,vram_r_adr
+	ldr r2,vdcReadAdr
 	ldrb r1,vdcAdrInc
 	add r1,r2,r1,lsl#16
-	str r1,vram_r_adr
+	str r1,vdcReadAdr
 
 	movs r2,r2,asr#15
 	ldrpl r1,vramPtr
@@ -415,22 +415,22 @@ VDC0W:						;@ VDC Register
 ;@----------------------------------------------------------------------------
 MAWR_L_W:					;@ 00
 ;@----------------------------------------------------------------------------
-	strb r0,vram_w_adr+2		;@ Write low address
+	strb r0,vdcWriteAdr+2		;@ Write low address
 	bx lr
 ;@----------------------------------------------------------------------------
 MAWR_H_W:					;@ 00
 ;@----------------------------------------------------------------------------
-	strb r0,vram_w_adr+3		;@ Write high address
+	strb r0,vdcWriteAdr+3		;@ Write high address
 	bx lr
 ;@----------------------------------------------------------------------------
 MARR_L_W:					;@ 01
 ;@----------------------------------------------------------------------------
-	strb r0,vram_r_adr+2		;@ Read low address
+	strb r0,vdcReadAdr+2		;@ Read low address
 	bx lr
 ;@----------------------------------------------------------------------------
 MARR_H_W:					;@ 01
 ;@----------------------------------------------------------------------------
-	strb r0,vram_r_adr+3		;@ Read high address
+	strb r0,vdcReadAdr+3		;@ Read high address
 	b fillRLatch
 ;@----------------------------------------------------------------------------
 VRAM_L_W:					;@ 02
@@ -443,9 +443,9 @@ VRAM_H_W:					;@ 02
 	ldrb r1,vdcWriteLatch
 	orr r0,r1,r0,lsl#8
 
-	ldr r2,vram_w_adr
+	ldr r2,vdcWriteAdr
 	add r1,r2,r2,lsl#16
-	str r1,vram_w_adr
+	str r1,vdcWriteAdr
 
 	movs r2,r2,asr#15
 	ldrpl r1,vramPtr
@@ -471,8 +471,9 @@ newVDCCR:
 	strh r1,vdcCtrl1Old
 
 	ldr addy,scanline
-	cmp cycles,#1552*CYCLE		;@ 1552
-	addmi addy,addy,#1
+	ldr r2,vdcLatchTime			;@ 1552
+	cmp r2,cycles
+	addcs addy,addy,#1
 	cmp addy,#260
 	movhi addy,#260
 	adr r2,vdcCtrl1Line
@@ -535,8 +536,9 @@ ScrolX_H_W:					;@ 07
 	strb r0,vdcScroll+1
 newX:							;@ ctrl0_W, loadstate jumps here
 	ldr r1,scanline
-	cmp cycles,#1552*CYCLE		;@ 1552
-	addmi r1,r1,#1
+	ldr r2,vdcLatchTime			;@ 1552
+	cmp r2,cycles
+	addcs r1,r1,#1
 scrollCont:
 	ldr r2,vdcScroll
 	add r2,r2,#0x10000			;@ Extra Y
@@ -578,8 +580,9 @@ ScrolY_H_W:					;@ 08
 	strb r0,vdcScroll+3
 newY:
 	ldr r1,scanline
-	cmp cycles,#1552*CYCLE		;@ 1552
-	addmi r1,r1,#1
+	ldr r2,vdcLatchTime			;@ 1552
+	cmp r2,cycles
+	addcs r1,r1,#1
 	b scrollCont
 ;@----------------------------------------------------------------------------
 MemWid_L_W:					;@ 09 Memory Width (Bgr virtual size)
@@ -945,11 +948,11 @@ vdcNextLineChange:
 	.long 0
 scanline:
 	.long 0
-vram_w_adr:
+vdcWriteAdr:
 vdcAdrInc:
-	.long 0						;@ vram_w_adr
-vram_r_adr:
-	.long 0						;@ vram_r_adr (temp)
+	.long 0						;@ vdcWriteAdr
+vdcReadAdr:
+	.long 0						;@ vdcReadAdr (temp)
 vdcReadLatch:
 	.long 0						;@ 
 vdcRasterCompare:
@@ -1005,7 +1008,8 @@ vdcDoVramDMA:
 	.byte 0						;@
 vdcPrimedVBl:
 	.byte 0						;@
-	.space 4
+vdcLatchTime:
+	.long 1552*CYCLE
 vdcScanlineHook:	.long 0
 
 vdcStateTable:

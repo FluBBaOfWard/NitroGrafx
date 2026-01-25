@@ -509,7 +509,7 @@ ls0:
 	bne ls1
 
 	ldr r0,=PCE_RAM
-	str r0,[h6280ptr,#h6280RegZP]
+	str r0,[h6280ptr,#h6280ZeroPage]
 
 	bl reInitMapperData
 
