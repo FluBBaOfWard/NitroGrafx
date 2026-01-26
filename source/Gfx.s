@@ -362,7 +362,7 @@ loadScaleValues:
 BG_SCALING_1_1:
 	.long 0x0100,0x0100,0x0080
 BG_SCALING_ASPECT:			;@ 192->170, 224->199, 240->213, 216->192, 9->8
-	.long 0x0110,0xFEE0,0x0090
+	.long 0x0120,0xFEE0,0x0090
 BG_SCALING_TO_FIT:	;@ 1:1, 7:6, 5:4
 	.long 0x0150,0xFEB6,0x0080
 
@@ -544,7 +544,7 @@ vblIrqHandler:
 	ldreq r1,scaleSprParam
 	moveq r1,r1,ror#8
 	cmp r0,#SCALED_ASPECT
-	ldreq r1,=0x24930001		;@ yScale, 1.14 (8/7) in Ypixel per out Y
+	ldreq r1,=0x20000001		;@ yScale, 1.14 (8/7) in Ypixel per out Y
 
 	ldrb r0,gFlicker
 	ldrb r2,gTwitch
@@ -586,7 +586,7 @@ scrolLoop2:
 	stmia r2!,{r0,r1,r6,r7,r8,r10,lr}	;@ BG3-(PA,PB),(PC,PD), BG3X & BG3Y. WINxH & WINxV. WININOUT
 
 	adds r4,r4,r1
-	addcs r4,r4,#1
+	addcs r4,r4,r1
 	subs r12,r12,#1
 	bne scrolLoop2
 
