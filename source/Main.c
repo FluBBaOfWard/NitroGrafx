@@ -166,10 +166,8 @@ static void setupGraphics() {
 	vramSetBankI(VRAM_I_SUB_SPRITE);
 
 	// Set up the main display
-	videoSetMode(MODE_5_2D
+	GFX_DISPCNT = MODE_5_2D
 				 | DISPLAY_SPR_1D_LAYOUT
-//				 | DISPLAY_BG0_ACTIVE
-//				 | DISPLAY_BG1_ACTIVE
 				 | DISPLAY_BG2_ACTIVE
 				 | DISPLAY_BG3_ACTIVE
 				 | DISPLAY_SPR_ACTIVE
@@ -177,7 +175,8 @@ static void setupGraphics() {
 				 | DISPLAY_WIN1_ON
 				 | DISPLAY_BG_EXT_PALETTE
 				 | DISPLAY_CHAR_BASE(1)
-				 );
+				 ;
+	videoSetMode(GFX_DISPCNT);
 
 	// Set up the sub display
 	videoSetModeSub(MODE_0_2D

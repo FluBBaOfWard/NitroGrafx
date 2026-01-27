@@ -331,10 +331,10 @@ const char *getYCbCrText() {
 
 /// Turn on/off rendering of background
 void bgrLayerSet() {
-	gGfxMask ^= 0x03;
+	gGfxMask ^= 0x0C;
 }
 const char *getBgrLayerText() {
-	return autoTxt[gGfxMask & 1];
+	return autoTxt[(gGfxMask >> 2) & 1];
 }
 /// Turn on/off rendering of sprites
 void sprLayerSet() {

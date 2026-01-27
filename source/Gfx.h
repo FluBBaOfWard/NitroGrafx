@@ -21,6 +21,8 @@ extern u8 gScalingSet;
 extern u8 sprCollision;
 
 extern u16 EMUPALBUFF[200];
+extern u32 GFX_DISPCNT;
+
 extern void *dmaOamBuffer;
 
 void gfxInit(void);

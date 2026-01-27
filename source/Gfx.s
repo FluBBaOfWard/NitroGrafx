@@ -11,6 +11,30 @@
 #include "Equates.h"
 #include "ARMH6280/H6280.i"
 
+	.global gTwitch
+	.global gFlicker
+	.global gGfxMask
+	.global gScalingSet
+	.global gRgbYcbcr
+	.global yStart
+	.global DIRTYTILES
+	.global DELAYED_TILEMAP
+	.global scrollBuff
+	.global BG_SCALING_TO_FIT
+	.global BG_SCALING_TBL
+	.global BG_SCALING_WIN
+	.global BG_SCALING_OFS
+	.global scaleSprParam
+	.global GFX_DISPCNT
+	.global PCE_VRAM
+	.global EMUPALBUFF			;@ Needs to be flushed before dma copied.
+//	.global WININBUFF			;@ Needs to be flushed after vblirq
+	.global dmaOamBuffer
+	.global gfxState
+	.global gColorValue
+	.global sprCollision
+
+
 	.global antWars
 	.global gfxInit
 	.global gfxReset
@@ -23,31 +47,8 @@
 	.global clearDirtyTiles
 	.global midFrame
 	.global endFrame
-	.global gfxState
-	.global gColorValue
-	.global gTwitch
-	.global gFlicker
-	.global gGfxMask
-	.global gScalingSet
-	.global gRgbYcbcr
-	.global sprCollision
 	.global vblIrqHandler
-	.global yStart
-
-	.global DIRTYTILES
-	.global DELAYED_TILEMAP
-	.global scrollBuff
-	.global BG_SCALING_TO_FIT
-	.global BG_SCALING_TBL
-	.global BG_SCALING_WIN
-	.global BG_SCALING_OFS
-	.global scaleSprParam
 	.global refreshSprites
-
-	.global PCE_VRAM
-	.global EMUPALBUFF			;@ Needs to be flushed before dma copied.
-//	.global WININBUFF			;@ Needs to be flushed after vblirq
-	.global dmaOamBuffer
 
 	.syntax unified
 	.arm
@@ -623,6 +624,11 @@ scrolLoop2:
 	orr r1,r1,#0x400000			;@ Spr ram
 	orr r2,r4,#0x2000			;@ 8192 words (32kbytes)
 	stmia r8,{r0-r2}			;@ DMA3 go
+
+	ldr r0,GFX_DISPCNT
+	ldrb r2,gGfxMask
+	bic r0,r0,r2,lsl#8
+	strh r0,[r9,#REG_DISPCNT]
 
 	ldr r2,=BGoffset1
 	ldr r2,[r2]
@@ -1443,6 +1449,9 @@ BGoffset1:		.long 0
 BGoffset2:		.long 0
 BGoffset333:	.long 0
 
+GFX_DISPCNT:
+	.long 0
+
 gfxState:
 yStart:
 	.long 0
@@ -1456,9 +1465,12 @@ sprMemReload:
 gScalingSet:
 	.byte SCALED_ASPECT			;@ scalemode(saved display type), default scale to fit
 sprCollision:		.byte 0x20
-	.pool
 
+#ifdef GBA
+	.section .sbss				;@ This is EWRAM on GBA with devkitARM
+#else
 	.section .bss
+#endif
 	.align 8					;@ Align to 256 bytes for RAM
 PCE_VRAM:
 	.space 0x10000
