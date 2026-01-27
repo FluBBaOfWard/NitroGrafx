@@ -42,6 +42,7 @@
 	.global BG_SCALING_WIN
 	.global BG_SCALING_OFS
 	.global scaleSprParam
+	.global refreshSprites
 
 	.global PCE_VRAM
 	.global EMUPALBUFF			;@ Needs to be flushed before dma copied.
@@ -360,7 +361,7 @@ loadScaleValues:
 	b buildSpriteScaling
 
 BG_SCALING_1_1:
-	.long 0x0100,0x0100,0x0080
+	.long 0x0100,0xFF01,0x0080
 BG_SCALING_ASPECT:			;@ 192->170, 224->199, 240->213, 216->192, 9->8
 	.long 0x0120,0xFEE0,0x0090
 BG_SCALING_TO_FIT:	;@ 1:1, 7:6, 5:4
@@ -384,7 +385,7 @@ scaleSprParam:
 ;@----------------------------------------------------------------------------
 buildSpriteScaling:
 ;@----------------------------------------------------------------------------
-	stmfd sp!,{r4-r6}
+	stmfd sp!,{r3-r6}
 	adr r0,scaleParms			;@ Set sprite scaling params
 	ldmia r0,{r1-r6}			;@ Get sprite scaling params
 
@@ -409,7 +410,7 @@ scaleLoop:
 	subs r0,r0,#1
 	bne scaleLoop
 
-	ldmfd sp!,{r4-r6}
+	ldmfd sp!,{r3-r6}
 	bx lr
 ;@----------------------------------------------------------------------------
 paletteInit:		;@ r0-r3 modified.
@@ -652,8 +653,6 @@ gRgbYcbcr:		.byte 0
 ;@----------------------------------------------------------------------------
 midFrame:					;@ Called at line 96
 ;@----------------------------------------------------------------------------
-	stmfd sp!,{r1-r9,r11,lr}
-
 	ldr r1,=hCenter				;@ (screenwidth-256)/2
 	ldr r1,[r1]
 	str r1,sprCenter
@@ -672,10 +671,11 @@ midFrame:					;@ Called at line 96
 	add r0,r0,#0x01
 	str r0,scaleParms+12
 	str r2,obXScaleValue
+	stmfd sp!,{lr}
 	bl buildSpriteScaling
+	ldmfd sp!,{lr}
 
-	bl sprDMADo
-	ldmfd sp!,{r1-r9,r11,pc}
+	b sprDMADo
 
 ;@----------------------------------------------------------------------------
 endFrame:					;@ Called just before screen end (~line 192)	(r0-r2 safe to use)
@@ -770,6 +770,14 @@ setVDPMode:
 
 	bx lr
 ;@----------------------------------------------------------------------------
+refreshSprites:
+	.type refreshSprites STT_FUNC
+;@----------------------------------------------------------------------------
+	stmfd sp!,{r3-r9,r11,lr}
+	ldr r9,=SPRTILELUT
+	ldr r2,dmaOamBuffer			;@ Destination
+	b sprRefresh
+;@----------------------------------------------------------------------------
 sprDMADo:					;@ Called from midframe. YATX
 ;@----------------------------------------------------------------------------
 ;@ Word 0 : ------aaaaaaaaaa
@@ -789,8 +797,7 @@ sprDMADo:					;@ Called from midframe. YATX
 ;@ j = Sprite palette (0-15)
 
 #define PRIORITY	(0x800)		// 0x800=AGB OBJ priority 2
-	str lr,[sp,#-4]!
-
+	stmfd sp!,{r3-r9,r11,lr}
 
 	ldr r9,=SPRTILELUT
 	ldrb r0,sprMemReload
@@ -803,9 +810,9 @@ sprDMADo:					;@ Called from midframe. YATX
 	strb r1,sprMemReload		;@ Clear spr mem reload.
 	strb r1,sprMemAlloc			;@ Clear spr mem alloc.
 noReload:
-
-	ldr addy,=vdcSpriteRam		;@ Source
 	ldr r2,tmpOamBuffer			;@ Destination
+sprRefresh:
+	ldr addy,=vdcSpriteRam		;@ Source
 
 	ldr r8,=DIRTYTILES
 
@@ -910,7 +917,7 @@ dm9:
 	ldr r0,=vdcSpriteRam+0x200
 	cmp addy,r0
 	bne dm11
-	ldr pc,[sp],#4
+	ldmfd sp!,{r3-r9,r11,pc}
 dm10:
 	mov r0,#0x200+SCREEN_HEIGHT	;@ Double, y=SCREEN_HEIGHT
 	str r0,[r2],#8

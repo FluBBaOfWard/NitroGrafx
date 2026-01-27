@@ -53,7 +53,7 @@ runStart:
 	cmp r1,#SCALED_1_1
 	bne skipYPan
 	ldr r2,=yStart
-	ldrb r1,[r2]
+	ldr r1,[r2]
 	tst r0,#0x100				;@ R?
 	addne r1,#1
 	tst r0,#0x200				;@ L?
@@ -64,7 +64,7 @@ runStart:
 	sub r0,r0,#SCREEN_HEIGHT
 	cmp r1,r0
 	movpl r1,r0
-	strb r1,[r2]
+	str r1,[r2]
 skipYPan:
 
 	bl refreshEMUjoypads		;@ Z=1 if communication ok

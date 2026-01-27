@@ -27,6 +27,7 @@ void gfxInit(void);
 void vblIrqHandler(void);
 void paletteInit(u8 gammaVal);
 void antWars(void);
+void refreshSprites(void);
 
 #ifdef __cplusplus
 } // extern "C"
