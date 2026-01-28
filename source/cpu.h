@@ -15,8 +15,10 @@ extern "C" {
 extern u8 waitMaskIn;
 extern u8 waitMaskOut;
 
-void cpuReset(void);
 void run(void);
+void stepFrame(void);
+
+void cpuReset(void);
 
 #ifdef __cplusplus
 } // extern "C"

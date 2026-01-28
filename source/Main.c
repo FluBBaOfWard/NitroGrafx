@@ -67,9 +67,7 @@ int main(int argc, char **argv) {
 	initSettings();
 	bool fsOk = initFileHelper();
 	loadSettings();
-	soundInit();
-	gfxInit();
-	cdInit();
+	machineInit();
 	ejectCart();
 	if (fsOk) {
 		loadBRAM();

@@ -34,7 +34,7 @@ soundInit:
 	.type soundInit STT_FUNC
 ;@----------------------------------------------------------------------------
 	stmfd sp!,{lr}
-
+	bl PCEPSGInit
 	ldmfd sp!,{lr}
 //	bx lr
 

@@ -22,14 +22,6 @@
 
 #define vceRegSize (vcePaletteRam-vceState)
 
-	.global vceInit
-	.global vceReset
-	.global vceInitPaletteMap
-	.global paletteTxAll
-
-	.global VCE_R
-	.global VCE_W
-
 	.global vceState
 	.global vceControl
 	.global vcePixelClock
@@ -37,6 +29,14 @@
 	.global MAPPED_RGB
 	.global vceAddress			;@ Only needed for cpu hacks
 	.global vcePaletteRam		;@ Only needed for cpu hacks
+
+	.global vceInit
+	.global vceReset
+	.global vceInitPaletteMap
+	.global paletteTxAll
+
+	.global VCE_R
+	.global VCE_W
 
 
 	.syntax unified

@@ -15,6 +15,7 @@
 //#define PSGNOISEFEED 0xC0184001
 //#define PSGNOISEFEED 0x00090001
 
+	.global PCEPSGInit
 	.global PCEPSGReset
 	.global PCEPSGMixer
 	.global PCEPSGWrite
@@ -33,7 +34,7 @@
 ;@ r11 = length.
 ;@ r12 = PCE samplebuffers.
 ;@ r14 = mixerbuffer1.
-;@ Waveforms are not signed!!!
+;@ Waveforms should not be signed!!!
 ;@----------------------------------------------------------------------------
 pcmMix:
 // IIIIIVCCCCCCCCCCCC10FFFFFFFFFFFF
@@ -146,6 +147,29 @@ vol5_R:
 	.align 2
 
 ;@----------------------------------------------------------------------------
+PCEPSGInit:					;@ r0=psgptr
+;@----------------------------------------------------------------------------
+	stmfd sp!,{r4-r5,lr}
+	ldr r4,=attenuation
+	mov r0,r4
+	mov r1,#0
+	mov r2,#96*4
+	bl memset
+
+	ldr r1,=0xB53BEF57			;@ 0.70794578 (-1.5dB)
+	mov r2,#0xB000				;@ (0x8000/6/31)<<8
+	mov r5,#91					;@ 31+30+30
+attenuationLoop:
+	mov r3,r2,lsr#8
+	str r3,[r4,r5,lsl#2]
+	umull r2,r3,r1,r2
+	subs r5,r5,#1
+	cmp r5,#60
+	bne attenuationLoop
+
+	ldmfd sp!,{r4-r5,lr}
+	bx lr
+;@----------------------------------------------------------------------------
 PCEPSGReset:				;@ psgptr=r12=pointer to struct
 ;@----------------------------------------------------------------------------
 	mov r1,#0
@@ -174,41 +198,45 @@ PCEPSGMixer:				;@ r0=len, r1=dest, r12=psgptr
 ;@--------------------------
 	ldr r10,=vol0_L
 
-	ldrb r1,[psgptr,#ch0Balance]
+	ldrb r2,[psgptr,#globalBalance]
+	adr r3,attenuation
+	mov r2,r2,ror#4
+
 	ldrb r0,[psgptr,#ch0Control]
-	bl getVolumeDS				;@ Volume in r1/r2, uses r0,r3 & r4.
-	strb r1,[r10],#vol0_R-vol0_L
-	strb r2,[r10],#vol1_L-vol0_R
+	ldrb r1,[psgptr,#ch0Balance]
+	bl getVolumeDS				;@ Volume in r0/r1, uses r0,r1 & r4.
+	strb r0,[r10,#vol0_L-vol0_L]
+	strb r1,[r10,#vol0_R-vol0_L]
 
-	ldrb r1,[psgptr,#ch1Balance]
 	ldrb r0,[psgptr,#ch1Control]
-	bl getVolumeDS				;@ Volume in r1/r2, uses r0,r3 & r4.
-	strb r1,[r10],#vol1_R-vol1_L
-	strb r2,[r10],#vol2_L-vol1_R
+	ldrb r1,[psgptr,#ch1Balance]
+	bl getVolumeDS				;@ Volume in r0/r1, uses r0,r1 & r4.
+	strb r0,[r10,#vol1_L-vol0_L]
+	strb r1,[r10,#vol1_R-vol0_L]
 
-	ldrb r1,[psgptr,#ch2Balance]
 	ldrb r0,[psgptr,#ch2Control]
-	bl getVolumeDS				;@ Volume in r1/r2, uses r0,r3 & r4.
-	strb r1,[r10],#vol2_R-vol2_L
-	strb r2,[r10],#vol3_L-vol2_R
+	ldrb r1,[psgptr,#ch2Balance]
+	bl getVolumeDS				;@ Volume in r0/r1, uses r0,r1 & r4.
+	strb r0,[r10,#vol2_L-vol0_L]
+	strb r1,[r10,#vol2_R-vol0_L]
 
-	ldrb r1,[psgptr,#ch3Balance]
 	ldrb r0,[psgptr,#ch3Control]
-	bl getVolumeDS				;@ Volume in r1/r2, uses r0,r3 & r4.
-	strb r1,[r10],#vol3_R-vol3_L
-	strb r2,[r10],#vol4_L-vol3_R
+	ldrb r1,[psgptr,#ch3Balance]
+	bl getVolumeDS				;@ Volume in r0/r1, uses r0,r1 & r4.
+	strb r0,[r10,#vol3_L-vol0_L]
+	strb r1,[r10,#vol3_R-vol0_L]
 
-	ldrb r1,[psgptr,#ch4Balance]
 	ldrb r0,[psgptr,#ch4Control]
-	bl getVolumeDS				;@ Volume in r1/r2, uses r0,r3 & r4.
-	strb r1,[r10],#vol4_R-vol4_L
-	strb r2,[r10],#vol5_L-vol4_R
+	ldrb r1,[psgptr,#ch4Balance]
+	bl getVolumeDS				;@ Volume in r0/r1, uses r0,r1 & r4.
+	strb r0,[r10,#vol4_L-vol0_L]
+	strb r1,[r10,#vol4_R-vol0_L]
 
-	ldrb r1,[psgptr,#ch5Balance]
 	ldrb r0,[psgptr,#ch5Control]
-	bl getVolumeDS				;@ Volume in r1/r2, uses r0,r3 & r4.
-	strb r1,[r10],#vol5_R-vol5_L
-	strb r2,[r10]
+	ldrb r1,[psgptr,#ch5Balance]
+	bl getVolumeDS				;@ Volume in r0/r1, uses r0,r1 & r4.
+	strb r0,[r10,#vol5_L-vol0_L]
+	strb r1,[r10,#vol5_R-vol0_L]
 
 	add r0,psgptr,#pcm0CurrentAddr
 	ldmia r0,{r3-r10}
@@ -269,13 +297,13 @@ pcmMixReturn:
 	ldmfd sp!,{r0,r1,r4-r11,pc}
 ;@----------------------------------------------------------------------------
 getVolumeDS:
-	and r2,r0,#0xc0
-	cmp r2,#0x80				;@ Should channel be played?
+	and r4,r0,#0xc0
+	cmp r4,#0x80				;@ Should channel be played?
 
+	movne r0,#0
 	and r0,r0,#0x1f				;@ Channel master
 ;@	mov r3,#103					;@ Maybe boost?
 	mov r3,#126					;@ Boost.
-	movne r3,#0
 	mul r0,r3,r0
 	ldrb r3,[psgptr,#globalBalance]
 
@@ -289,9 +317,12 @@ getVolumeDS:
 	mul r4,r3,r1
 	mul r1,r0,r4
 
-	mov r1,r1,lsr#12			;@ 0 <= r1 <= 0xAF
-	mov r2,r2,lsr#12			;@ 0 <= r2 <= 0xAF
+	mov r0,r1,lsr#12			;@ 0 <= r1 <= 0xAF
+	mov r1,r2,lsr#12			;@ 0 <= r2 <= 0xAF
 	bx lr
+;@----------------------------------------------------------------------------
+attenuation:
+	.space 96*4
 ;@----------------------------------------------------------------------------
 PCEPSGWrite:				;@ r0=data, r1=address, r12=psgptr
 ;@----------------------------------------------------------------------------

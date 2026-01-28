@@ -2,7 +2,10 @@ NitroGrafx revision history
 -=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 
-V0.9.0 - 2026-01-24 (FluBBa)
+V0.9.0 - 2026-01-28 (FluBBa)
+	Fixed unscaled & aspect scaling.
+	Fixed setting of vertical scroll value.
+	Fixed sound amplitudes.
 	Added new debug menu.
 	Better menu traversing.
 	Cleaned up code.

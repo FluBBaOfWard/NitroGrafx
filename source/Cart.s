@@ -16,12 +16,6 @@
 
 //#define EMBEDDED_ROM
 
-	.global loadCart
-	.global ejectCart
-	.global packState
-	.global unpackState
-	.global getStateSize
-	.global enableSuperCDRAM
 	.global gHwFlags
 	.global romStart
 	.global gCartFlags
@@ -47,6 +41,14 @@
 	.global BIOS_Space
 	.global g_BIOSBASE
 	.global g_ROM_Size
+
+	.global machineInit
+	.global loadCart
+	.global ejectCart
+	.global packState
+	.global unpackState
+	.global getStateSize
+	.global enableSuperCDRAM
 
 	.syntax unified
 	.arm
@@ -115,6 +117,20 @@ isoFile:
 //	.incbin "valis2.iso"
 //	.incbin "valis 4.iso"
 
+	.align 2
+;@----------------------------------------------------------------------------
+machineInit: 				;@ Called from C
+	.type   machineInit STT_FUNC
+;@----------------------------------------------------------------------------
+	stmfd sp!,{lr}
+
+	bl gfxInit
+//	bl ioInit
+	bl soundInit
+	bl cdInit;
+
+	ldmfd sp!,{lr}
+	bx lr
 
 	.section .ewram, "ax", %progbits
 	.align 2

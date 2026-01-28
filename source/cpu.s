@@ -17,8 +17,9 @@
 	.global waitMaskOut
 	.global frameTotal
 
-	.global cpuReset
 	.global run
+	.global stepFrame
+	.global cpuReset
 
 	.syntax unified
 	.arm
@@ -132,6 +133,29 @@ waitMaskIn:			.byte 0
 waitCountOut:		.byte 0
 waitMaskOut:		.byte 0
 
+;@----------------------------------------------------------------------------
+stepFrame:					;@ Return after 1 frame
+	.type stepFrame STT_FUNC
+;@----------------------------------------------------------------------------
+	stmfd sp!,{r4-r11,lr}
+	ldr h6280ptr,=h6280OpTable
+	bl newFrame					;@ Display update
+	bl updateCDROM				;@ Update CD counters and stuff
+	add r0,h6280ptr,#h6280Regs
+	ldmia r0,{h6280nz-h6280pc,h6280zpage}	;@ Restore H6280 state
+;@----------------------------------------------------------------------------
+stepLoop:
+;@----------------------------------------------------------------------------
+	bl VDCDoScanline
+	cmp r0,#0
+	ldreq r0,scanlineCycles
+	beq h6280RunXCycles
+;@----------------------------------------------------------------------------
+	add r0,h6280ptr,#h6280Regs
+	stmia r0,{h6280nz-h6280pc,h6280zpage}	;@ Save H6280 state
+
+	ldmfd sp!,{r4-r11,lr}
+	bx lr
 ;@----------------------------------------------------------------------------
 cpuReset:					;@ Called by loadcart/resetGame
 	.type cpuReset STT_FUNC

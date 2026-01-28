@@ -25,7 +25,8 @@
 
 #define MAXDIGITS	2
 #define NUMOFNUMS	3
-
+#define FRAMES_PER_SECOND (75)
+#define SECONDS_PER_MINUTE (60)
 
 /* Interpret argument as timecode value ("MM:SS:FF") and return the total
    number of frames. Tries to work in a way similar to atoi(), ignoring any
@@ -34,19 +35,16 @@
    "0" (interpreted as "00:00:00"), "1:2" ("00:01:02") and so on.
    Returns -1 on error (argument NULL or some value out of range) */
 
-long
-tc2fr(const char *tc)
+long tc2fr(const char *tc)
 {
 	int minutes = 0;
 	int seconds = 0;
 	int frames = 0;
-	long totalframes = 0;
 
 	char tmp[MAXDIGITS + 1];
 	int nums[NUMOFNUMS];
 	int n = 0;
 	int i = 0;
-//	int last_was_colon = 0;
 	int stop = 0;
 
 	if (tc == NULL) {
@@ -114,10 +112,8 @@ tc2fr(const char *tc)
 		break;
 	}
 
-	totalframes = ((60 * minutes) + seconds) * 75 + frames;
-
-	if (seconds > 59 || frames > 74) {
+	if (seconds >= SECONDS_PER_MINUTE || frames >= FRAMES_PER_SECOND) {
 		return -1;
 	}
-	return totalframes;
+	return ((SECONDS_PER_MINUTE * minutes) + seconds) * FRAMES_PER_SECOND + frames;
 }

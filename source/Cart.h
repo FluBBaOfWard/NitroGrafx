@@ -25,6 +25,7 @@ extern u8 ROM_Space[0x280200];
 extern u8 BIOS_Space[0x40000];
 extern void *g_BIOSBASE;
 
+void machineInit(void);
 void loadCart(void);
 void ejectCart(void);
 
