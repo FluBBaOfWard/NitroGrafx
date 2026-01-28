@@ -156,13 +156,14 @@ PCEPSGInit:					;@ r0=psgptr
 	mov r2,#96*4
 	bl memset
 
-	ldr r1,=0xB53BEF57			;@ 0.70794578 (-1.5dB)
+//	ldr r1,=0xB53BEF57			;@ 0.70794578 (-1.5dB)
+	ldr r1,=0xE189374B			;@ Not -1.5dB
 	mov r2,#0xB000				;@ (0x8000/6/31)<<8
 	mov r5,#91					;@ 31+30+30
 attenuationLoop:
 	mov r3,r2,lsr#8
 	str r3,[r4,r5,lsl#2]
-	umull r2,r3,r1,r2
+	umull r3,r2,r1,r2
 	subs r5,r5,#1
 	cmp r5,#60
 	bne attenuationLoop
@@ -296,29 +297,25 @@ pcmMixReturn:
 
 	ldmfd sp!,{r0,r1,r4-r11,pc}
 ;@----------------------------------------------------------------------------
-getVolumeDS:
-	and r4,r0,#0xc0
+getVolumeDS:				;@ r0=chCtrl,r1=chBalance,r2=globalBalance
+;@----------------------------------------------------------------------------
+	and r4,r0,#0xC0
 	cmp r4,#0x80				;@ Should channel be played?
 
 	movne r0,#0
-	and r0,r0,#0x1f				;@ Channel master
-;@	mov r3,#103					;@ Maybe boost?
-	mov r3,#126					;@ Boost.
-	mul r0,r3,r0
-	ldrb r3,[psgptr,#globalBalance]
+	and r0,r0,#0x1F				;@ Channel master
 
-	and r2,r1,#0xf				;@ Channel right
-	and r4,r3,#0xf				;@ Main right
-	mul r2,r4,r2
-	mul r2,r0,r2
+	and r4,r1,#0xF				;@ Channel right
+	add r4,r0,r4,lsl#1
+	add r4,r4,r2,lsr#28-1		;@ Global right
 
 	mov r1,r1,lsr#4				;@ Channel left
-	mov r3,r3,lsr#4				;@ Main left
-	mul r4,r3,r1
-	mul r1,r0,r4
+	add r0,r0,r1,lsl#1
+	and r1,r2,#0xF				;@ Global left
+	add r0,r0,r1,lsl#1
 
-	mov r0,r1,lsr#12			;@ 0 <= r1 <= 0xAF
-	mov r1,r2,lsr#12			;@ 0 <= r2 <= 0xAF
+	ldr r0,[r3,r0,lsl#2]
+	ldr r1,[r3,r4,lsl#2]
 	bx lr
 ;@----------------------------------------------------------------------------
 attenuation:

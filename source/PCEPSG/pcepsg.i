@@ -20,7 +20,7 @@ noiseCtrl5:		.byte 0			;@ Noise control ch5
 lfoFreq:		.byte 0			;@ LFO frequency
 lfoCtrl:		.byte 0			;@ LFO control
 ch3Change:		.byte 0
-				.space 1
+				.skip 1
 
 ch0Control:		.byte 0
 ch1Control:		.byte 0
