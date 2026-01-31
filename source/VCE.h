@@ -23,7 +23,27 @@ typedef struct {
 
 extern VCECore vceState;
 
-void vceSaveState(void);
+/**
+ * Saves the state of the VCE to the destination.
+ * @param  *destination: Where to save the state.
+ * @param  *chip: The VCE chip to save.
+ * @return The size of the state.
+ */
+int vceSaveState(void *destination, const VCECore *chip);
+
+/**
+ * Loads the state of the VCE from the source.
+ * @param  *chip: The VCE chip to load a state into.
+ * @param  *source: Where to load the state from.
+ * @return The size of the state.
+ */
+int vceLoadState(VCECore *chip, const void *source);
+
+/**
+ * Gets the state size of a VCE chip.
+ * @return The size of the state.
+ */
+int vceGetStateSize(void);
 
 #ifdef __cplusplus
 } // extern "C"

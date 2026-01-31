@@ -29,6 +29,7 @@
 	.global vdcReset
 	.global vdcSaveState
 	.global vdcLoadState
+	.global vdcGetStateSize
 	.global VDCDoScanline
 
 	.global VDC_R
@@ -112,12 +113,27 @@ vramLoop:
 	ldmfd sp!,{lr}
 	bx lr
 ;@----------------------------------------------------------------------------
-vdcSaveState:
+vdcSaveState:			;@ In r0=destination, r1=vdcptr. Out r0=state size.
+	.type   vdcSaveState STT_FUNC
 ;@----------------------------------------------------------------------------
+	mov r2,#vdcStateSize
+	stmfd sp!,{r2,lr}
+	bl memcpy
+	ldmfd sp!,{r0,lr}
 	bx lr
 ;@----------------------------------------------------------------------------
-vdcLoadState:
+vdcLoadState:			;@ In r0=vdcptr, r1=source. Out r0=state size.
+	.type   vdcLoadState STT_FUNC
 ;@----------------------------------------------------------------------------
+	stmfd sp!,{lr}
+	mov r2,#vdcStateSize
+	bl memcpy
+	ldmfd sp!,{lr}
+;@----------------------------------------------------------------------------
+vdcGetStateSize:		;@ Out r0=state size.
+	.type   vdcGetStateSize STT_FUNC
+;@----------------------------------------------------------------------------
+	mov r0,#vdcStateSize
 	bx lr
 
 VDCLineStateTable:
@@ -461,16 +477,15 @@ VDC_CR_L_W:					;@ 05
 	strb r0,vdcCtrl1
 newVDCCR:
 	ldrb r0,vdcCtrl1
-	ands r1,r0,#0x80			;@ Bg en? clear r1
+	movs r1,r0,lsr#7			;@ Bg/Obj en? clear r1
 	movne r1,#0x0C				;@ Bg2 & bg3
-	tst r0,#0x40				;@ Obj en?
-	orrne r1,r1,#0x30
+	orrcs r1,r1,#0x30
 	orr r1,r1,r1,lsl#8
 	ldr r0,vdcCtrl1Old			;@ r0=lastval
 	strh r1,vdcCtrl1Old
 
 	ldr addy,scanline
-	ldr r2,vdcLatchTime			;@ 1552
+	ldr r2,vdcLatchTime			;@ 1504/1552
 	cmp r2,cycles
 	addcs addy,addy,#1
 	cmp addy,#260
@@ -535,7 +550,7 @@ ScrolX_H_W:					;@ 07
 	strb r0,vdcScroll+1
 newX:							;@ ctrl0_W, loadstate jumps here
 	ldr r1,scanline
-	ldr r2,vdcLatchTime			;@ 1552
+	ldr r2,vdcLatchTime			;@ 1504/1552
 	cmp r2,cycles
 	addcs r1,r1,#1
 	ldr r2,vdcScroll
@@ -580,7 +595,7 @@ ScrolY_H_W:					;@ 08
 	strb r0,vdcScroll+3
 newY:
 	ldr r1,scanline
-	ldr r2,vdcLatchTime			;@ 1552
+	ldr r2,vdcLatchTime			;@ 1504/1552
 	cmp r2,cycles
 	addcs r1,r1,#1
 	ldr r2,vdcScroll
@@ -1012,7 +1027,7 @@ vdcDoVramDMA:
 vdcPrimedVBl:
 	.byte 0						;@
 vdcLatchTime:
-	.long 1504*CYCLE			;@ 1552
+	.long 1504*CYCLE			;@ 1504/1552
 vdcScanlineHook:	.long 0
 
 vdcStateTable:

@@ -20,10 +20,8 @@ int packState(void *statePtr) {
 	memcpy(statePtr+size, pceVRAM, sizeof(pceVRAM));
 	size += sizeof(pceVRAM);
 	size += h6280SaveState(statePtr+size, &h6280OpTable);
-	memcpy(statePtr+size, &vdcState, sizeof(vdcState));
-	size += sizeof(vdcState);
-	memcpy(statePtr+size, &vceState, sizeof(vceState));
-	size += sizeof(vceState);
+	size += vdcSaveState(statePtr+size, &vdcState);
+	size += vceSaveState(statePtr+size, &vceState);
 	size += pcePSGSaveState(statePtr+size, &PSG_0);
 	return size;
 }
@@ -37,10 +35,8 @@ void unpackState(const void *statePtr) {
 	memcpy(pceVRAM, statePtr+size, sizeof(pceVRAM));
 	size += sizeof(pceVRAM);
 	size += h6280LoadState(&h6280OpTable, statePtr+size);
-	memcpy(&vdcState, statePtr+size, sizeof(vdcState));
-	size += sizeof(vdcState);
-	memcpy(&vceState, statePtr+size, sizeof(vceState));
-	size += sizeof(vceState);
+	size += vdcLoadState(&vdcState, statePtr+size);
+	size += vceLoadState(&vceState, statePtr+size);
 	size += pcePSGLoadState(&PSG_0, statePtr+size);
 }
 
@@ -50,8 +46,8 @@ int getStateSize() {
 	size += sizeof(pceSRAM);
 	size += sizeof(pceVRAM);
 	size += h6280GetStateSize();
-	size += sizeof(vdcState);
-	size += sizeof(vceState);
+	size += vdcGetStateSize();
+	size += vceGetStateSize();
 	size += pcePSGGetStateSize();
 	return size;
 }

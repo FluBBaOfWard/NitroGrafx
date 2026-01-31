@@ -32,6 +32,9 @@
 
 	.global vceInit
 	.global vceReset
+	.global vceSaveState
+	.global vceLoadState
+	.global vceGetStateSize
 	.global vceInitPaletteMap
 	.global paletteTxAll
 
@@ -72,6 +75,30 @@ vceReset:					;@ Called from GFX reset
 
 	ldmfd sp!,{lr}
 	bx lr
+;@----------------------------------------------------------------------------
+vceSaveState:			;@ In r0=destination, r1=vceptr. Out r0=state size.
+	.type   vceSaveState STT_FUNC
+;@----------------------------------------------------------------------------
+	ldr r2,=vceStateSize
+	stmfd sp!,{r2,lr}
+	bl memcpy
+	ldmfd sp!,{r0,lr}
+	bx lr
+;@----------------------------------------------------------------------------
+vceLoadState:			;@ In r0=vceptr, r1=source. Out r0=state size.
+	.type   vceLoadState STT_FUNC
+;@----------------------------------------------------------------------------
+	stmfd sp!,{lr}
+	ldr r2,=vceStateSize
+	bl memcpy
+	ldmfd sp!,{lr}
+;@----------------------------------------------------------------------------
+vceGetStateSize:		;@ Out r0=state size.
+	.type   vceGetStateSize STT_FUNC
+;@----------------------------------------------------------------------------
+	ldr r0,=vceStateSize
+	bx lr
+
 ;@----------------------------------------------------------------------------
 //	.section .itcm, "ax", %progbits
 	.section .text
@@ -378,11 +405,13 @@ vcePixelClock:
 	.byte 0
 vceDMACyclesPerScanline:
 	.byte 0
-	.byte 0
+vcePadding:
+	.skip 1
 vcePaletteRam:
 	.space 0x400
 vceStateEnd:
 
+vceStateSize = vceStateEnd - vceState
 	.size vceState, (vceStateEnd - vceState)
 
 ;@----------------------------------------------------------------------------

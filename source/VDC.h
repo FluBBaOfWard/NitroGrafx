@@ -46,7 +46,7 @@ typedef struct {
 	u8 DoSprDMA;			//
 	u8 DoVramDMA;			//
 	u8 PrimedVBl;			//
-	u32 LatchTime;			// 1504*CYCLE /1552
+	u32 LatchTime;			// 1504/1552
 	u32 ScanlineHook;
 
 // StateTable
@@ -61,7 +61,27 @@ typedef struct {
 
 extern VDCCore vdcState;
 
-void vdcSaveState(void);
+/**
+ * Saves the state of the VDC to the destination.
+ * @param  *destination: Where to save the state.
+ * @param  *chip: The VDC chip to save.
+ * @return The size of the state.
+ */
+int vdcSaveState(void *destination, const VDCCore *chip);
+
+/**
+ * Loads the state of the VDC from the source.
+ * @param  *chip: The VDC chip to load a state into.
+ * @param  *source: Where to load the state from.
+ * @return The size of the state.
+ */
+int vdcLoadState(VDCCore *chip, const void *source);
+
+/**
+ * Gets the state size of a VDC chip.
+ * @return The size of the state.
+ */
+int vdcGetStateSize(void);
 
 #ifdef __cplusplus
 } // extern "C"
