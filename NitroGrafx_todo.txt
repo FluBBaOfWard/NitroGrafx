@@ -39,9 +39,7 @@ Graphic:
 Sound:
 	Update once per scanline.
 	PSG waveforms are not signed, optimize! Is this different between revisions?
-	Check sound levels on the different level controls.
-		(master left/right -3dB per step, channel -1.5dB per step, channel-left/right -3dB per step).
-		Silence at -45dB.
+	Check sound levels, figure out correct gain per level. Not -1.5dB per step.
 	Volume is only updated at 2kHz?
 	Only load 3k per frame before music starts playing.
 	Add ADPCM emulation (MSM5205).
@@ -59,7 +57,6 @@ Games:
 CPU:
 	Move rom_map to H6280 so that jmp becomes even faster.
 	Make list of all memory reads (mem, ram , io, sram).
-	Move mapper kod (0x53) to cpu code to get rid of branches.
 	Decimal mode still broken?
 
 

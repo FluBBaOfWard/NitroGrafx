@@ -20,6 +20,7 @@ extern u8 gRgbYcbcr;
 extern u8 gScalingSet;
 extern u8 sprCollision;
 
+extern u16 pceVRAM[8000];
 extern u16 EMUPALBUFF[200];
 extern u32 GFX_DISPCNT;
 

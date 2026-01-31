@@ -12,7 +12,7 @@
 #include "io.h"
 #include "ARMH6280/Version.h"
 
-#define EMUVERSION "V0.9.0 2026-01-28"
+#define EMUVERSION "V0.9.0 2026-01-31"
 
 // Asm functions
 extern void paletteTxAll(void);		// VCE.s
@@ -164,7 +164,7 @@ void uiAbout() {
 
 	drawMenuText("B:      TG16 Button 2", 7, 0);
 	drawMenuText("A:      TG16 Button 1", 8, 0);
-	drawMenuText("Start:  TG16 Start button", 9, 0);
+	drawMenuText("Start:  TG16 Run button", 9, 0);
 	drawMenuText("Select: TG16 Select button", 10, 0);
 	drawMenuText("DPad:   TG16 DPad", 11, 0);
 

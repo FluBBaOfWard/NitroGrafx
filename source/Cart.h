@@ -20,23 +20,20 @@ extern u8 gMachine;
 extern u8 gRegion;
 extern u8 gBramChanged;
 
-extern u8 EMU_SRAM[0x2000];
-extern u8 ROM_Space[0x280200];
-extern u8 BIOS_Space[0x40000];
+extern u8 pceRAM[0x2000];
+extern u8 sgxRAM[0x8000];
+extern u8 pceSRAM[0x2000];
+extern u8 CD_PCM_RAM[0x10000];
+extern u8 SCD_RAM[0x30000];
+extern u8 PCE_CD_RAM[0x10000];
+extern u8 ACC_RAM[0x200000];
+extern u8 ROM_Space[0x290000];
+extern u8 biosSpace[0x40000];
 extern void *g_BIOSBASE;
 
 void machineInit(void);
 void loadCart(void);
 void ejectCart(void);
-
-/// This runs all save state functions for each chip.
-int packState(u32 *statePtr);
-
-/// This runs all load state functions for each chip.
-void unpackState(u32 *statePtr);
-
-/// Gets the total state size in bytes.
-int getStateSize(void);
 
 #ifdef __cplusplus
 } // extern "C"

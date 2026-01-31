@@ -13,13 +13,14 @@
 	.extern pauseEmulation
 	.extern powerIsOn
 
+	.global PSG_0
+
 	.global soundInit
 	.global soundReset
 	.global soundSetFrequency
 	.global VblSound2
 	.global PSG_0_R
 	.global PSG_0_W
-	.global soundVariables
 	.global setMuteSoundGUI
 	.global setMuteSoundGame
 
@@ -225,7 +226,6 @@ muteSoundGame:
 	.section .bss
 #endif
 	.align 2
-soundVariables:
 PSG_0:
 	.space pcePsgSize
 ;@----------------------------------------------------------------------------

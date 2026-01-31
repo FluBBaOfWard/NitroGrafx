@@ -3,10 +3,10 @@
 PC-Engine/TurboGrafx-16 emulator for NDS
 
 This is a PC-Engine/TurboGrafx-16 emulator for the Nintendo DS(i)/3DS, it can
-also emulate some of the (Super) CD-ROM^2 & Arcade Card. All games are not
-perfect, (alot of US games doesn't work because they are encrypted, use PCEToy
-or the emulator Ootake to decrypt these before you use them). Don't use
-overdumps as these are evil on PC Engine.
+also emulate some of the (Super) CD-ROM^2 & Arcade Card. It does not emulate
+the SuperGrafx. All games are not perfect, (alot of US games doesn't work
+because they are encrypted, use PCEToy or the emulator Ootake to decrypt these
+before you use them). Don't use overdumps as these are evil on PC Engine.
 
 ## How to use
 

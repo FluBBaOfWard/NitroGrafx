@@ -496,7 +496,7 @@ NO.     MODE    DETAILS
                      b 5-4   'EX' external sync (from VCE)
                                   00 - vsync and hsync inputs
                                   01 - vsync input, hsync output
-                                  10 - vsync output, hsync input
+                                  10 - vsync output, hsync input (invalid)
                                   11 - vsync and hsync outputs
 
                      b 3     irq  (on/off)

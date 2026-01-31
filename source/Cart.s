@@ -11,9 +11,6 @@
 #include "ARMH6280/H6280mac.h"
 #include "PCEPSG/pcepsg.i"		// For savestates
 
-#define vdcStateSize 80
-#define vceStateSize 80
-
 //#define EMBEDDED_ROM
 
 	.global gHwFlags
@@ -32,22 +29,19 @@
 	.global romMask
 	.global MEMMAPTBL_
 
-	.global EMU_RAM
-	.global EMU_SRAM
-	.global PCE_RAM
+	.global pceRAM
+	.global sgxRAM
+	.global pceSRAM
 	.global CD_PCM_RAM
 	.global ACC_RAM
 	.global ROM_Space
-	.global BIOS_Space
+	.global biosSpace
 	.global g_BIOSBASE
 	.global g_ROM_Size
 
 	.global machineInit
 	.global loadCart
 	.global ejectCart
-	.global packState
-	.global unpackState
-	.global getStateSize
 	.global enableSuperCDRAM
 
 	.syntax unified
@@ -237,7 +231,7 @@ tbLoop2:
 ;@	bl enablePopulousRam
 
 
-	ldr r1,=EMU_SRAM
+	ldr r1,=pceSRAM
 	ldr r7,=sram_R
 	ldr r8,=sram_W
 	mov r0,#0xF7				;@ SRAM
@@ -245,7 +239,7 @@ tbLoop2:
 	str r7,[r5,r0,lsl#2]		;@ RdMem
 	str r8,[r6,r0,lsl#2]		;@ WrMem
 
-	ldr r1,=PCE_RAM
+	ldr r1,=pceRAM
 	ldr r7,=ram_R
 	ldr r8,=ram_W
 memL3:
@@ -415,7 +409,7 @@ memReset:
 	mov r7,r6
 	stmfd sp!,{r2,r3,r6,r7}
 	ldmfd sp!,{r4,r5,r8,r9}
-	ldr r0,=EMU_RAM				;@ Clear PCE RAM.
+	ldr r0,=pceRAM				;@ Clear PCE RAM.
 	mov r1,#0x2000/64
 wramLoop0:
 	subs r1,r1,#1
@@ -428,11 +422,10 @@ wramLoop0:
 	ldmfd sp!,{r4-r9,r11,lr}
 	bx lr
 
-
 ;@----------------------------------------------------------------------------
 checkPCEBRAM:
 ;@----------------------------------------------------------------------------
-	ldr r0,=EMU_SRAM
+	ldr r0,=pceSRAM
 	ldr r1,[r0]
 	ldr r2,=0x4d425548			;@ Init BRAM. "HUBM"
 	cmp r1,r2
@@ -446,116 +439,6 @@ checkPCEBRAM:
 	mov r2,#0x2000/4
 	sub r2,r2,#2
 	b memset_
-
-;@----------------------------------------------------------------------------
-packState:	;@ Called from gui.c.
-;@int packState(u32 *statePtr), copy state to <here>, return size
-	.type   packState STT_FUNC
-;@----------------------------------------------------------------------------
-	stmfd sp!,{r4-r5,h6280ptr,lr}
-	ldr h6280ptr,=h6280OpTable
-
-	mov r5,r0					;@ r5=where to copy state
-	bl fixCpuPCSave				;@ adjust h6280pc so it isn't based on rombase
-
-	mov r0,#0					;@ r0 holds total size (return value)
-
-	adr r4,saveLst				;@ r4=list of stuff to copy
-	mov r3,#(lstEnd-saveLst)/8	;@ r3=items in list
-ss1:
-	ldmia r4!,{r1,r2}			;@ r1=what to copy, r2=how much to copy
-	add r0,r0,r2
-ss0:
-	ldr r12,[r1],#4
-	str r12,[r5],#4
-	subs r2,r2,#4
-	bne ss0
-	subs r3,r3,#1
-	bne ss1
-
-	bl fixCpuPCLoad
-
-	ldmfd sp!,{r4-r5,h6280ptr,lr}
-	bx lr
-
-saveLst:
-	.long EMU_SRAM,0x2000
-	.long EMU_RAM,0x2000
-	.long PCE_VRAM,0x10000
-//	.long h6280State,h6280Size
-	.long vdcState,vdcStateSize
-	.long vceState,vceStateSize
-	.long soundVariables,pcePsgSize
-	.long ioState,4
-lstEnd:
-
-fixCpuPCSave:
-	loadLastBank r1
-	ldr r2,[h6280ptr,#h6280RegPC]
-	sub r2,r2,r1
-	str r2,[h6280ptr,#h6280RegPC]
-	bx lr
-
-fixCpuPCLoad:
-	stmfd sp!,{r0,h6280pc,lr}
-	ldr h6280pc,[h6280ptr,#h6280RegPC]
-	encodePC
-	str h6280pc,[h6280ptr,#h6280RegPC]
-	ldmfd sp!,{r0,h6280pc,lr}
-	bx lr
-
-;@----------------------------------------------------------------------------
-unpackState:	;@ Called from C
-;@ void unpackState(u32 *stateptr)	 (stateptr must be word aligned)
-	.type   unpackState STT_FUNC
-;@----------------------------------------------------------------------------
-	stmfd sp!,{r4-r5,h6280ptr,lr}
-	ldr h6280ptr,=h6280OpTable
-
-	mov r4,#(lstEnd-saveLst)/8	;@ read entire state
-	adr r3,saveLst
-ls1:
-	ldmia r3!,{r1,r2}
-ls0:
-	ldr r5,[r0],#4
-	str r5,[r1],#4
-	subs r2,r2,#4
-	bne ls0
-	subs r4,r4,#1
-	bne ls1
-
-	ldr r0,=PCE_RAM
-	str r0,[h6280ptr,#h6280ZeroPage]
-
-	bl reInitMapperData
-
-	bl fixCpuPCLoad
-
-	bl gfxSetupAfterLoadState
-
-	ldmfd sp!,{r4-r5,h6280ptr,lr}
-	bx lr
-
-;@----------------------------------------------------------------------------
-getStateSize:	;@ Called from gui.c.
-;@int getStateSize(void), return size
-	.type   getStateSize STT_FUNC
-;@----------------------------------------------------------------------------
-	stmfd sp!,{r4}
-
-	mov r0,#0					;@ r0 holds total size (return value)
-	adr r4,saveLst				;@ r4=list of stuff to copy
-	mov r3,#(lstEnd-saveLst)/8	;@ r3=items in list
-gss1:
-	ldmia r4!,{r1,r2}			;@ r1=what to copy, r2=how much to copy
-	add r0,r0,r2
-	subs r3,r3,#1
-	bne gss1
-
-	ldmfd sp!,{r4}
-	bx lr
-
-
 
 ;@----------------------------------------------------------------------------
 
@@ -590,9 +473,12 @@ gBramChanged:
 gHackFlags:
 	.long 0
 
-	.pool
-	.align 4
+#ifdef GBA
+	.section .sbss				;@ This is EWRAM on GBA with devkitARM
+#else
 	.section .bss
+#endif
+	.align 8					;@ Align to 256 bytes for RAM
 WRMEMTBL_:
 	.space 256*4
 RDMEMTBL_:
@@ -602,14 +488,16 @@ MEMMAPTBL_:
 
 DISABLEDMEM:
 	.space 0x2000
-EMU_SRAM:
-	.space 0x2000
-	.size EMU_SRAM, 0x2000
-EMU_RAM:
-PCE_RAM:
-	.space 0x8000
+pceSRAM:
+	.space 0x2000				;@ This is ususally just 2kB
+	.size pceSRAM, 0x2000
+pceRAM:
+sgxRAM:
+	.space 0x8000				;@ PC-Engine is 8kB, SuperGrafx is 32kB.
+	.size pceRAM, 0x2000
+	.size sgxRAM, 0x8000
 ROM_Space:
-BIOS_Space:
+biosSpace:
 	.space 0x40000				;@ US/JP 256kB BIOS max
 CD_PCM_RAM:
 	.space 0x10000

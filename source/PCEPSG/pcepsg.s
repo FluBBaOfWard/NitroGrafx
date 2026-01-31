@@ -17,6 +17,9 @@
 
 	.global PCEPSGInit
 	.global PCEPSGReset
+	.global pcePSGSaveState
+	.global pcePSGLoadState
+	.global pcePSGGetStateSize
 	.global PCEPSGMixer
 	.global PCEPSGWrite
 
@@ -191,6 +194,30 @@ rLoop:
 	str r0,[psgptr,#noise4CurrentAddr]
 	str r0,[psgptr,#noise5CurrentAddr]
 	bx lr
+;@----------------------------------------------------------------------------
+pcePSGSaveState:		;@ In r0=destination, r1=psgptr. Out r0=state size.
+	.type   pcePSGSaveState STT_FUNC
+;@----------------------------------------------------------------------------
+	mov r2,#pcePsgSize
+	stmfd sp!,{r2,lr}
+	bl memcpy
+	ldmfd sp!,{r0,lr}
+	bx lr
+;@----------------------------------------------------------------------------
+pcePSGLoadState:			;@ In r0=psgptr, r1=source. Out r0=state size.
+	.type   pcePSGLoadState STT_FUNC
+;@----------------------------------------------------------------------------
+	stmfd sp!,{lr}
+	mov r2,#pcePsgSize
+	bl memcpy
+	ldmfd sp!,{lr}
+;@----------------------------------------------------------------------------
+pcePSGGetStateSize:			;@ Out r0=state size.
+	.type   pcePSGGetStateSize STT_FUNC
+;@----------------------------------------------------------------------------
+	mov r0,#pcePsgSize
+	bx lr
+
 
 ;@----------------------------------------------------------------------------
 PCEPSGMixer:				;@ r0=len, r1=dest, r12=psgptr

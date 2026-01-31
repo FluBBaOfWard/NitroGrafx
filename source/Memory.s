@@ -147,7 +147,7 @@ ram_W:						;@ Ram write ($2000-$3FFF)
 sram_R:						;@ sram read
 ;@----------------------------------------------------------------------------
 	bic r1,addy,#0xfe000
-	ldr r0,=EMU_SRAM
+	ldr r0,=pceSRAM
 	ldrb r0,[r0,r1]
 	ldr r1,=bramAccess
 	ldrb r1,[r1]
@@ -162,7 +162,7 @@ sram_W:						;@ sram write
 	cmp r1,#0
 
 	bicne r2,addy,#0xfe000
-	ldrne r1,=EMU_SRAM
+	ldrne r1,=pceSRAM
 	strbne r0,[r1,r2]
 	ldrne r1,=gBramChanged
 	movne r2,#1

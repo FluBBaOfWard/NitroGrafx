@@ -11,9 +11,8 @@
 #include "Equates.h"
 #include "ARMH6280/H6280mac.h"
 
-#define vdcStateSize (vdcStateEnd-vdcState)
-
 	.global vdcState
+	.global vdcStateEnd
 	.global scanline
 	.global hCenter
 	.global vdcRegister
@@ -313,7 +312,7 @@ fillRLatch:
 
 	movs r2,r2,asr#15
 	ldrpl r1,vramPtr
-	ldrhpl r1,[r1,r2]			;@ Read from virtual PCE_VRAM
+	ldrhpl r1,[r1,r2]			;@ Read from virtual pceVRAM
 	str r1,vdcReadLatch
 
 	bx lr
@@ -449,7 +448,7 @@ VRAM_H_W:					;@ 02
 
 	movs r2,r2,asr#15
 	ldrpl r1,vramPtr
-	strhpl r0,[r1,r2]			;@ Write to virtual PCE_VRAM
+	strhpl r0,[r1,r2]			;@ Write to virtual pceVRAM
 	ldrpl r1,=DIRTYTILES
 	strbpl h6280a,[r1,r2,lsr#7]	;@ Write to dirtymap
 	bx lr
@@ -912,8 +911,8 @@ vramDMA_W:			;@ VRAM to VRAM DMA transfer, r0=cycles to run
 vramDmaLoop:
 	mov r1,r1,lsr#15
 	movs r2,r2,asr#15
-	ldrhpl r9,[r5,r1]			;@ Read from virtual PCE_VRAM
-	strhpl r9,[r5,r2]			;@ Write to virtual PCE_VRAM
+	ldrhpl r9,[r5,r1]			;@ Read from virtual pceVRAM
+	strhpl r9,[r5,r2]			;@ Write to virtual pceVRAM
 	strbpl r3,[r6,r2,lsr#7]		;@ Write to dirtymap, r3 low byte=0.
 
 	add r1,r7,r1,lsl#15
@@ -943,7 +942,7 @@ vramDmaLoop:
 
 
 vramPtr:
-	.long PCE_VRAM
+	.long pceVRAM
 
 vdcState:
 vdcLineState:
@@ -1029,6 +1028,7 @@ vdcLastScanline:	.long 261, frameEndHook
 vdcSpriteRam:
 	.space 0x200
 vdcStateEnd:
+vdcStateSize = vdcStateEnd - vdcState
 
 ;@----------------------------------------------------------------------------
 	.end

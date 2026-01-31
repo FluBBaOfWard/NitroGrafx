@@ -129,7 +129,7 @@ int loadBRAM() {
 		return 1;
 	}
 	if ((file = fopen(bramName, "r"))) {
-		fread(EMU_SRAM, 1, sizeof(EMU_SRAM), file);
+		fread(pceSRAM, 1, sizeof(pceSRAM), file);
 		fclose(file);
 		return 0;
 	}
@@ -149,7 +149,7 @@ void saveBRAM() {
 		return;
 	}
 	if ((file = fopen(bramName, "w"))) {
-		fwrite(EMU_SRAM, 1, sizeof(EMU_SRAM), file);
+		fwrite(pceSRAM, 1, sizeof(pceSRAM), file);
 		fclose(file);
 		gBramChanged = 0;
 	}
@@ -239,8 +239,8 @@ int loadBIOS(void *dest, const char *fPath, const int maxSize) {
 }
 
 int loadUSBIOS(void) {
-	if (loadBIOS(BIOS_Space, cfg.biosPath, sizeof(BIOS_Space))) {
-		g_BIOSBASE = BIOS_Space;
+	if (loadBIOS(biosSpace, cfg.biosPath, sizeof(biosSpace))) {
+		g_BIOSBASE = biosSpace;
 		biosLoaded = true;
 		return 1;
 	}
@@ -278,7 +278,7 @@ void selectCDROM() {
 				loadUSBIOS();
 			}
 			if (biosLoaded) {
-				g_ROM_Size = sizeof(BIOS_Space);
+				g_ROM_Size = sizeof(biosSpace);
 				setEmuSpeed(0);
 				loadCart();
 				if (emuSettings & AUTOLOAD_STATE) {

@@ -16,6 +16,11 @@
 		9C7BB95025FCE08B00EA9C9C /* EmuFont.grit */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = EmuFont.grit; sourceTree = "<group>"; };
 		9C7BB95125FCE08B00EA9C9C /* EmuFont.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = EmuFont.png; sourceTree = "<group>"; };
 		9C8F33F0248ACAF400996E5A /* nds_asm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = nds_asm.h; sourceTree = "<group>"; };
+		9CBE3EFC2F2E097B00A4A0FF /* PCEngine.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PCEngine.h; sourceTree = "<group>"; };
+		9CBE3EFD2F2E097B00A4A0FF /* PCEngine.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = PCEngine.c; sourceTree = "<group>"; };
+		9CBE3EFE2F2E1DCC00A4A0FF /* pcepsg.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pcepsg.h; sourceTree = "<group>"; };
+		9CBE3EFF2F2E1DDF00A4A0FF /* VCE.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = VCE.h; sourceTree = "<group>"; };
+		9CBE3F002F2E1DDF00A4A0FF /* VDC.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = VDC.h; sourceTree = "<group>"; };
 		9CBEE0D026EDE1440095347A /* EmuSettings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EmuSettings.h; sourceTree = "<group>"; };
 		9CF752362B6FF7BD00001220 /* EmuMenu.i */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c.preprocessed; path = EmuMenu.i; sourceTree = "<group>"; };
 		A47F09142084B325004E1DA6 /* ArcadeCard.i */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c.preprocessed; path = ArcadeCard.i; sourceTree = "<group>"; };
@@ -180,6 +185,8 @@
 				A48CC03F1618E65300465E20 /* Gui.c */,
 				A48CC03D1618E65300465E20 /* FileHandling.h */,
 				A48CC03C1618E65300465E20 /* FileHandling.c */,
+				9CBE3EFC2F2E097B00A4A0FF /* PCEngine.h */,
+				9CBE3EFD2F2E097B00A4A0FF /* PCEngine.c */,
 				A47F09162084E1A7004E1DA6 /* Cart.h */,
 				A48CC0301618E65300465E20 /* Cart.s */,
 				A47F09192084E1A7004E1DA6 /* cpu.h */,
@@ -191,7 +198,9 @@
 				A47F09182084E1A7004E1DA6 /* Gfx.h */,
 				A48CC03E1618E65300465E20 /* Gfx.s */,
 				A48CC0431618E65300465E20 /* Memory.s */,
+				9CBE3F002F2E1DDF00A4A0FF /* VDC.h */,
 				A48CC0501618E65300465E20 /* VDC.s */,
+				9CBE3EFF2F2E1DDF00A4A0FF /* VCE.h */,
 				A49024FE207BC1400086B28E /* VCE.s */,
 				A47F091A2084ECB6004E1DA6 /* cdrom.h */,
 				A48CC0311618E65300465E20 /* cdrom.s */,
@@ -231,6 +240,7 @@
 		A48CC0451618E65300465E20 /* PCEPSG */ = {
 			isa = PBXGroup;
 			children = (
+				9CBE3EFE2F2E1DCC00A4A0FF /* pcepsg.h */,
 				A4DA86772084B1AC00E7404E /* pcepsg.i */,
 				A48CC0461618E65300465E20 /* pcepsg.s */,
 			);

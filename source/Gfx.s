@@ -26,7 +26,7 @@
 	.global BG_SCALING_OFS
 	.global scaleSprParam
 	.global GFX_DISPCNT
-	.global PCE_VRAM
+	.global pceVRAM
 	.global EMUPALBUFF			;@ Needs to be flushed before dma copied.
 //	.global WININBUFF			;@ Needs to be flushed after vblirq
 	.global dmaOamBuffer
@@ -1005,7 +1005,7 @@ cacheHit00:
 ;@-----------------------------------------
 do16:
 	and r0,r0,#0xff
-	ldr r4,=PCE_VRAM+1
+	ldr r4,=pceVRAM+1
 	ldr r5,=SPR_DECODE
 //	mov r6,#BG_GFX				;@ r6=NDS BG tileset
 //	orr r6,r6,#0x400000			;@ Spr ram
@@ -1158,7 +1158,7 @@ cacheHit01:
 do32:
 	mov r7,r7,lsl#1
 	and r0,r0,#0xff
-	ldr r4,=PCE_VRAM+1
+	ldr r4,=pceVRAM+1
 	ldr r5,=SPR_DECODE
 //	mov r6,#BG_GFX				;@ r6=NDS BG tileset
 //	orr r6,r6,#0x400000			;@ Spr ram
@@ -1245,7 +1245,7 @@ tileMapFinish:				;@ End of frame...  finish up BGxCNTBUFF
 ;@----------------------------------------------------------------------------
 	stmfd sp!,{r3-r11,lr}
 
-	ldr r4,=PCE_VRAM
+	ldr r4,=pceVRAM
 	ldr r5,=DELAYED_TILEMAP
 	ldr r6,=DIRTYTILES
 	ldr r9,=0x80808080
@@ -1334,7 +1334,7 @@ trLoop:
 redrawTiles:
 ;@----------------------------------------------------------------------------
 	stmfd sp!,{r3-r11,lr}
-	ldr r4,=PCE_VRAM
+	ldr r4,=pceVRAM
 	ldr r5,=BGR_DECODE
 	mov r6,#BG_GFX				;@ r6=NDS BG tileset
 	add r6,r6,#0x10000			;@ Tile ram 2
@@ -1471,8 +1471,8 @@ sprCollision:		.byte 0x20
 #else
 	.section .bss
 #endif
-	.align 8					;@ Align to 256 bytes for RAM
-PCE_VRAM:
+	.align 2
+pceVRAM:
 	.space 0x10000
 DELAYED_TILEMAP:
 	.space 0x4000*2
