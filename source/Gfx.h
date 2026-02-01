@@ -20,8 +20,8 @@ extern u8 gRgbYcbcr;
 extern u8 gScalingSet;
 extern u8 sprCollision;
 
-extern u16 pceVRAM[8000];
-extern u16 EMUPALBUFF[200];
+extern u16 pceVRAM[0x8000];
+extern u16 EMUPALBUFF[0x200];
 extern u32 GFX_DISPCNT;
 
 extern void *dmaOamBuffer;

@@ -128,6 +128,13 @@ vdcLoadState:			;@ In r0=vdcptr, r1=source. Out r0=state size.
 	stmfd sp!,{lr}
 	mov r2,#vdcStateSize
 	bl memcpy
+
+	bl clearDirtyTiles
+	bl paletteTxAll
+	bl calcVBL
+	bl calcHDW
+	ldrb r0,vdcMWReg
+	bl mirrorPCE
 	ldmfd sp!,{lr}
 ;@----------------------------------------------------------------------------
 vdcGetStateSize:		;@ Out r0=state size.
@@ -172,12 +179,12 @@ borderScanlineHook:
 
 	ldrb r1,vdcDoSprDMA
 	cmp r1,#0
-	blne sprDMA_W
+	blne sprDMA
 
 	cmp r0,#0
 	ldrbne r1,vdcDoVramDMA
 	cmpne r1,#0
-	blne vramDMA_W
+	blne vramDMA
 ;@----------------------------------------------------------------------------
 defaultScanlineHook:
 ;@----------------------------------------------------------------------------
@@ -579,7 +586,6 @@ sx1:
 	bhi sx1
 	bx lr
 
-scrollMask:		.long 0x01FF00FF	;@ scrollmask
 scrollOld:		.long 0			;@ Last write
 vdcScrollLine:	.long 0			;@ ..was when?
 
@@ -873,7 +879,7 @@ mirrorPCE:
 ;@ VRAM DMA is 81-85 WORDs per scanline in 5.37MHz mode,
 ;@ 108-113 WORDS in 7.16MHz mode and 162-170 WORDS in 10.74MHz mode.
 ;@----------------------------------------------------------------------------
-sprDMA_W:			;@ Sprite DMA transfer, should be called during VBlank
+sprDMA:			;@ Sprite DMA transfer, should be called during VBlank
 ;@----------------------------------------------------------------------------
 	stmfd sp!,{r3-r5}
 
@@ -908,7 +914,7 @@ sprDMALoop:
 
 	bx lr
 ;@----------------------------------------------------------------------------
-vramDMA_W:			;@ VRAM to VRAM DMA transfer, r0=cycles to run
+vramDMA:			;@ VRAM to VRAM DMA transfer, r0=cycles to run
 ;@----------------------------------------------------------------------------
 	stmfd sp!,{r3-r9,lr}
 
@@ -958,6 +964,7 @@ vramDmaLoop:
 
 vramPtr:
 	.long pceVRAM
+scrollMask:		.long 0x01FF00FF	;@ scrollmask
 
 vdcState:
 vdcLineState:

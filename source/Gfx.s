@@ -18,7 +18,6 @@
 	.global gRgbYcbcr
 	.global yStart
 	.global DIRTYTILES
-	.global DELAYED_TILEMAP
 	.global scrollBuff
 	.global BG_SCALING_TO_FIT
 	.global BG_SCALING_TBL
@@ -38,7 +37,6 @@
 	.global antWars
 	.global gfxInit
 	.global gfxReset
-	.global gfxSetupAfterLoadState
 	.global setupScaling
 	.global buildSpriteScaling
 	.global setVDPMode
@@ -309,19 +307,6 @@ gfxReset:					;@ Called with cpuReset
 
 	ldmfd sp!,{pc}
 
-;@----------------------------------------------------------------------------
-gfxSetupAfterLoadState:
-;@----------------------------------------------------------------------------
-	stmfd sp!,{lr}
-	bl clearDirtyTiles
-	bl paletteTxAll
-	bl calcVBL
-	bl calcHDW
-	ldr r0,=vdcMWReg
-	ldrb r0,[r0]
-	bl mirrorPCE
-
-	ldmfd sp!,{pc}
 ;@----------------------------------------------------------------------------
 setBGOffsetsNormal:
 ;@----------------------------------------------------------------------------
@@ -1102,7 +1087,6 @@ noLutHit32:
 	str r0,[r9,r3,lsl#1]
 	stmfd sp!,{r0-r6,lr}
 
-
 	cmp r7,#2
 	addpl r4,r3,#2
 	addpl r5,r0,#2
@@ -1202,8 +1186,6 @@ spr2:
 cacheHit32:
 	ldmfd sp!,{r0-r6,pc}
 
-
-
 ;@----------------------------------------------------------------------------
 doDTMap:
 ;@----------------------------------------------------------------------------
@@ -1239,7 +1221,7 @@ dTTest:
 	bcs dTStart
 	addcc r3,r3,#0x100
 	bne dTTest
-	b dtiRet
+	bx lr
 ;@----------------------------------------------------------------------------
 tileMapFinish:				;@ End of frame...  finish up BGxCNTBUFF
 ;@----------------------------------------------------------------------------
@@ -1253,8 +1235,7 @@ tileMapFinish:				;@ End of frame...  finish up BGxCNTBUFF
 dtiLoop:
 	ldr r0,[r6,r8]				;@ Read from dirtymap.
 	bics r7,r9,r0,lsl#7
-	bne doDTMap
-dtiRet:
+	blne doDTMap
 	subs r8,r8,#4
 	bpl dtiLoop
 
@@ -1302,13 +1283,13 @@ tsbo1:
 	ldmfd sp!,{r3-r11,pc}
 
 tsbo2:
+	mov r6,r0
 	ldrh r1,[r8,#-10]			;@ Pixel clock
 	and r1,r1,#0x3F0
 	cmp r1,#0x150
 	movmi r7,#16+2
 	moveq r7,#21+2
 	movhi r7,#32+2
-	mov r6,r0
 
 	add r1,lr,#0x80
 	mov r1,r1,lsr#8
@@ -1321,7 +1302,7 @@ tsbo2:
 	mov r2,r0,lsl#22			;@ r2 = x startpos
 trLoop:
 	and r1,lr,r2,lsr#23
-	ldrd r0,r1,[r1,r10]			;@ Read from virtual delayed tilemap
+	ldrd r0,r1,[r1,r10]			;@ Read from delayed tilemap
 
 	str r0,[r11,r2,lsr#24]		;@ Write to NDS tilemap
 	str r1,[r12,r2,lsr#24]		;@ Write to NDS tilemap
@@ -1463,7 +1444,7 @@ sprMemReload:
 	.skip 8
 
 gScalingSet:
-	.byte SCALED_ASPECT			;@ scalemode(saved display type), default scale to fit
+	.byte SCALED_ASPECT			;@ scalemode(saved display type), default scale to aspect
 sprCollision:		.byte 0x20
 
 #ifdef GBA
@@ -1478,9 +1459,9 @@ DELAYED_TILEMAP:
 	.space 0x4000*2
 DELAYED_SPRITETILES:
 	.space 0x8000
-	.space 0x400
-DirtyTilesBackup:
-	.space 0x200
+//	.space 0x400
+//DirtyTilesBackup:
+//	.space 0x200
 
 SPRTILELUT:
 	.space 768*4
@@ -1493,7 +1474,7 @@ SCROLLBUFF2:
 	.space 264*16				;@ Scrollbuffer.
 
 DMA0BUFF:
-	.space 200*4*11				;@ Scroll reg buffer 0
+	.space 200*4*11				;@ Scroll reg dst buffer
 EMUPALBUFF:
 	.space 0x400
 OAM_BUFFER1:
@@ -1509,7 +1490,7 @@ OAM_BUFFER2:
 	.section .bss
 #endif
 	.align 2
-DIRTYTILES:						;@ bit0 = mode0 bgr, bit1 = mode1 bgr
+DIRTYTILES:						;@ bit0 = map, bit5=bgtiles, bit6=32spr, bit7=16spr
 	.space 0x200
 SPR_DECODE:
 	.space 0x400
