@@ -494,7 +494,7 @@ newVDCCR:
 	ldr addy,scanline
 	ldr r2,vdcLatchTime			;@ 1504/1552
 	cmp r2,cycles
-	addcs addy,addy,#1
+	adc addy,addy,#1
 	cmp addy,#260
 	movhi addy,#260
 	adr r2,vdcCtrl1Line
@@ -559,7 +559,7 @@ newX:							;@ ctrl0_W, loadstate jumps here
 	ldr r1,scanline
 	ldr r2,vdcLatchTime			;@ 1504/1552
 	cmp r2,cycles
-	addcs r1,r1,#1
+	adc r1,r1,#1
 	ldr r2,vdcScroll
 	ldrh r0,scrollOld+2			;@ r2 = lastval
 	orr r2,r0,r2,lsl#16
@@ -603,7 +603,7 @@ newY:
 	ldr r1,scanline
 	ldr r2,vdcLatchTime			;@ 1504/1552
 	cmp r2,cycles
-	addcs r1,r1,#1
+	adc r1,r1,#1
 	ldr r2,vdcScroll
 	add r2,r2,#0x10000			;@ Extra Y
 	sub r2,r2,r1,lsl#16			;@ y -= scanline
@@ -735,8 +735,9 @@ calcVBL:
 	rsb r1,r1,#0
 	strb r1,[r4,#0x0D]			;@ WIN
 
-	sub r1,r0,#218				;@ Screen size in scale to aspect.
-	movs r1,r1,asr#1
+//	sub r1,r0,#218				;@ Screen size in scale to aspect.
+//	movs r1,r1,asr#1
+	rsb r1,r2,#24
 	str r1,[r4,#0x20]			;@ OFS, for centering in scaled to aspect mode.vertical
 	movpl r1,#0					;@ r1 should be multiplied?
 	rsb r1,r1,#0

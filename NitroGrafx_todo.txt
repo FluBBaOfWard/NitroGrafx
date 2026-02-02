@@ -21,7 +21,6 @@ Misc:
 	.
 
 GUI:
-	Fix so you can turn on/off sprites/background.
 	Pad left and right to switch Tabs in GUI?
 
 Graphic:
