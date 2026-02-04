@@ -231,6 +231,7 @@ ppi1:
 	bne ppi1
 
 	bl resetScrollBuffers
+	bl vdcInit
 	bl vceInit
 
 	ldmfd sp!,{pc}
@@ -545,11 +546,10 @@ vblIrqHandler:
 	ldr r10,windowVValue
 	orr r10,r10,r10,lsl#16
 	ldr r2,=DMA0BUFF
-	ldr r11,=vdcMWReg
-	ldrb r11,[r11]
-	tst r11,#0x40				;@ Tilemap height 256 or 512?
-	mov r11,#0x0FF00
-	orrne r11,r11,#0x10000
+	ldr r11,=vdcScrollMask
+	ldr r11,[r11]
+	mov r11,r11,lsr#8			;@ Only use vertical mask
+	bic r11,r11,#0xFF
 	mov r12,#SCREEN_HEIGHT
 scrolLoop2:
 	mov r3,r4,lsl#17
@@ -644,7 +644,7 @@ gRgbYcbcr:		.byte 0
 ;@----------------------------------------------------------------------------
 midFrame:					;@ Called at line 96
 ;@----------------------------------------------------------------------------
-	ldr r1,=hCenter				;@ (screenwidth-256)/2
+	ldr r1,=hOffset				;@ Display start
 	ldr r1,[r1]
 	str r1,sprCenter
 
@@ -845,7 +845,7 @@ dm11:
 	cmp r0,r1
 	bpl dm10					;@ Skip if sprite Y>=ScreenHeight
 	ldr r1,sprCenter			;@ (screenwidth-256)/2
-	rsb r3,r1,r3,lsr#16			;@ x = x-(32+hcenter)
+	rsb r3,r1,r3,lsr#16			;@ x = x-(32+hOffset)
 	and r3,r3,r7				;@ Mask X
 	sub r3,r3,#32
 	tst r4,#0x21000000			;@ Check Xsize and ysize = 64.
@@ -1242,16 +1242,10 @@ dtiLoop:
 ;@----------------------------------------------------------------------------
 tileMapCont:
 	ldr r8,scrollBuff
-	ldr r2,=vdcMWReg
-	ldrb r2,[r2]
-	mov lr,#0x00F80000			;@ Mask for x & y values.
-	orr lr,lr,#0x000000F0		;@ Screen width 32
-	tst r2,#0x40				;@ Screen height, 32 or 64 tiles.
-	orrne lr,lr,#0x01000000
-	tst r2,#0x10
-	orrne lr,lr,#0x000001F0		;@ Screen width 64
-	tst r2,#0x20
-	orrne lr,lr,#0x000003F0		;@ Screen width 128
+	ldr r2,=vdcScrollMask
+	ldr lr,[r2]
+	bic lr,lr,#0x00070000		;@ Mask out low bits.
+	bic lr,lr,#0x0000000F		;@ Mask out low bits.
 	mov lr,lr,lsr#1
 
 	mov r4,#0

@@ -14,18 +14,17 @@
 	.global vdcState
 	.global vdcStateEnd
 	.global scanline
-	.global hCenter
+	.global hOffset
 	.global vdcRegister
-	.global vdcAdrInc
-	.global vdcWriteAdr
-	.global vdcCtrl1
-	.global vdcMWReg
+	.global vdcWriteAdr			;@ Only used for hacks
+	.global vdcScrollMask
 	.global vdcScroll
 	.global vdcBurst
 	.global vdcEndFrameLine
 	.global vdcLastScanline
 	.global vdcSpriteRam
 
+	.global vdcInit
 	.global vdcReset
 	.global vdcSaveState
 	.global vdcLoadState
@@ -42,7 +41,6 @@
 	.global vdcCtrl1Finish
 	.global calcVBL
 	.global calcHDW
-	.global mirrorPCE
 
 
 
@@ -52,6 +50,11 @@
 
 	.section .text
 	.align 2
+;@----------------------------------------------------------------------------
+vdcInit:					;@ Called from gfxInit
+	.type vdcInit STT_FUNC
+;@----------------------------------------------------------------------------
+	b mirrorPCE
 ;@----------------------------------------------------------------------------
 vdcReset:					;@ Called from gfxReset
 	.type vdcReset STT_FUNC
@@ -91,7 +94,6 @@ vramLoop:
 	mov r0,#240
 	str r0,vdcVDW
 	bl calcVBL
-	mov r0,#0
 	bl mirrorPCE
 
 	mov r0,#1
@@ -133,7 +135,6 @@ vdcLoadState:			;@ In r0=vdcptr, r1=source. Out r0=state size.
 	bl paletteTxAll
 	bl calcVBL
 	bl calcHDW
-	ldrb r0,vdcMWReg
 	bl mirrorPCE
 	ldmfd sp!,{lr}
 ;@----------------------------------------------------------------------------
@@ -207,6 +208,7 @@ noRasterIrq:
 ;@----------------------------------------------------------------------------
 
 frameEndHook:
+	bl mirrorPCE
 	mov r0,#0
 	str r0,vdcNextLineChange
 	ldr r0,=vdcStateTable+4
@@ -353,20 +355,20 @@ VDCWriteTbl:
 	.long emptyIOW				;@ 03
 	.long emptyIOW				;@ 04
 	.long emptyIOW				;@ 04
-	.long VDC_CR_L_W			;@ 05 Interuppt, sync, increment width...
-	.long VDC_CR_H_W			;@ 05 Interuppt, sync, increment width...
-	.long RstCmp_L_W			;@ 06 Raster compare
-	.long RstCmp_H_W			;@ 06 Raster compare
+	.long vdcCR_L_W				;@ 05 Interuppt, sync, increment width...
+	.long vdcCR_H_W				;@ 05 Interuppt, sync, increment width...
+	.long RstCmp_L_W			;@ 06 Raster Compare Reg
+	.long RstCmp_H_W			;@ 06 Raster Compare Reg
 	.long ScrolX_L_W			;@ 07 Scroll X
 	.long ScrolX_H_W			;@ 07 Scroll X
 	.long ScrolY_L_W			;@ 08 Scroll Y
 	.long ScrolY_H_W			;@ 08 Scroll Y
 	.long MemWid_L_W			;@ 09 Memory Width (Bgr virtual size)
 	.long MemWid_H_W			;@ 09 Memory Width (Bgr virtual size)
-	.long VdcHsr_L_W			;@ 0A Horizontal Sync Reg
-	.long VdcHsr_H_W			;@ 0A Horizontal Sync Reg
-	.long VdcHDW_L_W			;@ 0B Horizontal Display Width
-	.long VdcHDW_H_W			;@ 0B Horizontal Display Reg
+	.long vdcHsr_L_W			;@ 0A Horizontal Sync Reg
+	.long vdcHsr_H_W			;@ 0A Horizontal Sync Reg
+	.long vdcHDW_L_W			;@ 0B Horizontal Display Width
+	.long vdcHDW_H_W			;@ 0B Horizontal Display Reg
 	.long VdcVpr_L_W			;@ 0C Vertical Sync Reg
 	.long VdcVpr_H_W			;@ 0C Vertical Sync Reg
 	.long VdcVdw_L_W			;@ 0D Vertical Display Reg
@@ -479,7 +481,7 @@ VRAM_H_W:					;@ 02
 vdcCtrl1Old:	.long 0x01003C3C	;@ Last write
 vdcCtrl1Line:	.long 0 		;@ When?
 ;@----------------------------------------------------------------------------
-VDC_CR_L_W:					;@ 05
+vdcCR_L_W:					;@ 05
 ;@----------------------------------------------------------------------------
 	strb r0,vdcCtrl1
 newVDCCR:
@@ -516,7 +518,7 @@ vdc1:
 	bx lr
 
 ;@----------------------------------------------------------------------------
-VDC_CR_H_W:					;@ 05
+vdcCR_H_W:					;@ 05
 ;@----------------------------------------------------------------------------
 	and r2,r0,#0x18
 	adr r1,incTbl
@@ -565,9 +567,9 @@ newX:							;@ ctrl0_W, loadstate jumps here
 	orr r2,r0,r2,lsl#16
 	mov r2,r2,ror#16
 scrollCont:
-	ldr r0,hCenter
+	ldr r0,hOffset
 	add r2,r2,r0
-	ldr r0,scrollMask
+	ldr r0,vdcScrollMask
 	and addy,r2,r0
 	ldr r2,scrollOld			;@ r2 = lastval
 	str addy,scrollOld
@@ -611,48 +613,74 @@ newY:
 ;@----------------------------------------------------------------------------
 MemWid_L_W:					;@ 09 Memory Width (Bgr virtual size)
 ;@----------------------------------------------------------------------------
-	strb r0,vdcMWReg
-	b mirrorPCE
+	strb r0,vdcMW
+	bx lr
 ;@----------------------------------------------------------------------------
-VdcHDW_L_W:					;@ 0B Horizontal Display Width.
+vdcHsr_L_W:					;@ 0A Horizontal Sync Reg, HSW, H Synch Width
+;@----------------------------------------------------------------------------
+	and r0,r0,#0x1f
+	strb r0,vdcHSW
+	bx lr
+;@----------------------------------------------------------------------------
+vdcHsr_H_W:					;@ 0A Horizontal Sync Reg, HDS, H Display start
+;@----------------------------------------------------------------------------
+	and r0,r0,#0x7f
+	strb r0,vdcHDS
+	b calcHDW
+;@----------------------------------------------------------------------------
+vdcHDW_L_W:					;@ 0B Horizontal Display Width.
 ;@----------------------------------------------------------------------------
 	and r0,r0,#0x7f
 	strb r0,vdcHDW
 
 ;@----------------------------------------------------------------------------
 calcHDW:
-	ldrb r0,vdcHDW
-	add r0,r0,#1
-	ldr r2,=vcePixelClock
-	ldrb r2,[r2]
-	cmp r2,#1
-	movmi r0,r0,lsl#2
-	addeq r0,r0,r0,lsl#1		;@ Multiply with 3
-	movhi r0,r0,lsl#1
-	sub r0,r0,#128
-	mov r1,r0
-	addeq r1,r1,r1,lsr#2		;@ Add 1/3 (in this case 1/4)
-	movhi r1,r1,lsl#1
-	str r1,hCenter
+	ldr addy,=vcePixelClock
+	ldrb addy,[addy]
+	cmp addy,#1
+//	ldrb r1,vdcHSW
+	ldrb r0,vdcHDS				;@ Display Start.
+//	add r0,r0,r1
+	add r0,r0,#7
+	movmi r2,r0,lsl#2
+	addeq r2,r0,r0,lsl#1		;@ Multiply with 3
+	movhi r2,r0,lsl#1
+	rsb r2,r2,#36
+	mov r2,r2,lsl#1
+	movmi r0,r2
+	moveq r0,r0,lsl#1
+	rsbeq r0,r0,#16
+	addeq r0,r0,r2
+	movhi r0,r2,lsl#2
 
-	cmp r0,#0
-	movpl r0,#0
-	and r1,r0,#0x00FF
-	orr r1,r1,#0x8000
-	rsb r0,r0,#0
-	and r0,r0,#0xFF
-	mov r0,r0,lsl#8
-	orr r0,r0,#0x0080
-	orr r0,r0,r1,lsl#16
+	str r0,hOffset
+	subeq r2,r2,#6				;@ Why!!!!!
+	movhi r2,r2,lsl#1
+
+	ldrb r1,vdcHDW				;@ Display Width in bytes -1.
+	add r1,r1,#1
+	movmi r1,r1,lsl#2
+	addeq r1,r1,r1,lsl#1		;@ Multiply with 3
+	movhi r1,r1,lsl#1
+
+	rsbs r2,r2,#0
+	add r1,r2,r1,lsl#1
+	movmi r2,#0
+	cmp r1,#0xFF
+	movhi r1,#0xFF
+	and r2,r2,#0xFF
+	orr r2,r1,r2,lsl#8
+	add r1,r2,#0x0100
+	bichi r1,r1,#0xFF
+	orr r2,r2,r1,lsl#16
 	ldr r1,Window0HValue
-	str r0,Window0HValue
+	str r2,Window0HValue
 	str r1,Window0HOld
 
-//	bx lr
-//newVCECR:
+;@------------------------
 	mov r1,#0x0100				;@ 1 Xpixel per X
-	cmp r2,#1					;@ vcePixelClock
-	orreq r1,#0x0054			;@ 1.1/3 Xpixel per X
+	cmp addy,#1					;@ vcePixelClock
+	orreq r1,#0x0055			;@ 1.1/3 Xpixel per X
 	movhi r1,#0x0200			;@ 2 Xpixel per X
 
 	ldr r2,=vdcCtrl1Old
@@ -793,13 +821,7 @@ VdcVcr_L_W:					;@ 0E Vertical Display End Reg, how much is blanked after the di
 MemWid_H_W:					;@ 09 Memory Width (Bgr virtual size)
 ;@----------------------------------------------------------------------------
 ;@----------------------------------------------------------------------------
-VdcHsr_L_W:					;@ 0A Horizontal Sync Reg
-;@----------------------------------------------------------------------------
-;@----------------------------------------------------------------------------
-VdcHsr_H_W:					;@ 0A Horizontal Sync Reg
-;@----------------------------------------------------------------------------
-;@----------------------------------------------------------------------------
-VdcHDW_H_W:					;@ 0B Horizontal Display Width
+vdcHDW_H_W:					;@ 0B Horizontal Display Width
 ;@----------------------------------------------------------------------------
 ;@----------------------------------------------------------------------------
 VdcVcr_H_W:					;@ 0E Vertical Display End Reg
@@ -871,10 +893,11 @@ maskTable:
 	.long 0x00FF00FF,0x00FF01FF,0x00FF03FF,0x00FF03FF,0x01FF00FF,0x01FF01FF,0x01FF03FF,0x01FF03FF
 ;@----------------------------------------------------------------------------
 mirrorPCE:
+	ldrb r0,vdcMW
 	and r0,r0,#0x70
 	adr r1,maskTable
 	ldr r1,[r1,r0,lsr#2]
-	str r1,scrollMask
+	str r1,vdcScrollMask
 	bx lr
 
 ;@ VRAM DMA is 81-85 WORDs per scanline in 5.37MHz mode,
@@ -965,7 +988,8 @@ vramDmaLoop:
 
 vramPtr:
 	.long pceVRAM
-scrollMask:		.long 0x01FF00FF	;@ scrollmask
+vdcScrollMask:
+	.long 0						;@ scroll mask from vdcMW Reg
 
 vdcState:
 vdcLineState:
@@ -1000,24 +1024,23 @@ vdcDMALen:
 	.long 0						;@ VRAM DMA Length
 vdcVDW:
 	.long 0
-hCenter:
+hOffset:
 	.long 0
 
 vdcWriteLatch:
 	.byte 0		;@ 
 vdcRegister:
 	.byte 0		;@ 
-vdcAdrIncOld:
-	.byte 1		;@
 vdcStat:
 	.byte 0						;@ 
-vdcMWReg:
-	.byte 0						;@ Memory width register
-vdcBurst:
-	.byte 0						;@ 
-	.byte 0
+vdcMW:
+	.byte 0						;@ Memory Width Register
 vdcCtrl1:
 	.byte 0						;@ 
+vdcHSW:
+	.byte 0						;@
+vdcHDS:
+	.byte 0						;@
 vdcHDW:
 	.byte 0						;@ Horizontal Display Width
 vdcVDS:
@@ -1034,6 +1057,11 @@ vdcDoVramDMA:
 	.byte 0						;@
 vdcPrimedVBl:
 	.byte 0						;@
+//vdcAdrIncOld:
+//	.byte 1		;@
+vdcBurst:
+	.byte 0						;@
+//	.byte 0
 vdcLatchTime:
 	.long 1504*CYCLE			;@ 1504/1552
 vdcScanlineHook:	.long 0

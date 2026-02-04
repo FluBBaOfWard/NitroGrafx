@@ -555,7 +555,7 @@ NO.     MODE    DETAILS
                     map.
 
                     b 15-8  (not used)
-                    b 7     'CM' (unknown - presumably 'Color Mode')
+                    b 7     'CM' which bitplanes are used for 2bp bg.
                     b 6-4   'SCREEN' These bits control virtual map size 
                             as noted below.
                             b 6     virtual screen height

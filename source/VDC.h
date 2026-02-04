@@ -29,7 +29,7 @@ typedef struct {
 	u32 dmaDst;				// VRAM DMA Destination
 	u32 dmaLen;				// VRAM DMA Length
 	u32 vdw;
-	u32 hCenter;
+	u32 hOffset;
 
 	u8 writeLatch;
 	u8 Register;

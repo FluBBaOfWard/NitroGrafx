@@ -1,6 +1,9 @@
 
 NitroGrafx To Do:
 -----------------
+	Add vertical offset to GUI.
+	Makai Hakkenden Shada (J) doesn't start after Gradius.
+	Check save states.
 	Add debug menu, "Step Frame".
 	Fix click when a cd track starts and stops playing.
 	Exile needs 2kB BRAM only?
@@ -12,7 +15,7 @@ NitroGrafx To Do:
 	Fix TAM/TMA #$00
 	Check the Games Express games. Data in track 1 is the problem?
 		Or should their BIOS lay "over" the normal?
-		Do both the normal BIOS and GE be loaded at the same time?
+		Is both the normal BIOS and GE loaded at the same time?
 	Fix bitswap for USA roms.
 	Fix so you can load roms even if the path is gone from the disc. Fixed?
 	Fix V flicker position (all games with statusbar etc.). Done?
@@ -24,10 +27,11 @@ GUI:
 	Pad left and right to switch Tabs in GUI?
 
 Graphic:
+	Count TV lines for real, not when the picture start showing.
+	Graphics can start before line 14, it is just not shown.
 	Move all gfx logik to VDC, rewrite routines in order.
 		midrame, endframe.
 	Convert palette via component. Add saturation, contrast and brightness (hue?).
-	Count TV lines for real, not when the picture start showing.
 	Clean up the scaling routines.
 	Change so sprites can use 64kB VRAM.
 	Split up doSprDMA, so that positions and tilenum are fixed first and then the tiles.
@@ -38,7 +42,7 @@ Sound:
 	Update once per scanline.
 	PSG waveforms are not signed, optimize! Is this different between revisions?
 	Check sound levels, figure out correct gain per level. Not -1.5dB per step.
-	Volume is only updated at 2kHz?
+	PSG volume is only updated at 2kHz?
 	Only load 3k per frame before music starts playing.
 	Add ADPCM emulation (MSM5205).
 	Load variable number of bytes?
