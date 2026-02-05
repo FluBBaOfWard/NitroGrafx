@@ -2,7 +2,6 @@
 NitroGrafx To Do:
 -----------------
 	Add vertical offset to GUI.
-	Makai Hakkenden Shada (J) doesn't start after Gradius.
 	Check save states.
 	Add debug menu, "Step Frame".
 	Fix click when a cd track starts and stops playing.
@@ -54,6 +53,7 @@ Games:
 	Champions Forever Boxing. Not working on CDROM?
 	Coryoon Child of dragon, no scrolling sometime.
 	Davis Cup Tennis.
+	Takeda Shingen, graphics is corrupt.
 	Turrican, hangs at continue.
 
 CPU:
