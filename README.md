@@ -58,11 +58,9 @@ Now load up a game and you should be good to go.
 * Display:
   * Display: Here you can select if you want scaled or unscaled screenmode.
   * Scaling: Here you can select if you want flicker or barebones lineskip.
-  * Output: Select between RGB or Composite (affects colors).
+  * Output: Select between Composite or RGB (affects colors).
   * Gamma: Lets you change the gamma ("brightness").
   * Color: Lets you change the color saturation.
-  * Disable Background: Turn on/off background rendering.
-  * Disable Sprites: Turn on/off sprite rendering.
 * Machine:
   * Region: Change the region between US & JP, US should work for most games.
   * Machine: Here you can select the hardware, Auto should work for most games.
@@ -72,10 +70,10 @@ Now load up a game and you should be good to go.
   * Fake spritecollision: Not used yet.
 * Settings:
   * Speed: Switch between speed modes, can also be toggled with L+START.
-    * Normal: Standard, 100% speed.
-    * Fast: Double, 200% speed.
-    * Max: Fastest, 400% speed.
-    * Slowmo: Slow, 50% speed.
+    * Normal: Game runs at it's normal speed.
+    * 200%: Game can run up to double speed.
+    * Max: Game can run up to 4 times normal speed.
+    * 50%: Game runs at half speed.
   * Autoload State: Toggle Savestate autoloading. Automagicaly load the
     savestate associated with the selected game.
   * Autosave BRAM: Saves BRAM if it's changed when entering GUI.

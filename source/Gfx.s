@@ -16,6 +16,7 @@
 	.global gGfxMask
 	.global gScalingSet
 	.global yStart
+	.global aspectYStart
 	.global DIRTYTILES
 	.global scrollBuff
 	.global BG_SCALING_TO_FIT
@@ -37,7 +38,6 @@
 	.global gfxInit
 	.global gfxReset
 	.global setupScaling
-	.global buildSpriteScaling
 	.global setVDPMode
 	.global paletteInit
 	.global transferVRAM
@@ -348,7 +348,7 @@ loadScaleValues:
 
 BG_SCALING_1_1:
 	.long 0x0100,0xFF01,0x0080
-BG_SCALING_ASPECT:			;@ 192->170, 224->199, 240->213, 216->192, 9->8
+BG_SCALING_ASPECT:			;@ 192->168, 224->196, 240->210, 219->192, 8->7
 	.long 0x0120,0xFEE0,0x0090
 BG_SCALING_TO_FIT:	;@ 1:1, 7:6, 5:4
 	.long 0x0150,0xFEB6,0x0080
@@ -1430,16 +1430,19 @@ GFX_DISPCNT:
 gfxState:
 yStart:
 	.long 0
-
 sprMemAlloc:
 	.byte 0
 sprMemReload:
 	.byte 0
-	.skip 8
+	.skip 6
 
+aspectYStart:
+	.byte 24
 gScalingSet:
 	.byte SCALED_ASPECT			;@ scalemode(saved display type), default scale to aspect
-sprCollision:		.byte 0x20
+sprCollision:
+	.byte 0x20
+	.skip 1
 
 #ifdef GBA
 	.section .sbss				;@ This is EWRAM on GBA with devkitARM

@@ -735,7 +735,7 @@ VdcVdw_H_W:					;@ 0D Vertical Display Reg, display height
 
 ;@----------------------------------------------------------------------------
 calcVBL:
-.type   calcVBL STT_FUNC
+	.type   calcVBL STT_FUNC
 ;@----------------------------------------------------------------------------
 	stmfd sp!,{r3,r4,lr}
 	ldrb r0,vdcVSW
@@ -763,9 +763,9 @@ calcVBL:
 	rsb r1,r1,#0
 	strb r1,[r4,#0x0D]			;@ WIN
 
-//	sub r1,r0,#218				;@ Screen size in scale to aspect.
-//	movs r1,r1,asr#1
-	rsb r1,r2,#24
+	ldr r1,=aspectYStart
+	ldrb r1,[r1]
+	sub r1,r1,r2				;@ Y offset in scale to aspect.
 	str r1,[r4,#0x20]			;@ OFS, for centering in scaled to aspect mode.vertical
 	movpl r1,#0					;@ r1 should be multiplied?
 	rsb r1,r1,#0

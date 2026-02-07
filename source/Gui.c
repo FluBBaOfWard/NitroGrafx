@@ -38,6 +38,8 @@ static void multiTapSet(void);
 static const char *getMultiTapText(void);
 static void scalingSet(void);
 static const char *getScalingText(void);
+static void yOffsetSet(void);
+static const char *getYOffsetText(void);
 static void colorSet(void);
 static const char *getColorText(void);
 static void ycbcrSet(void);
@@ -80,6 +82,7 @@ const MItem ctrlItems[] = {
 const MItem displayItems[] = {
 	{"Display:", scalingSet, getScalingText},
 	{"Scaling:", flickSet, getFlickText},
+	{"Y Offset:", yOffsetSet, getYOffsetText},
 	{"Output:", ycbcrSet, getYCbCrText},
 	{"Gamma:", gammaChange, getGammaText},
 	{"Color:", colorSet, getColorText},
@@ -133,6 +136,7 @@ static const char *const cntrTxt[]={"US", "Japan"};
 static const char *const biosTxt[]={"Off", "Auto"};
 static const char *const rgbTxt[]={"Composite", "RGB"};
 
+char ofstxt[4];
 
 void setupGUI() {
 	keysSetRepeat(25, 4);	// Delay, repeat.
@@ -296,6 +300,42 @@ void scalingSet(){
 }
 const char *getScalingText() {
 	return dispTxt[gScalingSet];
+}
+
+void yOffsetSet() {
+	pauseEmulation = true;
+	ui10();
+	cls(0);
+	drawMenuText("Up & Down to adjust", 11, 0);
+	drawMenuText("B & A to exit", 12, 0);
+
+	while (1) {
+		waitVBlank();
+		int pressed = getInput();
+		if (pressed & (KEY_A | KEY_B)) {
+			break;
+		}
+		if (pressed & KEY_UP) {
+			aspectYStart += 1;
+			if (aspectYStart >= (256 - 219)) {
+				aspectYStart = (256 - 219);
+			}
+		}
+		if (pressed & KEY_DOWN) {
+			aspectYStart -= 1;
+			if (aspectYStart <= 0) {
+				aspectYStart = 0;
+			}
+		}
+		calcVBL();
+		refreshSprites();
+		drawMenuText(getYOffsetText(), 14, 0);
+	}
+	backOutOfMenu();
+}
+const char *getYOffsetText() {
+	char2Str(ofstxt, aspectYStart);
+	return ofstxt;
 }
 
 /// Change gamma (brightness).

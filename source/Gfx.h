@@ -16,8 +16,8 @@ extern u8 gFlicker;
 extern u8 gTwitch;
 extern u8 gGfxMask;
 extern u8 gColorValue;
-extern u8 gRgbYcbcr;
 extern u8 gScalingSet;
+extern s8 aspectYStart;
 extern u8 sprCollision;
 
 extern u16 pceVRAM[0x8000];
