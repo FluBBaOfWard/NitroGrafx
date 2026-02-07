@@ -17,7 +17,7 @@ typedef struct {
 	u8 control;
 	u8 pixelClock;
 	u8 dmaCyclesPerScanline;
-	u8 padding[1];
+	u8 rgbYCbCr;
 	u16 paletteRam[0x200];
 } VCECore;
 

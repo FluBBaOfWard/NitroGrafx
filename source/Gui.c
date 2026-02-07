@@ -8,6 +8,7 @@
 #include "Equates.h"
 #include "Cart.h"
 #include "cdrom.h"
+#include "VCE.h"
 #include "Gfx.h"
 #include "io.h"
 #include "ARMH6280/Version.h"
@@ -130,7 +131,7 @@ static const char *const dispTxt[]={"Scaled 1:1", "Scaled to fit", "Scaled to as
 static const char *const machTxt[]={"Auto", "PC-Engine", "CD-ROM", "Super CD-ROM", "Arcade CD-ROM", "Super Grafx", "Super CD-ROM Card", "TurboGrafx-16"};
 static const char *const cntrTxt[]={"US", "Japan"};
 static const char *const biosTxt[]={"Off", "Auto"};
-static const char *const rgbTxt[]={"RGB", "Composite"};
+static const char *const rgbTxt[]={"Composite", "RGB"};
 
 
 void setupGUI() {
@@ -321,12 +322,12 @@ const char *getColorText() {
 }
 
 void ycbcrSet() {
-	gRgbYcbcr ^= 0x01;
+	vceState.rgbYCbCr ^= 0x01;
 	paletteInit(gGammaValue);
 	paletteTxAll();					// Make new palette visible
 }
 const char *getYCbCrText() {
-	return rgbTxt[gRgbYcbcr];
+	return rgbTxt[vceState.rgbYCbCr];
 }
 
 /// Turn on/off rendering of background

@@ -53,6 +53,7 @@
 #ifdef EMBEDDED_ROM
 rawRom:
 //	.incbin "roms/15-in-1 Mega Collection (J).pce"
+//	.incbin "roms/240pSuite.pce"
 //	.incbin "roms/1943 Kai (J).pce"
 //	.incbin "roms/Aero Blasters (J).pce"
 //	.incbin "roms/After Burner II (J).pce"

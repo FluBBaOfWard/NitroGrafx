@@ -15,7 +15,6 @@
 	.global gFlicker
 	.global gGfxMask
 	.global gScalingSet
-	.global gRgbYcbcr
 	.global yStart
 	.global DIRTYTILES
 	.global scrollBuff
@@ -404,9 +403,10 @@ paletteInit:		;@ r0-r3 modified.
 	.type   paletteInit STT_FUNC
 ;@ Called by ui.c:  void paletteInit(u8 gammaVal);
 ;@----------------------------------------------------------------------------
-	ldrb r1,gRgbYcbcr
+	ldr r1,=vceRGBYCbCr
+	ldrb r1,[r1]
 	cmp r1,#0
-	bne vceInitPaletteMap
+	beq vceInitPaletteMap
 	stmfd sp!,{r4-r9,lr}
 	ldr r6,=MAPPED_RGB
 	mov r7,r0					;@ Gamma value = 0 -> 4
@@ -638,7 +638,7 @@ gTwitch:		.byte 0
 gFlicker:		.byte 1
 gColorValue:	.byte 4
 gGfxMask:		.byte 0
-gRgbYcbcr:		.byte 0
+				.byte 0
 				.byte 0,0,0
 
 ;@----------------------------------------------------------------------------

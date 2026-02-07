@@ -11,6 +11,7 @@
 #include "Equates.h"
 #include "cueparser/cue2toc.h"
 #include "cdrom.h"
+#include "VCE.h"
 #include "Gfx.h"
 #include "io.h"
 
@@ -40,7 +41,8 @@ void applyConfigData(void) {
 	emuSettings  = cfg.emuSettings & ~EMUSPEED_MASK; // Clear speed setting.
 	sprCollision = cfg.sprites;
 	gConfigSet   = cfg.config;
-	gScalingSet  = cfg.scaling & 3;
+	gScalingSet  = cfg.display & 3;
+	vceState.rgbYCbCr  = (cfg.display >> 3) & 1;
 	gFlicker     = cfg.flicker & 1;
 	gGammaValue  = cfg.gammaValue & 0x7;
 	gColorValue  = (cfg.gammaValue >> 4) & 0x7;
@@ -56,7 +58,7 @@ void updateConfigData(void) {
 //	cfg.dipSwitch0  = gDipSwitch0;
 	cfg.sprites     = sprCollision;
 	cfg.config      = gConfigSet;
-	cfg.scaling     = gScalingSet & 3;
+	cfg.display     = (gScalingSet & 3) | ((vceState.rgbYCbCr & 1) << 3);
 	cfg.flicker     = gFlicker & 1;
 	cfg.gammaValue  = (gGammaValue & 0x7) | ((gColorValue & 0x7) << 4);
 	cfg.sleepTime   = sleepTime;
@@ -69,7 +71,7 @@ void initSettings() {
 	cfg.emuSettings = AUTOPAUSE_EMULATION | AUTOSLEEP_OFF;
 	cfg.sprites     = 0x20;
 	cfg.config      = 0x80; // Bios on
-	cfg.scaling     = SCALED_ASPECT;
+	cfg.display     = SCALED_ASPECT;
 	cfg.flicker     = 1;
 	cfg.gammaValue  = 0x40; // ColorValue = 4
 	cfg.sleepTime   = 60*60*5;

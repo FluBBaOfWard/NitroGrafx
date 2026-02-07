@@ -25,6 +25,7 @@
 	.global vceState
 	.global vceControl
 	.global vcePixelClock
+	.global vceRGBYCbCr
 	.global vceDMACyclesPerScanline
 	.global MAPPED_RGB
 	.global vceAddress			;@ Only needed for cpu hacks
@@ -158,6 +159,7 @@ _0405R:						;@ VCE CTD H
 ;@----------------------------------------------------------------------------
 _0400W:						;@ VCE CR - dotclock, interlace, color.
 ;@----------------------------------------------------------------------------
+	ldrb r2,vceControl
 	strb r0,vceControl
 	and r1,r0,#3
 	strb r1,vcePixelClock
@@ -166,13 +168,24 @@ _0400W:						;@ VCE CR - dotclock, interlace, color.
 	moveq r1,#112
 	movhi r1,#170
 	strb r1,vceDMACyclesPerScanline
-
+	eor r2,r2,r0
+	tst r2,#0x80				;@ ColorBurst changed?
+	bne updateColorBurst
+cbRet:
 	ldr r1,=261					;@ NTSC (261-262) number of lines=262+1
 	tst r0,#4
-	addne r1,r1,#1				;@ Chew Man Fu & Jyuohki likes this, Chase HQ does not.
+	addne r1,r1,#1
 	ldr r0,=vdcLastScanline
 	str r1,[r0]
 	b calcHDW
+
+updateColorBurst:
+	stmfd sp!,{r0,r3,lr}
+	ldrb r2,vceRGBYCbCr
+	tst	r2,#1
+	bleq vceInitPaletteMap
+	ldmfd sp!,{r0,r3,lr}
+	b cbRet
 ;@----------------------------------------------------------------------------
 _0402W:						;@ VCE Color Table Address L
 ;@----------------------------------------------------------------------------
@@ -262,47 +275,48 @@ vceInitPaletteMap:			;@ r0-r3 modified.
 	.type   vceInitPaletteMap STT_FUNC
 ;@ called by ui.c:  void vceInitPaletteMap();
 ;@----------------------------------------------------------------------------
+	ldrb r2,vceControl
+	eor r2,r2,#0x80				;@ ColorBurst enabled?
 	ldr r0,=MAPPED_RGB			;@ Destination
 	ldr r1,=vceYUVLut			;@ YUV Source
 //	ldr r1,=vceRGBToYBYRY
 	stmfd sp!,{r4-r10,lr}
-	ldr r8,=sineTable+0xFF
+	ldr r5,=sineTable+0xFF
+	ldrsb r8,[r5]
+	ldrsb r9,[r5,#0x40-0x100]
+	ands r10,r2,#0x80
+	movne r10,#-1				;@ U & V mask for no ColorBurst
 	mov r4,#512
 noMap:							;@ map 0UUUUUVVVVVYYYYY  ->  0bbbbbgggggrrrrr
 	ldrh r6,[r1],#2				;@ 0UUUUUVVVVVYYYYY
 
 	and r7,r6,#0x7C00			;@ U (Y-B)
 	orr r7,r7,r7,lsr#5
-	mov r7,r7,lsr#7
-	sub r7,r7,#0x80
-//	mov r7,#0
+	sub r7,r7,#0x4000
+	and r7,r10,r7,asr#7
 
 	and r2,r6,#0x03E0			;@ V (Y-R)
 	orr r2,r2,r2,lsr#5
-	mov r2,r2,lsr#2
-	sub r2,r2,#0x80
-//	mov r2,#0
+	sub r2,r2,#0x200
+	and r2,r10,r2,asr#2
 
-	ldrsb r3,[r8]
-	ldrsb r5,[r8,#0x40-0x100]
+	muls r3,r7,r9
+	muls r5,r2,r8
+	add r3,r3,r5
 
-	muls r9,r7,r5
-	muls r10,r2,r3
-	add r9,r9,r10
-
-	muls r2,r5,r2
-	muls r7,r3,r7
+	muls r2,r9,r2
+	muls r7,r8,r7
 	sub r2,r2,r7
 
-	mov r7,r9,asr#7
+	mov r7,r3,asr#7
 	mov r2,r2,asr#7
 
 	and r6,r6,#0x001F		;@ Y
+	orr r6,r6,r6,lsl#5		;@ 5bit Y to 24bit.
+	orr r6,r6,r6,lsl#10
 	orr r6,r6,r6,lsl#5
-	mov r6,r6,lsr#2
+	mov r6,r6,lsr#1
 
-	ldr r3,=0x00010101		;@ 8bit Y to 24bit.
-	mul r6,r3,r6
 							;@ https://en.wikipedia.org/wiki/YCbCr , JPEG version
 	ldr r3,=-0x00581062		;@ (B-Y) * -0.344 (-0x00581062)
 	mul r3,r7,r3
@@ -405,8 +419,8 @@ vcePixelClock:
 	.byte 0
 vceDMACyclesPerScanline:
 	.byte 0
-vcePadding:
-	.skip 1
+vceRGBYCbCr:
+	.byte 0
 vcePaletteRam:
 	.space 0x400
 vceStateEnd:
