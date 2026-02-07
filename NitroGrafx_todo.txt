@@ -53,8 +53,10 @@ Games:
 	Champions Forever Boxing. Not working on CDROM?
 	Coryoon Child of dragon, no scrolling sometime.
 	Davis Cup Tennis.
-	Takeda Shingen, graphics is corrupt.
 	Turrican, hangs at continue.
+
+Games Fixed:
+	Takeda Shingen, graphics is corrupt. VRAM DMA length is val+1.
 
 CPU:
 	Move rom_map to H6280 so that jmp becomes even faster.

@@ -952,7 +952,7 @@ vramDMA:			;@ VRAM to VRAM DMA transfer, r0=cycles to run
 	ldr r6,=DIRTYTILES
 	ldr r1,vdcDMASrc
 	ldr r2,vdcDMADst
-	ldr r3,vdcDMALen
+	ldr r3,vdcDMALen			;@ Length is actually val+1.
 vramDmaLoop:
 	mov r1,r1,lsr#15
 	movs r2,r2,asr#15
@@ -963,13 +963,13 @@ vramDmaLoop:
 	add r1,r7,r1,lsl#15
 	add r2,r8,r2,lsl#15
 	subs r3,r3,#0x10000
-	subsne r0,r0,#1
-	bne vramDmaLoop
+	subscs r0,r0,#1
+	bcs vramDmaLoop
 
 	str r1,vdcDMASrc
 	str r2,vdcDMADst
 	str r3,vdcDMALen
-	cmp r3,#0
+	cmp r3,#0xFFFF0000
 	ldmfd sp!,{r3-r9,lr}
 	bxne lr
 
