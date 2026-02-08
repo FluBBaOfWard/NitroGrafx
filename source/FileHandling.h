@@ -29,6 +29,7 @@ void selectGame(void);
 void selectCDROM(void);
 void selectBios(void);
 int loadUSBIOS(void);
+void descrambleROM(void);
 
 int CD_ReadByte(void);
 int CD_FetchAudio(int len, char *dest);

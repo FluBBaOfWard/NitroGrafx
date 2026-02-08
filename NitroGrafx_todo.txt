@@ -2,7 +2,6 @@
 NitroGrafx To Do:
 -----------------
 	Add vertical offset to GUI.
-	Check save states.
 	Add debug menu, "Step Frame".
 	Fix click when a cd track starts and stops playing.
 	Exile needs 2kB BRAM only?
@@ -15,7 +14,6 @@ NitroGrafx To Do:
 	Check the Games Express games. Data in track 1 is the problem?
 		Or should their BIOS lay "over" the normal?
 		Is both the normal BIOS and GE loaded at the same time?
-	Fix bitswap for USA roms.
 	Fix so you can load roms even if the path is gone from the disc. Fixed?
 	Fix V flicker position (all games with statusbar etc.). Done?
 
@@ -64,6 +62,38 @@ CPU:
 	Make list of all memory reads (mem, ram , io, sram).
 	Decimal mode still broken?
 
+Encrypted US Roms:
+	In most games, " NEC " is in the first 0x60 bytes of the rom.
+
+	Alien Crush -
+	Andre Panza Kick Boxing -
+	Boxy Boy - 0x3DA
+	Bravoman - 0xFB9
+	Cadash -   0x094
+	Chew-Man-Fu - 0x1CBD
+	Dragon's Curse - 0x166
+	Fantazy Zone - 0x18A
+	Galaga '90 - 0x074
+	Ghost Manor -
+	Gunboat -
+	Hit the Ice - 0xCB3
+	Keith Courage - 0x97E
+	Legend of Hero Tonma - 0x1F14
+	Moto Roader - 0x6B
+	Neutopia - 0x12E
+	Neutopia II - 0xCE
+	New Adventure Island - 0x471
+	Night Creatures -
+	Order of the Griffon - 0x39F
+	Ordyne - 0x85
+	Psychosis - 0x198C
+	Somer Assault - 0x477
+	Space Harrier - 0x1F9
+	Tale Spin - 0x7FF
+	Tiger Road - 0x7B7
+	Veigues Tactical Gladiator - 0xB29
+	Vigilante - 0x535
+	
 
 	opcode	length	cycles
 	01		13		7

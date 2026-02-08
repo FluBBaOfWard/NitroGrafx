@@ -68,6 +68,7 @@ const MItem optionItems[] = {
 	{"Display", ui5},
 	{"Machine", ui6},
 	{"Settings", ui7},
+//	{"Descramble ROM", descrambleROM},
 	{"Debug", ui8},
 };
 const MItem ctrlItems[] = {

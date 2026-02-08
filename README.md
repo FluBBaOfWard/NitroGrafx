@@ -4,9 +4,8 @@ PC-Engine/TurboGrafx-16 emulator for NDS
 
 This is a PC-Engine/TurboGrafx-16 emulator for the Nintendo DS(i)/3DS, it can
 also emulate some of the (Super) CD-ROM^2 & Arcade Card. It does not emulate
-the SuperGrafx. All games are not perfect, (alot of US games doesn't work
-because they are encrypted, use PCEToy or the emulator Ootake to decrypt these
-before you use them). Don't use overdumps as these are evil on PC Engine.
+the SuperGrafx. All games are not perfect. Don't use overdumps as these are
+evil on PC-Engine.
 
 ## How to use
 
@@ -93,7 +92,23 @@ Now load up a game and you should be good to go.
 
 ### About
 
-Some dumb info...
+Some dumb info about the emulator...
+
+## Controls
+
+* NDS B & A buttons are mapped to PC-Engine II & I.
+* NDS Start is mapped to PC-Engine Run.
+* NDS Select is mapped to PC-Engine Select.
+* NDS d-pad is mapped to PC-Engine d-pad.
+
+## Games
+
+* Cadash, vertical flickering alot.
+* Gunboat, tanks the performance completely (hold L+R a long time to enter menu again).
+* Klax, tanks the performance completely (hold L+R a long time to enter menu again).
+* Night Creatures, no sprites.
+* Space Harrier, no sprites.
+* Turrican, hangs at continue.
 
 ## Credits
 

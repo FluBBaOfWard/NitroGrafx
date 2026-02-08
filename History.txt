@@ -8,6 +8,7 @@ V0.9.0 - 2026-02-08 (FluBBa)
 	Fixed horizontal centering of screen.
 	Fixed sound amplitude/envelope.
 	Fixed save states.
+	Added descrambling of US ROMs.
 	Added new debug menu.
 	Better menu traversing.
 	Cleaned up code.

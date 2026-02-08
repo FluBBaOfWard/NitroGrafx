@@ -7,6 +7,7 @@
 #include "Shared/EmuMenu.h"
 #include "Shared/EmuSettings.h"
 #include "Shared/FileHelper.h"
+#include "Shared/AsmExtra.h"
 #include "Gui.h"
 #include "Equates.h"
 #include "cueparser/cue2toc.h"
@@ -215,7 +216,32 @@ void selectBios() {
 }
 
 bool isEncryptedRom(const void *src, const char *fPath) {
+	if (strstr(fPath, "(U)") || strstr(fPath, "(USA)")) {
+		u8 nec[5] = " NEC ";
+		// Encrypted " NEC ".
+		u8 key[5] = { 0x04, 0x72, 0xA2, 0xC2, 0x04};
+		if (memmem_(src, 0x20, &nec, sizeof(nec))) {
+			return false;
+		}
+		if (memmem_(src, 0x20, &key, sizeof(key))) {
+			return true;
+		}
+		if (memmem_(src, 0x80, &nec, sizeof(nec))) {
+			return false;
+		}
+		if (memmem_(src, 0x80, &key, sizeof(key))) {
+			return true;
+		}
+		if (memmem_(src, 0x2000, &key, sizeof(key))) {
+			return true;
+		}
+	}
 	return false;
+}
+
+void descrambleROM() {
+	mirrorBytes(ROM_Space, g_ROM_Size);
+	loadCart();
 }
 
 int loadPCEROM(void *dest, const char *fName, const int maxSize) {
@@ -226,8 +252,8 @@ int loadPCEROM(void *dest, const char *fName, const int maxSize) {
 		memcpy(dest, dest+0x200, size);
 	}
 	if (isEncryptedRom(dest, fName)) {
-		infoOutput("Decrypting ROM.");
-		mirrorBytes(ROM_Space, g_ROM_Size);
+		infoOutput("ROM Descrambled.");
+		mirrorBytes(dest, size);
 	}
 	return size;
 }
