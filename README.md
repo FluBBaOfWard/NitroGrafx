@@ -69,7 +69,7 @@ Now load up a game and you should be good to go.
     * Select Bios: Browse for CD bios.
   * Fake spritecollision: Not used yet.
 * Settings:
-  * Speed: Switch between speed modes, can also be toggled with L+START.
+  * Speed: Switch between speed modes.
     * Normal: Game runs at it's normal speed.
     * 200%: Game can run up to double speed.
     * Max: Game can run up to 4 times normal speed.

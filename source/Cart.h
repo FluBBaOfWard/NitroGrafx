@@ -34,6 +34,7 @@ extern void *g_BIOSBASE;
 void machineInit(void);
 void loadCart(void);
 void ejectCart(void);
+void mirrorBytes(u8 *memory, int length);
 
 #ifdef __cplusplus
 } // extern "C"

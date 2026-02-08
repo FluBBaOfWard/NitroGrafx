@@ -43,6 +43,7 @@
 	.global loadCart
 	.global ejectCart
 	.global enableSuperCDRAM
+	.global mirrorBytes
 
 	.syntax unified
 	.arm
@@ -442,7 +443,34 @@ checkPCEBRAM:
 	mov r2,#0x2000/4
 	sub r2,r2,#2
 	b memset_
+;@----------------------------------------------------------------------------
+mirrorBytes:					;@ r0=src/dst, r1=length
+	.type   mirrorBytes STT_FUNC
+;@----------------------------------------------------------------------------
+	ldrb r2,[r0]
+	mov r3,#0
+	movs r2,r2,lsr#1
+	adc r3,r3,r3
+	movs r2,r2,lsr#1
+	adc r3,r3,r3
+	movs r2,r2,lsr#1
+	adc r3,r3,r3
+	movs r2,r2,lsr#1
+	adc r3,r3,r3
+	movs r2,r2,lsr#1
+	adc r3,r3,r3
+	movs r2,r2,lsr#1
+	adc r3,r3,r3
+	movs r2,r2,lsr#1
+	adc r3,r3,r3
+	movs r2,r2,lsr#1
+	adc r3,r3,r3
+	strb r3,[r0],#1
 
+	subs r1,r1,#1
+	bne mirrorBytes
+
+	bx lr
 ;@----------------------------------------------------------------------------
 
 romBase:	.long 0

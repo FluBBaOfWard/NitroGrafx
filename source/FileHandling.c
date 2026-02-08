@@ -214,12 +214,20 @@ void selectBios() {
 	}
 }
 
+bool isEncryptedRom(const void *src, const char *fPath) {
+	return false;
+}
+
 int loadPCEROM(void *dest, const char *fName, const int maxSize) {
 	int size = loadROM(dest, fName, maxSize);
 	if ((size & 0x3FF) == 0x200) {
 		size -= 0x200;
 		infoOutput("Useless header, relocating ROM.");
 		memcpy(dest, dest+0x200, size);
+	}
+	if (isEncryptedRom(dest, fName)) {
+		infoOutput("Decrypting ROM.");
+		mirrorBytes(ROM_Space, g_ROM_Size);
 	}
 	return size;
 }
