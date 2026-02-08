@@ -361,7 +361,7 @@ BG_SCALING_OFS:
 	.long 0,0,0
 
 scaleParms:
-	.long OAM_BUFFER1+6
+	.long OAM_BUFFER1
 	.long 0x0000				;@ Rotate value
 	.long 0x0100				;@ Normal Horizontal
 	.long 0xFF01				;@ Flipped Horizontal
@@ -371,33 +371,10 @@ scaleSprParam:
 ;@----------------------------------------------------------------------------
 buildSpriteScaling:
 ;@----------------------------------------------------------------------------
-	stmfd sp!,{r3-r6}
 	adr r0,scaleParms			;@ Set sprite scaling params
-	ldmia r0,{r1-r6}			;@ Get sprite scaling params
-
-	mov r0,#2
-scaleLoop:
-	strh r3,[r1],#8				;@ buffer1, buffer2. Normal sprites
-	strh r2,[r1],#8
-	strh r2,[r1],#8
-	strh r5,[r1],#232
-		strh r4,[r1],#8			;@ Flipped Horizontal
-		strh r2,[r1],#8
-		strh r2,[r1],#8
-		strh r5,[r1],#232
-			strh r3,[r1],#8		;@ Flipped Vertical
-			strh r2,[r1],#8
-			strh r2,[r1],#8
-			strh r6,[r1],#232
-				strh r4,[r1],#8	;@ Flipped Vertical & Horizontal
-				strh r2,[r1],#8
-				strh r2,[r1],#8
-				strh r6,[r1],#232
-	subs r0,r0,#1
-	bne scaleLoop
-
-	ldmfd sp!,{r3-r6}
-	bx lr
+	stmfd sp!,{r3,r12,lr}
+	bl setupSpriteScaling
+	ldmfd sp!,{r3,r12,pc}
 ;@----------------------------------------------------------------------------
 paletteInit:		;@ r0-r3 modified.
 	.type   paletteInit STT_FUNC

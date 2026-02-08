@@ -50,6 +50,7 @@ Sound:
 	Add LFO emulation? (Hanii in the Sky, Juuouki, and Flash Hiders use LFO).
 
 Games:
+	Cadash. Vertical flickering alot.
 	Champions Forever Boxing. Not working on CDROM?
 	Coryoon Child of dragon, no scrolling sometime.
 	Davis Cup Tennis.
