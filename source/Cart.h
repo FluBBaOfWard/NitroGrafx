@@ -34,6 +34,9 @@ extern void *g_BIOSBASE;
 void machineInit(void);
 void loadCart(void);
 void ejectCart(void);
+/**
+ * Reverses the bits in the bytes.
+ */
 void mirrorBytes(u8 *memory, int length);
 
 #ifdef __cplusplus

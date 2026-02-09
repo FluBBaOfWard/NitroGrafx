@@ -447,35 +447,24 @@ checkPCEBRAM:
 mirrorBytes:					;@ r0=src/dst, r1=length
 	.type   mirrorBytes STT_FUNC
 ;@----------------------------------------------------------------------------
+	ldr r12,=0x00022110
+mirrorLoop:
 	ldrb r2,[r0]
-	mov r3,#0
-	movs r2,r2,lsr#1
-	adc r3,r3,r3
-	movs r2,r2,lsr#1
-	adc r3,r3,r3
-	movs r2,r2,lsr#1
-	adc r3,r3,r3
-	movs r2,r2,lsr#1
-	adc r3,r3,r3
-	movs r2,r2,lsr#1
-	adc r3,r3,r3
-	movs r2,r2,lsr#1
-	adc r3,r3,r3
-	movs r2,r2,lsr#1
-	adc r3,r3,r3
-	movs r2,r2,lsr#1
-	adc r3,r3,r3
+	orr r2,r2,r2,lsl#10			;@ b * 0x401
+	and r3,r12,r2,lsl#1
+	and r2,r12,r2,lsl#3
+	orr r2,r3,r2,lsl#2
+	orr r3,r2,r2,lsr#8			;@ r * 0x10101
+	orr r3,r3,r2,lsr#16
 	strb r3,[r0],#1
-
 	subs r1,r1,#1
-	bne mirrorBytes
-
+	bne mirrorLoop
 	bx lr
 ;@----------------------------------------------------------------------------
 
 romBase:	.long 0
 g_BIOSBASE:
-	.long 0						;@ biosbase_sms, SMS
+	.long 0						;@ biosbase_pce
 g_ROM_Size:
 	.long 0
 romMask:	.long 0
