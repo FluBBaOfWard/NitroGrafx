@@ -104,8 +104,6 @@ Some dumb info about the emulator...
 ## Games
 
 * Cadash, vertical flickering alot.
-* Gunboat, tanks the performance completely (hold L+R a long time to enter menu again).
-* Klax, tanks the performance completely (hold L+R a long time to enter menu again).
 * Night Creatures, no sprites.
 * Space Harrier, no sprites.
 * Turrican, hangs at continue.

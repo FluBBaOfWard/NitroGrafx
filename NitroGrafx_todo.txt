@@ -55,6 +55,8 @@ Games:
 	Turrican, hangs at continue.
 
 Games Fixed:
+	Gunboat, tanks the performance completely. Timer counting was wrong.
+	Klax, tanks the performance completely. Timer counting was wrong.
 	Takeda Shingen, graphics is corrupt. VRAM DMA length is val+1.
 
 CPU:

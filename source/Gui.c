@@ -13,7 +13,7 @@
 #include "io.h"
 #include "ARMH6280/Version.h"
 
-#define EMUVERSION "V0.9.0 2026-02-08"
+#define EMUVERSION "V0.9.0 2026-02-10"
 
 // Asm functions
 extern void paletteTxAll(void);		// VCE.s
@@ -154,6 +154,7 @@ void exitGUI() {
 }
 
 void quickSelectGame(void) {
+	openMenu();
 	selectGame();
 	closeMenu();
 }

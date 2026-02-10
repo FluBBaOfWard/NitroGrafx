@@ -81,6 +81,7 @@ rawRom:
 //	.incbin "roms/Gaia no Monshou (J).pce"
 //	.incbin "roms/Gradius (J).pce"
 //	.incbin "roms/Games Express CD Card 1993 (J).pce"
+//	.incbin "roms/Klax (U).pce"
 //	.incbin "roms/Kyuukyoku Tiger (J).pce"
 //	.incbin "roms/Legend of Hero Tonma (U).pce"
 //	.incbin "roms/Magical Chase (U) [!].pce"
