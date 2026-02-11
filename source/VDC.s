@@ -179,7 +179,7 @@ borderScanlineHook:
 	ldrb r0,[r1]
 
 	ldrb r1,vdcDoSprDMA
-	cmp r1,#0
+	tst r1,#1
 	blne sprDMA
 
 	cmp r0,#0
@@ -232,12 +232,11 @@ startVbl:
 	str r0,vdcScanlineHook
 
 	ldrb r0,vdcDoSprDMA
-	ldrb r2,vdcDMACR
-	and r2,r2,#0x10				;@ Check for DMA repetition
-	orrs r0,r0,r2
+	and r0,r0,#0x11				;@ Check for DMA repetition
+	orrs r0,r0,r0,lsr#4
 	strb r0,vdcDoSprDMA
-	mov r1,#0x100
-	strne r1,vdcSatLen
+	movne r0,#0x100
+	str r0,vdcSatLen
 
 	ldrb r0,vdcCtrl1
 	tst r0,#0x08				;@ vbl IRQ?
@@ -883,9 +882,12 @@ DMAOAM_L_W:						;@ 13 DMA Sprite Attribute Table
 ;@----------------------------------------------------------------------------
 DMAOAM_H_W:						;@ 13 DMA Sprite Attribute Table
 ;@----------------------------------------------------------------------------
+	mov r11,r11
 	strb r0,vdcSatAdr+1
-	mov r0,#-1
+	mov r0,#1
 	strb r0,vdcDoSprDMA
+	mov r0,#0x100
+	str r0,vdcSatLen
 	bx lr
 
 ;@----------------------------------------------------------------------------
@@ -905,11 +907,11 @@ mirrorPCE:
 ;@----------------------------------------------------------------------------
 sprDMA:			;@ Sprite DMA transfer, should be called during VBlank
 ;@----------------------------------------------------------------------------
-	stmfd sp!,{r3-r5}
+	stmfd sp!,{r3,r4}
 
-	ldr r5,vdcSatAdr
+	ldr r4,vdcSatAdr
 	ldr r1,vramPtr
-	add r1,r1,r5,lsl#1			;@ r1=DMA source
+	add r1,r1,r4,lsl#1			;@ r1=DMA source
 	ldr r4,=vdcSpriteRam		;@ Destination
 	ldr r2,vdcSatLen			;@ Length
 	rsb r3,r2,#0x100			;@ How much is already done
@@ -920,21 +922,24 @@ sprDMALoop:
 	subspl r2,r2,#1
 	ldrhpl r3,[r1],#2
 	strhpl r3,[r4],#2
-	bhi sprDMALoop
-	ldmfd sp!,{r3-r5}
+	bgt sprDMALoop
+	ldmfd sp!,{r3,r4}
+	movmi r0,#0					;@ Only happen when r2 is greater than r0
 
 	str r2,vdcSatLen
-	cmp r2,#0
-	bxhi lr
+	bxmi lr
 
-	strb r2,vdcDoSprDMA
 	ldrb r1,vdcDMACR
+	and r2,r1,#0x10				;@ SPR DMA repeat?
+	strb r2,vdcDoSprDMA
 	tst r1,#0x01				;@ Spr IRQ?
 	bxeq lr
 	ldrb r1,vdcStat
 	orr r1,r1,#0x08				;@ Spr DMA done.
 	strb r1,vdcStat
-	setIrqPin VDCIRQ_F
+	ldrb r1,[h6280ptr,#h6280IrqPending]
+	orr r1,r1,#VDCIRQ_F
+	strb r1,[h6280ptr,#h6280IrqPending]
 
 	bx lr
 ;@----------------------------------------------------------------------------

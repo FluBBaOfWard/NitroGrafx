@@ -275,7 +275,7 @@ noCDAudio:
 	strb r2,cdIrqReq
 
 ;@----------------------------------------------------------------------------
-CD_Check_IRQ:					;@ Don't use r0 as it may be used as return data.
+CD_Check_IRQ:				;@ Don't use r0 as it may be used as return data.
 ;@----------------------------------------------------------------------------
 	ldrb r2,cdIrqMask
 	ldrb r1,cdIrqReq

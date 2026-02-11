@@ -104,8 +104,7 @@ Some dumb info about the emulator...
 ## Games
 
 * Cadash, vertical flickering alot.
-* Night Creatures, no sprites.
-* Space Harrier, no sprites.
+* Chikudenya Toubee, hangs at start.
 * Turrican, hangs at continue.
 
 ## Credits

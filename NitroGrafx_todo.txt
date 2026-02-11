@@ -57,6 +57,8 @@ Games:
 Games Fixed:
 	Gunboat, tanks the performance completely. Timer counting was wrong.
 	Klax, tanks the performance completely. Timer counting was wrong.
+	Night Creatures, no sprites. Sprite DMA handling.
+	Space Harrier, no sprites. Sprite DMA handling.
 	Takeda Shingen, graphics is corrupt. VRAM DMA length is val+1.
 
 CPU:

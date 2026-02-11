@@ -89,6 +89,7 @@ rawRom:
 //	.incbin "roms/Mr. Heli no Dai Bouken (J).pce"
 //	.incbin "roms/New Adventure Island (U).pce"
 //	.incbin "roms/New Zealand Story, The (J).pce"
+//	.incbin "roms/Night Creatures (U).pce"
 //	.incbin "roms/Ninja Spirit (U).pce"
 //	.incbin "roms/Ninja Warriors, The (J).pce"
 //	.incbin "roms/Outrun (J).pce"

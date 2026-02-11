@@ -2,11 +2,13 @@ NitroGrafx revision history
 -=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 
-V0.9.0 - 2026-02-08 (FluBBa)
+V0.9.0 - 2026-02-11 (FluBBa)
 	Fixed unscaled & aspect scaling.
 	Fixed setting of vertical scroll value.
 	Fixed horizontal centering of screen.
 	Fixed sound amplitude/envelope.
+	Fixed timer counting.
+	Fixed sprite DMA.
 	Fixed save states.
 	Added descrambling of US ROMs.
 	Added new debug menu.
