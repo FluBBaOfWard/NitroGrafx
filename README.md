@@ -103,8 +103,10 @@ Some dumb info about the emulator...
 
 ## Games
 
+* Benkei Gaiden, crashes in intro.
 * Cadash, vertical flickering alot.
 * Chikudenya Toubee, hangs at start.
+* Gaia no Monsho, black screen at boot.
 * Turrican, hangs at continue.
 
 ## Credits

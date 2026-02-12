@@ -48,11 +48,27 @@ Sound:
 	Add LFO emulation? (Hanii in the Sky, Juuouki, and Flash Hiders use LFO).
 
 Games:
+	Benkei Gaiden, crashes in intro.
 	Cadash. Vertical flickering alot.
 	Champions Forever Boxing. Not working on CDROM?
-	Coryoon Child of dragon, no scrolling sometime.
-	Davis Cup Tennis.
+	Chikudenya Toubee, hangs at start.
+	College Pro Baseball '88, music no graphics. SprDMA.
+	College Pro Baseball '90, music no graphics. SprDMA.
+	Coryoon Child of dragon, no scrolling sometime?
+	Dragon Egg!, black screen at boot.
+	Fighting Run, too many bitplanes.
+	Gaia no Monsho, black screen at boot.
+	Hisou Kihei Serd, black screen at boot.
+	Naxat Open, can't make a shot. SprDMA.
+	Power Tennis, crashes in intro.
+	Rock-On, garbage on continue screen.
+	Tatsujin, sprites freeze after death. SprDMA.
+	Toy Shop Boys, hangs early in game.
 	Turrican, hangs at continue.
+	TV Sports Football, hangs in game. SprDMA.
+	TV Sports Ice Hockey, no sprites. SprDMA.
+	Valkyrie no Densetsu, hangs in intro. SprDMA.
+	Volfied, hangs just before game starts. SprDMA.
 
 Games Fixed:
 	Gunboat, tanks the performance completely. Timer counting was wrong.
@@ -98,6 +114,26 @@ Encrypted US Roms:
 	Veigues Tactical Gladiator - 0xB29
 	Vigilante - 0x535
 	
+
+@r0=pointer to memory being bit-reversed
+@r1=number of bytes to have their bytes bit-reversed
+  ldr  r2, =0x0F0F0F0F
+  ldr  r3, =0x33333333
+  ldr  r4, =0x55555555
+mirrorLoop:
+  ldr  r5, [r0]
+  and  r6, r2, r5, lsr #4
+  and  r5, r2, r5
+  orr  r5, r6, r5, lsl #4
+  and  r6, r3, r5, lsr #2
+  and  r5, r3, r5
+  orr  r5, r6, r5, lsl #2
+  and  r6, r4, r5, lsr #1
+  and  r5, r4, r5
+  orr  r5, r6, r5, lsl #1
+  str  r5, [r0], #4
+  subs r1, r1, #4
+  bne  mirrorLoop
 
 	opcode	length	cycles
 	01		13		7
