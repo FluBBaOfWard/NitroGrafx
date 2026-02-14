@@ -446,21 +446,28 @@ checkPCEBRAM:
 	sub r2,r2,#2
 	b memset_
 ;@----------------------------------------------------------------------------
-mirrorBytes:					;@ r0=src/dst, r1=length
+mirrorBytes:				;@ r0=src/dst, r1=length
 	.type   mirrorBytes STT_FUNC
 ;@----------------------------------------------------------------------------
-	ldr r12,=0x00022110
+	stmfd sp!,{r4-r6}
+	ldr  r2, =0x0F0F0F0F
+	eor r3,r2,r2,lsl#2			;@ r3=0x33333333
+	eor r4,r3,r3,lsl#1			;@ r4=0x55555555
 mirrorLoop:
-	ldrb r2,[r0]
-	orr r2,r2,r2,lsl#10			;@ b * 0x401
-	and r3,r12,r2,lsl#1
-	and r2,r12,r2,lsl#3
-	orr r2,r3,r2,lsl#2
-	orr r3,r2,r2,lsr#8			;@ r * 0x10101
-	orr r3,r3,r2,lsr#16
-	strb r3,[r0],#1
-	subs r1,r1,#1
-	bne mirrorLoop
+	ldr  r5, [r0]
+	and  r6, r2, r5, lsr #4
+	and  r5, r2, r5
+	orr  r5, r6, r5, lsl #4
+	and  r6, r3, r5, lsr #2
+	and  r5, r3, r5
+	orr  r5, r6, r5, lsl #2
+	and  r6, r4, r5, lsr #1
+	and  r5, r4, r5
+	orr  r5, r6, r5, lsl #1
+	str  r5, [r0], #4
+	subs r1, r1, #4
+	bne  mirrorLoop
+	ldmfd sp!,{r4-r6}
 	bx lr
 ;@----------------------------------------------------------------------------
 

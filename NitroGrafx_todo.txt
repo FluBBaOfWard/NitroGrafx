@@ -50,32 +50,32 @@ Sound:
 Games:
 	Benkei Gaiden, crashes in intro.
 	Cadash. Vertical flickering alot.
-	Champions Forever Boxing. Not working on CDROM?
 	Chikudenya Toubee, hangs at start.
-	College Pro Baseball '88, music no graphics. SprDMA.
-	College Pro Baseball '90, music no graphics. SprDMA.
-	Coryoon Child of dragon, no scrolling sometime?
 	Dragon Egg!, black screen at boot.
 	Fighting Run, too many bitplanes.
 	Gaia no Monsho, black screen at boot.
 	Hisou Kihei Serd, black screen at boot.
-	Naxat Open, can't make a shot. SprDMA.
 	Power Tennis, crashes in intro.
 	Rock-On, garbage on continue screen.
-	Tatsujin, sprites freeze after death. SprDMA.
 	Toy Shop Boys, hangs early in game.
 	Turrican, hangs at continue.
+
+Games Fixed:
+	Champions Forever Boxing. Not working on CDROM?
+	College Pro Baseball '88, music no graphics. SprDMA (SprDMA IRQ?).
+	College Pro Baseball '90, music no graphics. SprDMA (SprDMA IRQ?).
+	Coryoon Child of dragon, no scrolling sometime?
+	Gunboat, tanks the performance completely. Timer counting was wrong.
+	Klax, tanks the performance completely. Timer counting was wrong.
+	Naxat Open, can't make a shot. SprDMA (SprDMA IRQ?).
+	Night Creatures, no sprites. No cycles for Sprite DMA handling.
+	Space Harrier, no sprites. No cycles for Sprite DMA handling.
+	Takeda Shingen, graphics is corrupt. VRAM DMA length is val+1.
+	Tatsujin, sprites freeze after death. SprDMA.
 	TV Sports Football, hangs in game. SprDMA.
 	TV Sports Ice Hockey, no sprites. SprDMA.
 	Valkyrie no Densetsu, hangs in intro. SprDMA.
 	Volfied, hangs just before game starts. SprDMA.
-
-Games Fixed:
-	Gunboat, tanks the performance completely. Timer counting was wrong.
-	Klax, tanks the performance completely. Timer counting was wrong.
-	Night Creatures, no sprites. Sprite DMA handling.
-	Space Harrier, no sprites. Sprite DMA handling.
-	Takeda Shingen, graphics is corrupt. VRAM DMA length is val+1.
 
 CPU:
 	Move rom_map to H6280 so that jmp becomes even faster.
@@ -117,23 +117,39 @@ Encrypted US Roms:
 
 @r0=pointer to memory being bit-reversed
 @r1=number of bytes to have their bytes bit-reversed
-  ldr  r2, =0x0F0F0F0F
-  ldr  r3, =0x33333333
-  ldr  r4, =0x55555555
+	ldr  r2, =0x0F0F0F0F
+	eor r3,r2,r2,lsl#2			;@ r3=0x33333333
+	eor r4,r3,r3,lsl#1			;@ r4=0x55555555
 mirrorLoop:
-  ldr  r5, [r0]
-  and  r6, r2, r5, lsr #4
-  and  r5, r2, r5
-  orr  r5, r6, r5, lsl #4
-  and  r6, r3, r5, lsr #2
-  and  r5, r3, r5
-  orr  r5, r6, r5, lsl #2
-  and  r6, r4, r5, lsr #1
-  and  r5, r4, r5
-  orr  r5, r6, r5, lsl #1
-  str  r5, [r0], #4
-  subs r1, r1, #4
-  bne  mirrorLoop
+	ldr  r5, [r0]
+	and  r6, r2, r5, lsr #4
+	and  r5, r2, r5
+	orr  r5, r6, r5, lsl #4
+	and  r6, r3, r5, lsr #2
+	and  r5, r3, r5
+	orr  r5, r6, r5, lsl #2
+	and  r6, r4, r5, lsr #1
+	and  r5, r4, r5
+	orr  r5, r6, r5, lsl #1
+	str  r5, [r0], #4
+	subs r1, r1, #4
+	bne  mirrorLoop
+
+@r0=pointer to memory being bit-reversed
+@r1=number of bytes to have their bytes bit-reversed
+	ldr r2,=0x00022110
+mirrorLoop:
+	ldrb r3,[r0]
+	orr r3,r3,r3,lsl#10			;@ b * 0x401
+	and r12,r2,r3,lsl#1
+	and r3,r2,r3,lsl#3
+	orr r3,r12,r3,lsl#2
+	orr r3,r3,r3,lsr#8			;@ r * 0x10101
+	orr r3,r3,r3,lsr#16
+	strb r3,[r0],#1
+	subs r1,r1,#1
+	bne mirrorLoop
+	bx lr
 
 	opcode	length	cycles
 	01		13		7

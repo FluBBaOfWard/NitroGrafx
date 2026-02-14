@@ -275,7 +275,7 @@ noCDAudio:
 	strb r2,cdIrqReq
 
 ;@----------------------------------------------------------------------------
-CD_Check_IRQ:				;@ Don't use r0 as it may be used as return data.
+CD_Check_IRQ:				;@ Don´t use r0 as it may be used as return data.
 ;@----------------------------------------------------------------------------
 	ldrb r2,cdIrqMask
 	ldrb r1,cdIrqReq
@@ -793,7 +793,7 @@ CD0B_W:						;@ CD-ROM to ADPCM-RAM DMA
 	b debugOutput_asm
 CDMA_txt:
 	.string "CD DMA"
-	.align 4
+	.align 2
 ;@----------------------------------------------------------------------------
 CD0C_W:						;@ ADPCM status (Read Only)
 ;@----------------------------------------------------------------------------
@@ -843,7 +843,7 @@ CD0D_W:						;@ ADPCM adr control
 
 PS_txt:
 	.string "ADPCM Play"
-	.align 4
+	.align 2
 ;@----------------------------------------------------------------------------
 CD0E_W:						;@ ADPCM playback rate
 ;@----------------------------------------------------------------------------
@@ -854,7 +854,7 @@ CD0E_W:						;@ ADPCM playback rate
 //	bx lr
 PB_txt:
 	.string "ADPCM Rate"
-	.align 4
+	.align 2
 ;@----------------------------------------------------------------------------
 CD0F_W:						;@ CD Audio fade
 ;@----------------------------------------------------------------------------
@@ -864,7 +864,7 @@ CD0F_W:						;@ CD Audio fade
 //	bx lr
 AF_txt:
 	.string "Audio Fade"
-	.align 4
+	.align 2
 
 ;@----------------------------------------------------------------------------
 cdromState:
@@ -901,13 +901,14 @@ adpcmRate:		.byte 0			;@ ADPCM playback rate ($180E)
 adpcmStatus:	.byte 0			;@ ADPCM busy status.
 adpcmDmaOn:		.byte 0			;@ ADPCM -> CD DMA on?
 cdAudioFade:	.byte 0			;@ CD Audio fade ($180F)
+cdDAStatus:		.byte 0			;@ gomwing
 cdAudioPlaying:	.byte 0			;@ Is cd audio playing?
 cdAudioRepeat:	.byte 0			;@ Should music repeat after completion?
 scsiPtr:		.byte 0			;@ Which byte of the command
 
 scsiCmd:		.space 10
 scsiResponse:	.space 10
-	.align 4
+	.align 2
 cdromStateEnd:
 
 tgcdBase:
@@ -918,7 +919,7 @@ isoBase:
 	.long 0
 cdInserted:		.byte 0
 coverOpen:		.byte 0
-	.align 4
+	.align 2
 scsiCommandHex:	.space 32
 
 
@@ -1068,7 +1069,7 @@ CMD_TestUnitReady:
 	.short 0x6464,0x0000
 turTxt:
 	.string "TestUnitReady"
-	.align 4
+	.align 2
 noTur:
 	adr r1,turTxt
 	b debugOutput_asm
@@ -1106,7 +1107,7 @@ rsLoop:
 	.short 0x6464,0x0000
 rsTxt:
 	.string "RequestSense"
-	.align 4
+	.align 2
 noSense:
 	adr r1,rsTxt
 	b debugOutput_asm
@@ -1146,7 +1147,7 @@ CMD_Read6:
 //	bx lr
 r6Txt:
 	.string "Read6"
-	.align 4
+	.align 2
 ;@----------------------------------------------------------------------------
 CMD_PlayCD:
 	stmfd sp!,{r3-r5,lr}
@@ -1213,7 +1214,7 @@ notTrack:
 //	bx lr
 pcTxt:
 	.string "PlayCD_D8"
-	.align 4
+	.align 2
 
 ;@----------------------------------------------------------------------------
 CD_DoRepeat:
@@ -1305,7 +1306,7 @@ notTrack2:
 //	bx lr
 pc2Txt:
 	.string "PlayCD_D9"
-	.align 4
+	.align 2
 ;@----------------------------------------------------------------------------
 CMD_PausCD:
 	mov r0,#0xD8				;@ No data only status
@@ -1318,7 +1319,7 @@ CMD_PausCD:
 //	bx lr
 paTxt:
 	.string "PauseCD"
-	.align 4
+	.align 2
 ;@----------------------------------------------------------------------------
 CMD_SubQ:
 ;@	mov r11,r11					;@ No$GBA Debugg
@@ -1376,7 +1377,7 @@ CMD_SubQ:
 	bx lr
 sqTxt:
 	.string "SubQ"
-	.align 4
+	.align 2
 ;@----------------------------------------------------------------------------
 CMD_GetInfo:
 	mov r0,#0
@@ -1598,7 +1599,7 @@ giukTxt:
 	.string "GetInfo "
 ukTxt:
 	.string "Unknown"
-	.align 4
+	.align 2
 
 TGCD_D_Header:
 	.incbin "new.tcd"
@@ -1612,7 +1613,7 @@ TGCD_M_Header:
 
 ;@----------------------------------------------------------------------------
 	.section .bss
-	.align 4
+	.align 2
 ;@----------------------------------------------------------------------------
 CDROM_TOC:
 	.space 8*128				;@ Max 99 tracks
