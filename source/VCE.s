@@ -69,9 +69,9 @@ vceReset:					;@ Called from GFX reset
 
 	mov r0,#0
 	bl _0400W
-	ldr r0,=vceState
+	ldr r0,=vcePaletteRam
 	mov r1,#0
-	mov r2,#vceRegSize/4
+	mov r2,#0x400/4
 	bl memset_					;@ Clear VCE regs
 	bl resetPaletteRam
 	bl paletteTxAll				;@ Transfer PCE palette to NDS

@@ -79,8 +79,6 @@ convertInput:			;@ Convert from device keys to target r0=input/output
 ;@----------------------------------------------------------------------------
 refreshEMUjoypads:			;@ Call every frame
 ;@----------------------------------------------------------------------------
-;@	mov r11,r11
-
 		ldr r4,=frameTotal
 		ldr r4,[r4]
 		movs r0,r4,lsr#2		;@ C=frame&2 (autofire alternates every other frame)

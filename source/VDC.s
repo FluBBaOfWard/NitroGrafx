@@ -232,8 +232,8 @@ startVbl:
 	str r0,vdcScanlineHook
 
 	ldrb r0,vdcDoSprDMA
-	and r0,r0,#0x11				;@ Check for DMA repetition
-	orrs r0,r0,r0,lsr#4
+	ldrb r1,vdcDMACR
+	orrs r0,r0,r1,lsr#4			;@ Add Spr DMA repetition
 	strb r0,vdcDoSprDMA
 	movne r0,#0x100
 	str r0,vdcSatLen
@@ -839,6 +839,7 @@ DMACtl_L_W:					;@ 0F DMA Control Reg
 ;@ VDMA_VINT_ON	equ	%00010		; Interrupt when VRAM DMA is finnished.
 ;@ SDMA_VINT_ON	equ	%00001		; Interrupt when SPR DMA is finnished.
 ;@----------------------------------------------------------------------------
+	and r0,r0,#0x1F
 	strb r0,vdcDMACR
 	bx lr
 ;@----------------------------------------------------------------------------
@@ -882,12 +883,9 @@ DMAOAM_L_W:						;@ 13 DMA Sprite Attribute Table
 ;@----------------------------------------------------------------------------
 DMAOAM_H_W:						;@ 13 DMA Sprite Attribute Table
 ;@----------------------------------------------------------------------------
-	mov r11,r11
 	strb r0,vdcSatAdr+1
 	mov r0,#1
 	strb r0,vdcDoSprDMA
-	mov r0,#0x100
-	str r0,vdcSatLen
 	bx lr
 
 ;@----------------------------------------------------------------------------
@@ -930,8 +928,7 @@ sprDMALoop:
 	bxmi lr
 
 	ldrb r1,vdcDMACR
-	and r2,r1,#0x10				;@ SPR DMA repeat?
-	strb r2,vdcDoSprDMA
+	strb r2,vdcDoSprDMA			;@ Spr DMA done.
 	tst r1,#0x01				;@ Spr IRQ?
 	bxeq lr
 	ldrb r1,vdcStat
