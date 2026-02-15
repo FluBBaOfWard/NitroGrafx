@@ -63,9 +63,7 @@ Now load up a game and you should be good to go.
 * Machine:
   * Region: Change the region between US & JP, US should work for most games.
   * Machine: Here you can select the hardware, Auto should work for most games.
-  * Bios Settings:
-    * Use Bios: Here you can select if you want to use the selected BIOSes.
-    * Select Bios: Browse for CD bios.
+  * Select Bios: Browse for CD bios.
   * Fake spritecollision: Not used yet.
 * Settings:
   * Speed: Switch between speed modes.
@@ -75,14 +73,13 @@ Now load up a game and you should be good to go.
     * 50%: Game runs at half speed.
   * Autoload State: Toggle Savestate autoloading. Automagicaly load the
     savestate associated with the selected game.
-  * Autosave BRAM: Saves BRAM if it's changed when entering GUI.
+  * Autosave NVRAM: Saves BRAM if it's changed when entering GUI.
   * Autosave Settings: Saves changed settings every time you leave GUI.
   * Autopause Game: Pause game when opening GUI.
   * Powersave 2nd Screen: If graphics/light should be turned off for the GUI
     screen when menu is not active.
   * Emulator on Bottom: Select if top or bottom screen should be used for
     emulator, when menu is active emulator screen is allways on top.
-  * Debug Output: Set if you want debug output or not.
 * Debug:
   * Debug Output: Show FPS and logged text.
   * Disable Background: Turn on/off background rendering.

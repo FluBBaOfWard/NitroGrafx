@@ -53,7 +53,7 @@ Games:
 	Chikudenya Toubee, hangs at start.
 	Dragon Egg!, black screen at boot.
 	Fighting Run, too many bitplanes.
-	Gaia no Monsho, black screen at boot.
+	Gaia no Monsho, black screen at boot. Timer handling. H6280.s row 1826.
 	Hisou Kihei Serd, black screen at boot.
 	Power Tennis, crashes in intro.
 	Rock-On, garbage on continue screen.
