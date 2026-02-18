@@ -45,58 +45,54 @@ pcmMix:
 ;@----------------------------------------------------------------------------
 pcmMixLoop:
 	add r3,r3,#PSGADDITION
-	movs r0,r3,lsr#27
+	orrs r0,r12,r3,lsr#27
 	mov r1,r3,lsl#18
 	subcs r3,r3,r1,asr#4
 vol0_L:
 	mov r2,#0x00				;@ Volume left
 vol0_R:
 	orrs r1,r2,#0xFF0000		;@ Volume right
-	ldrsbne r0,[r12,r0]			;@ Channel 0
+	ldrsbne r0,[r0,#0x00]		;@ Channel 0
 	mulne r2,r1,r0
 
 	add r4,r4,#PSGADDITION
-	movs r0,r4,lsr#27
-	add r0,r0,#0x20
+	orrs r0,r12,r4,lsr#27
 	mov r1,r4,lsl#18
 	subcs r4,r4,r1,asr#4
 vol1_L:
 	mov r1,#0x00				;@ Volume left
 vol1_R:
 	orrs r1,r1,#0xFF0000		;@ Volume right
-	ldrsbne r0,[r12,r0]			;@ Channel 1
+	ldrsbne r0,[r0,#0x20]		;@ Channel 1
 	mlane r2,r1,r0,r2
 
 
 	add r5,r5,#PSGADDITION
-	movs r0,r5,lsr#27
-	add r0,r0,#0x40
+	orrs r0,r12,r5,lsr#27
 	mov r1,r5,lsl#18
 	subcs r5,r5,r1,asr#4
 vol2_L:
 	mov r1,#0x00				;@ Volume left
 vol2_R:
 	orrs r1,r1,#0xFF0000		;@ Volume right
-	ldrsbne r0,[r12,r0]			;@ Channel 2
+	ldrsbne r0,[r0,#0x40]		;@ Channel 2
 	mlane r2,r1,r0,r2
 
 
 	add r6,r6,#PSGADDITION
-	movs r0,r6,lsr#27
-	add r0,r0,#0x60
+	orrs r0,r12,r6,lsr#27
 	mov r1,r6,lsl#18
 	subcs r6,r6,r1,asr#4
 vol3_L:
 	mov r1,#0x00				;@ Volume left
 vol3_R:
 	orrs r1,r1,#0xFF0000		;@ Volume right
-	ldrsbne r0,[r12,r0]			;@ Channel 3
+	ldrsbne r0,[r0,#0x60]		;@ Channel 3
 	mlane r2,r1,r0,r2
 
 
 	add r7,r7,#PSGADDITION
-	movs r0,r7,lsr#27
-	add r0,r0,#0x80
+	orrs r0,r12,r7,lsr#27
 	mov r1,r7,lsl#18
 	subcs r7,r7,r1,asr#4
 
@@ -105,7 +101,7 @@ vol3_R:
 	ldrcs r1,=PSGNOISEFEED
 	eorcs r9,r9,r1
 	tst r9,#0x80				;@ Noise 4 enabled?
-	ldrsbeq r0,[r12,r0]			;@ Channel 4
+	ldrsbeq r0,[r0,#0x80]		;@ Channel 4
 	andsne r0,r9,#0x00000001
 	movne r0,#0x1F
 
@@ -117,8 +113,7 @@ vol4_R:
 
 
 	adds r8,r8,#PSGADDITION
-	movs r0,r8,lsr#27
-	add r0,r0,#0xA0
+	orrs r0,r12,r8,lsr#27
 	mov r1,r8,lsl#18
 	subcs r8,r8,r1,asr#4
 
@@ -127,7 +122,7 @@ vol4_R:
 	ldrcs r1,=PSGNOISEFEED
 	eorcs r10,r10,r1
 	tst r10,#0x80				;@ Noise 5 enabled?
-	ldrsbeq r0,[r12,r0]			;@ Channel 5
+	ldrsbeq r0,[r0,#0xA0]		;@ Channel 5
 	andsne r0,r10,#0x00000001
 	movne r0,#0x1F
 
@@ -144,7 +139,6 @@ vol5_R:
 
 	b pcmMixReturn
 ;@----------------------------------------------------------------------------
-
 
 	.section .text
 	.align 2
@@ -217,7 +211,6 @@ pcePSGGetStateSize:			;@ Out r0=state size.
 ;@----------------------------------------------------------------------------
 	mov r0,#pcePsgSize
 	bx lr
-
 
 ;@----------------------------------------------------------------------------
 PCEPSGMixer:				;@ r0=len, r1=dest, r12=psgptr
@@ -367,8 +360,11 @@ _0804W:						;@ Channel Enable, DDA & Volume
 	add r2,psgptr,r1
 	strb r0,[r2,#ch0Control]
 	tst r0,#0x40
-	mov r0,#0
-	strbne r0,[r2,#ch0WaveIndx]
+	bxeq lr
+	add r2,psgptr,#pcm0CurrentAddr+3
+	ldrb r0,[r2,r1,lsl#2]
+	bic r0,#0xF8
+	strb r0,[r2,r1,lsl#2]
 	bx lr
 ;@----------------------------------------------------------------------------
 _0805W:						;@ Channel Balance
@@ -381,14 +377,15 @@ _0805W:						;@ Channel Balance
 _0806W:						;@ Waveform Data
 ;@----------------------------------------------------------------------------
 	ldrb r1,[psgptr,#psgChannel]
-	add r2,r1,#ch0WaveIndx
+	mov r2,#pcm0CurrentAddr+3
+	add r2,r2,r1,lsl#2
 	add r1,psgptr,r1,lsl#5
 	ldrb r2,[psgptr,r2]!		;@ Get channel X index
 	add r1,r1,r2,lsr#3
 	and r0,r0,#0x1f
 	sub r0,r0,#0x10
 	strb r0,[r1,#ch0Waveform]
-	add r2,r2,#8
+	add r2,r2,#0x08
 	strb r2,[psgptr]			;@ Write back channel X index
 	bx lr
 ;@----------------------------------------------------------------------------

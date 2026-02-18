@@ -13,15 +13,6 @@
 
 							;@ pcepsg.s
 	.struct 0					// Changes section so make sure it's set before real code.
-psgChannel:		.byte 0			;@ Channel select
-globalBalance:	.byte 0			;@
-noiseCtrl4:		.byte 0			;@ Noise control ch4
-noiseCtrl5:		.byte 0			;@ Noise control ch5
-lfoFreq:		.byte 0			;@ LFO frequency
-lfoCtrl:		.byte 0			;@ LFO control
-ch3Change:		.byte 0
-				.skip 1
-
 ch0Control:		.byte 0
 ch1Control:		.byte 0
 ch2Control:		.byte 0
@@ -39,15 +30,6 @@ ch4Balance:		.byte 0
 ch5Balance:		.byte 0
 ch6Balance:		.byte 0			;@ Dummy
 ch7Balance:		.byte 0			;@ Dummy
-
-ch0WaveIndx:	.byte 0
-ch1WaveIndx:	.byte 0
-ch2WaveIndx:	.byte 0
-ch3WaveIndx:	.byte 0
-ch4WaveIndx:	.byte 0
-ch5WaveIndx:	.byte 0
-ch6WaveIndx:	.byte 0			;@ Dummy
-ch7WaveIndx:	.byte 0			;@ Dummy
 
 ch0Freq:		.short 0
 ch1Freq:		.short 0
@@ -75,6 +57,15 @@ ch4Waveform:		.space 32
 ch5Waveform:		.space 32
 ch6Waveform:		.space 32	;@ Dummy
 ch7Waveform:		.space 32	;@ Dummy
+
+psgChannel:		.byte 0			;@ Channel select
+globalBalance:	.byte 0			;@
+noiseCtrl4:		.byte 0			;@ Noise control ch4
+noiseCtrl5:		.byte 0			;@ Noise control ch5
+lfoFreq:		.byte 0			;@ LFO frequency
+lfoCtrl:		.byte 0			;@ LFO control
+ch3Change:		.byte 0
+				.skip 1
 
 pcePsgSize:
 

@@ -40,15 +40,6 @@ typedef struct {
 	u8 ch6Balance;			// Dummy
 	u8 ch7Balance;			// Dummy
 
-	u8 ch0WaveIndx;
-	u8 ch1WaveIndx;
-	u8 ch2WaveIndx;
-	u8 ch3WaveIndx;
-	u8 ch4WaveIndx;
-	u8 ch5WaveIndx;
-	u8 ch6WaveIndx;			// Dummy
-	u8 ch7WaveIndx;			// Dummy
-
 	u16 ch0Freq;
 	u16 ch1Freq;
 	u16 ch2Freq;

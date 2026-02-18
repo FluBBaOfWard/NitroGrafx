@@ -225,7 +225,7 @@ muteSoundGame:
 #else
 	.section .bss
 #endif
-	.align 2
+	.align 5
 PSG_0:
 	.space pcePsgSize
 ;@----------------------------------------------------------------------------

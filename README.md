@@ -1,5 +1,7 @@
 # NitroGrafx V0.9.0
 
+<img align="right" width="220" src="./logo.png" alt="The PC-Engine logo" />
+
 PC-Engine/TurboGrafx-16 emulator for NDS
 
 This is a PC-Engine/TurboGrafx-16 emulator for the Nintendo DS(i)/3DS, it can
