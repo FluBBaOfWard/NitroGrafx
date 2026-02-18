@@ -9,7 +9,7 @@
 
 #include "pcepsg.i"
 
-#define PSGDIVIDE 20*4
+#define PSGDIVIDE 80
 #define PSGADDITION 0x00004000*PSGDIVIDE
 #define PSGNOISEFEED 0x8600C001
 //#define PSGNOISEFEED 0xC0184001
@@ -54,7 +54,7 @@ vol0_R:
 	orrs r1,r2,#0xFF0000		;@ Volume right
 	ldrsbne r0,[r0,#0x00]		;@ Channel 0
 	mulne r2,r1,r0
-
+;@----------------------------
 	add r4,r4,#PSGADDITION
 	orrs r0,r12,r4,lsr#27
 	mov r1,r4,lsl#18
@@ -65,8 +65,7 @@ vol1_R:
 	orrs r1,r1,#0xFF0000		;@ Volume right
 	ldrsbne r0,[r0,#0x20]		;@ Channel 1
 	mlane r2,r1,r0,r2
-
-
+;@----------------------------
 	add r5,r5,#PSGADDITION
 	orrs r0,r12,r5,lsr#27
 	mov r1,r5,lsl#18
@@ -77,8 +76,7 @@ vol2_R:
 	orrs r1,r1,#0xFF0000		;@ Volume right
 	ldrsbne r0,[r0,#0x40]		;@ Channel 2
 	mlane r2,r1,r0,r2
-
-
+;@----------------------------
 	add r6,r6,#PSGADDITION
 	orrs r0,r12,r6,lsr#27
 	mov r1,r6,lsl#18
@@ -89,8 +87,7 @@ vol3_R:
 	orrs r1,r1,#0xFF0000		;@ Volume right
 	ldrsbne r0,[r0,#0x60]		;@ Channel 3
 	mlane r2,r1,r0,r2
-
-
+;@----------------------------
 	add r7,r7,#PSGADDITION
 	orrs r0,r12,r7,lsr#27
 	mov r1,r7,lsl#18
@@ -104,14 +101,12 @@ vol3_R:
 	ldrsbeq r0,[r0,#0x80]		;@ Channel 4
 	andsne r0,r9,#0x00000001
 	movne r0,#0x1F
-
 vol4_L:
 	mov r1,#0x00				;@ Volume left
 vol4_R:
 	orrs r1,r1,#0xFF0000		;@ Volume right
 	mlane r2,r1,r0,r2
-
-
+;@----------------------------
 	adds r8,r8,#PSGADDITION
 	orrs r0,r12,r8,lsr#27
 	mov r1,r8,lsl#18
@@ -125,13 +120,12 @@ vol4_R:
 	ldrsbeq r0,[r0,#0xA0]		;@ Channel 5
 	andsne r0,r10,#0x00000001
 	movne r0,#0x1F
-
 vol5_L:
 	mov r1,#0x00				;@ Volume left
 vol5_R:
 	orrs r1,r1,#0xFF0000		;@ Volume right
 	mlane r2,r1,r0,r2
-
+;@----------------------------
 
 	subs r11,r11,#1
 	strpl r2,[lr],#4
@@ -259,11 +253,10 @@ PCEPSGMixer:				;@ r0=len, r1=dest, r12=psgptr
 	strb r0,[r10,#vol5_L-vol0_L]
 	strb r1,[r10,#vol5_R-vol0_L]
 
-	add r0,psgptr,#pcm0CurrentAddr
-	ldmia r0,{r3-r10}
+	add psgptr,psgptr,#pcm0CurrentAddr
+	ldmia psgptr!,{r3-r10}		;@ r12 = PCE wavebuffer
 ;@--------------------------
 
-	add psgptr,psgptr,#ch0Waveform	;@ r12 = PCE wavebuffer
 	ldmfd sp,{r11,lr}			;@ r11=len, lr=dest buffer
 	b pcmMix
 pcmMixReturn:
@@ -281,14 +274,13 @@ getVolumeDS:				;@ r0=chCtrl,r1=chBalance,r2=globalBalance
 	movne r0,#0
 	and r0,r0,#0x1F				;@ Channel master
 
-	and r4,r1,#0xF				;@ Channel right
-	add r4,r0,r4,lsl#1
+	mov r1,r1,ror#4
+	add r4,r0,r1,lsr#28-1		;@ Channel right
 	add r4,r4,r2,lsr#28-1		;@ Global right
 
-	mov r1,r1,lsr#4				;@ Channel left
-	add r0,r0,r1,lsl#1
-	and r1,r2,#0xF				;@ Global left
-	add r0,r0,r1,lsl#1
+	add r0,r0,r1,lsl#1			;@ Channel left
+	add r0,r0,r2,lsl#1			;@ Global left
+	and r0,r0,#0x7F
 
 	ldr r0,[r3,r0,lsl#2]
 	ldr r1,[r3,r4,lsl#2]
