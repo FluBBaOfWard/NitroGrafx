@@ -11,9 +11,9 @@
 
 #define PSGDIVIDE 80
 #define PSGADDITION 0x00004000*PSGDIVIDE
-#define PSGNOISEFEED 0x8600C001
-//#define PSGNOISEFEED 0xC0184001
-//#define PSGNOISEFEED 0x00090001
+#define PSGNOISEFEED 0x8600C01F
+//#define PSGNOISEFEED 0xC018401F
+//#define PSGNOISEFEED 0x0009001F
 
 	.global PCEPSGInit
 	.global PCEPSGReset
@@ -29,14 +29,14 @@
 	.section .itcm, "ax", %progbits
 	.align 2
 ;@----------------------------------------------------------------------------
-;@ r0 = sample reg.
-;@ r1 = volume.
+;@ r0 = length.
+;@ r1 = mixerbuffer1.
 ;@ r2 = mixer reg.
-;@ r3 -> r8 = pos+freq.
-;@ r9,r10 = noise regs.
-;@ r11 = length.
+;@ r3 = sample reg.
+;@ r4 -> r9 = pos+freq.
+;@ r10,r11 = noise regs.
 ;@ r12 = PCE samplebuffers.
-;@ r14 = mixerbuffer1.
+;@ r14 = volume.
 ;@ Waveforms should not be signed!!!
 ;@----------------------------------------------------------------------------
 pcmMix:
@@ -44,91 +44,89 @@ pcmMix:
 // I=sampleindex, V=overflow, C=counter, F=frequency
 ;@----------------------------------------------------------------------------
 pcmMixLoop:
-	add r3,r3,#PSGADDITION
-	orrs r0,r12,r3,lsr#27
-	mov r1,r3,lsl#18
-	subcs r3,r3,r1,asr#4
+	add r4,r4,#PSGADDITION
+	orrs r3,r12,r4,lsr#27
+	mov lr,r4,lsl#18
+	subcs r4,r4,lr,asr#4
 vol0_L:
 	mov r2,#0x00				;@ Volume left
 vol0_R:
-	orrs r1,r2,#0xFF0000		;@ Volume right
-	ldrsbne r0,[r0,#0x00]		;@ Channel 0
-	mulne r2,r1,r0
-;@----------------------------
-	add r4,r4,#PSGADDITION
-	orrs r0,r12,r4,lsr#27
-	mov r1,r4,lsl#18
-	subcs r4,r4,r1,asr#4
-vol1_L:
-	mov r1,#0x00				;@ Volume left
-vol1_R:
-	orrs r1,r1,#0xFF0000		;@ Volume right
-	ldrsbne r0,[r0,#0x20]		;@ Channel 1
-	mlane r2,r1,r0,r2
+	orrs lr,r2,#0xFF0000		;@ Volume right
+	ldrsbne r3,[r3,#0x00]		;@ Channel 0
+	mulne r2,lr,r3
 ;@----------------------------
 	add r5,r5,#PSGADDITION
-	orrs r0,r12,r5,lsr#27
-	mov r1,r5,lsl#18
-	subcs r5,r5,r1,asr#4
-vol2_L:
-	mov r1,#0x00				;@ Volume left
-vol2_R:
-	orrs r1,r1,#0xFF0000		;@ Volume right
-	ldrsbne r0,[r0,#0x40]		;@ Channel 2
-	mlane r2,r1,r0,r2
+	orrs r3,r12,r5,lsr#27
+	mov lr,r5,lsl#18
+	subcs r5,r5,lr,asr#4
+vol1_L:
+	mov lr,#0x00				;@ Volume left
+vol1_R:
+	orrs lr,lr,#0xFF0000		;@ Volume right
+	ldrsbne r3,[r3,#0x20]		;@ Channel 1
+	mlane r2,lr,r3,r2
 ;@----------------------------
 	add r6,r6,#PSGADDITION
-	orrs r0,r12,r6,lsr#27
-	mov r1,r6,lsl#18
-	subcs r6,r6,r1,asr#4
-vol3_L:
-	mov r1,#0x00				;@ Volume left
-vol3_R:
-	orrs r1,r1,#0xFF0000		;@ Volume right
-	ldrsbne r0,[r0,#0x60]		;@ Channel 3
-	mlane r2,r1,r0,r2
+	orrs r3,r12,r6,lsr#27
+	mov lr,r6,lsl#18
+	subcs r6,r6,lr,asr#4
+vol2_L:
+	mov lr,#0x00				;@ Volume left
+vol2_R:
+	orrs lr,lr,#0xFF0000		;@ Volume right
+	ldrsbne r3,[r3,#0x40]		;@ Channel 2
+	mlane r2,lr,r3,r2
 ;@----------------------------
 	add r7,r7,#PSGADDITION
-	orrs r0,r12,r7,lsr#27
-	mov r1,r7,lsl#18
-	subcs r7,r7,r1,asr#4
+	orrs r3,r12,r7,lsr#27
+	mov lr,r7,lsl#18
+	subcs r7,r7,lr,asr#4
+vol3_L:
+	mov lr,#0x00				;@ Volume left
+vol3_R:
+	orrs lr,lr,#0xFF0000		;@ Volume right
+	ldrsbne r3,[r3,#0x60]		;@ Channel 3
+	mlane r2,lr,r3,r2
+;@----------------------------
+	add r8,r8,#PSGADDITION
+	orrs r3,r12,r8,lsr#27
+	mov lr,r8,lsl#18
+	subcs r8,r8,lr,asr#4
 
-	movcs r1,r9,lsr#14
-	addscs r9,r9,r1,lsl#14
-	ldrcs r1,=PSGNOISEFEED
-	eorcs r9,r9,r1
-	tst r9,#0x80				;@ Noise 4 enabled?
-	ldrsbeq r0,[r0,#0x80]		;@ Channel 4
-	andsne r0,r9,#0x00000001
-	movne r0,#0x1F
+	movcs lr,r10,lsr#14
+	addscs r10,r10,lr,lsl#14
+	ldrcs lr,=PSGNOISEFEED
+	eorcs r10,r10,lr
+	tst r10,#0x80				;@ Noise 4 enabled?
+	ldrsbeq r3,[r3,#0x80]		;@ Channel 4
+	andne r3,r10,#0x0000001F
 vol4_L:
-	mov r1,#0x00				;@ Volume left
+	mov lr,#0x00				;@ Volume left
 vol4_R:
-	orrs r1,r1,#0xFF0000		;@ Volume right
-	mlane r2,r1,r0,r2
+	orrs lr,lr,#0xFF0000		;@ Volume right
+	mlane r2,lr,r3,r2
 ;@----------------------------
-	adds r8,r8,#PSGADDITION
-	orrs r0,r12,r8,lsr#27
-	mov r1,r8,lsl#18
-	subcs r8,r8,r1,asr#4
+	adds r9,r9,#PSGADDITION
+	orrs r3,r12,r9,lsr#27
+	mov lr,r9,lsl#18
+	subcs r9,r9,lr,asr#4
 
-	movcs r1,r10,lsr#14
-	addscs r10,r10,r1,lsl#14
-	ldrcs r1,=PSGNOISEFEED
-	eorcs r10,r10,r1
-	tst r10,#0x80				;@ Noise 5 enabled?
-	ldrsbeq r0,[r0,#0xA0]		;@ Channel 5
-	andsne r0,r10,#0x00000001
-	movne r0,#0x1F
+	movcs lr,r11,lsr#14
+	addscs r11,r11,lr,lsl#14
+	ldrcs lr,=PSGNOISEFEED
+	eorcs r11,r11,lr
+	tst r11,#0x80				;@ Noise 5 enabled?
+	ldrsbeq r3,[r3,#0xA0]		;@ Channel 5
+	andne r3,r11,#0x0000001F
 vol5_L:
-	mov r1,#0x00				;@ Volume left
+	mov lr,#0x00				;@ Volume left
 vol5_R:
-	orrs r1,r1,#0xFF0000		;@ Volume right
-	mlane r2,r1,r0,r2
+	orrs lr,lr,#0xFF0000		;@ Volume right
+	mlane r2,lr,r3,r2
 ;@----------------------------
 
-	subs r11,r11,#1
-	strpl r2,[lr],#4
+	subs r0,r0,#1
+	strpl r2,[r1],#4
 	bgt pcmMixLoop				;@ 91 cycles according to No$gba
 
 	b pcmMixReturn
@@ -178,7 +176,7 @@ rLoop:
 	str r0,[psgptr,#pcm3CurrentAddr]
 	str r0,[psgptr,#pcm4CurrentAddr]
 	str r0,[psgptr,#pcm5CurrentAddr]
-	mov r0,#0x80000000
+	mov r0,#0x8000001F
 	str r0,[psgptr,#noise4CurrentAddr]
 	str r0,[psgptr,#noise5CurrentAddr]
 	bx lr
@@ -254,15 +252,15 @@ PCEPSGMixer:				;@ r0=len, r1=dest, r12=psgptr
 	strb r1,[r10,#vol5_R-vol0_L]
 
 	add psgptr,psgptr,#pcm0CurrentAddr
-	ldmia psgptr!,{r3-r10}		;@ r12 = PCE wavebuffer
+	ldmia psgptr!,{r4-r11}		;@ r12 = PCE wavebuffer
 ;@--------------------------
 
-	ldmfd sp,{r11,lr}			;@ r11=len, lr=dest buffer
+	ldmfd sp,{r0,r1}			;@ r0=len, r1=dest buffer
 	b pcmMix
 pcmMixReturn:
 	sub psgptr,psgptr,#ch0Waveform	;@ Get correct psgptr
 	add r0,psgptr,#pcm0CurrentAddr	;@ Counters
-	stmia r0,{r3-r10}			;@ Write back counters
+	stmia r0,{r4-r11}			;@ Write back counters
 
 	ldmfd sp!,{r0,r1,r4-r11,pc}
 ;@----------------------------------------------------------------------------
@@ -388,6 +386,9 @@ _0807W:						;@ Noise enable and frequency
 	beq noise5W
 	cmp r1,#4
 	bxne lr
+;@----------------------------------------------------------------------------
+noise4W:
+;@----------------------------------------------------------------------------
 	strb r0,[psgptr,#noiseCtrl4]
 
 	ldrb r1,[psgptr,#noise4CurrentAddr]
