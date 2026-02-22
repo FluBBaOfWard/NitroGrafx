@@ -209,53 +209,52 @@ PCEPSGMixer:				;@ r0=len, r1=dest, r12=psgptr
 ;@----------------------------------------------------------------------------
 	stmfd sp!,{r0,r1,r4-r11,lr}
 ;@--------------------------
-	ldr r10,=vol0_L
+	ldr r7,=vol0_L
 
-	ldrb r2,[psgptr,#globalBalance]
-	adr r3,attenuation
-	mov r2,r2,ror#4
+	ldrb r4,[psgptr,#globalBalance]
+	adr r5,attenuation
+	mov r4,r4,ror#4
 
-	ldrb r0,[psgptr,#ch0Control]
-	ldrb r1,[psgptr,#ch0Balance]
-	bl getVolumeDS				;@ Volume in r0/r1, uses r0,r1 & r4.
-	strb r0,[r10,#vol0_L-vol0_L]
-	strb r1,[r10,#vol0_R-vol0_L]
+	ldrb r2,[psgptr,#ch0Control]
+	ldrb r3,[psgptr,#ch0Balance]
+	bl getVolumeDS				;@ Volume in r2/r3, uses r2-r7.
+	strb r2,[r7,#vol0_L-vol0_L]
+	strb r3,[r7,#vol0_R-vol0_L]
 
-	ldrb r0,[psgptr,#ch1Control]
-	ldrb r1,[psgptr,#ch1Balance]
-	bl getVolumeDS				;@ Volume in r0/r1, uses r0,r1 & r4.
-	strb r0,[r10,#vol1_L-vol0_L]
-	strb r1,[r10,#vol1_R-vol0_L]
+	ldrb r2,[psgptr,#ch1Control]
+	ldrb r3,[psgptr,#ch1Balance]
+	bl getVolumeDS				;@ Volume in r2/r3, uses r2-r7.
+	strb r2,[r7,#vol1_L-vol0_L]
+	strb r3,[r7,#vol1_R-vol0_L]
 
-	ldrb r0,[psgptr,#ch2Control]
-	ldrb r1,[psgptr,#ch2Balance]
-	bl getVolumeDS				;@ Volume in r0/r1, uses r0,r1 & r4.
-	strb r0,[r10,#vol2_L-vol0_L]
-	strb r1,[r10,#vol2_R-vol0_L]
+	ldrb r2,[psgptr,#ch2Control]
+	ldrb r3,[psgptr,#ch2Balance]
+	bl getVolumeDS				;@ Volume in r2/r3, uses r2-r7.
+	strb r2,[r7,#vol2_L-vol0_L]
+	strb r3,[r7,#vol2_R-vol0_L]
 
-	ldrb r0,[psgptr,#ch3Control]
-	ldrb r1,[psgptr,#ch3Balance]
-	bl getVolumeDS				;@ Volume in r0/r1, uses r0,r1 & r4.
-	strb r0,[r10,#vol3_L-vol0_L]
-	strb r1,[r10,#vol3_R-vol0_L]
+	ldrb r2,[psgptr,#ch3Control]
+	ldrb r3,[psgptr,#ch3Balance]
+	bl getVolumeDS				;@ Volume in r2/r3, uses r2-r7.
+	strb r2,[r7,#vol3_L-vol0_L]
+	strb r3,[r7,#vol3_R-vol0_L]
 
-	ldrb r0,[psgptr,#ch4Control]
-	ldrb r1,[psgptr,#ch4Balance]
-	bl getVolumeDS				;@ Volume in r0/r1, uses r0,r1 & r4.
-	strb r0,[r10,#vol4_L-vol0_L]
-	strb r1,[r10,#vol4_R-vol0_L]
+	ldrb r2,[psgptr,#ch4Control]
+	ldrb r3,[psgptr,#ch4Balance]
+	bl getVolumeDS				;@ Volume in r2/r3, uses r2-r7.
+	strb r2,[r7,#vol4_L-vol0_L]
+	strb r3,[r7,#vol4_R-vol0_L]
 
-	ldrb r0,[psgptr,#ch5Control]
-	ldrb r1,[psgptr,#ch5Balance]
-	bl getVolumeDS				;@ Volume in r0/r1, uses r0,r1 & r4.
-	strb r0,[r10,#vol5_L-vol0_L]
-	strb r1,[r10,#vol5_R-vol0_L]
+	ldrb r2,[psgptr,#ch5Control]
+	ldrb r3,[psgptr,#ch5Balance]
+	bl getVolumeDS				;@ Volume in r2/r3, uses r2-r7.
+	strb r2,[r7,#vol5_L-vol0_L]
+	strb r3,[r7,#vol5_R-vol0_L]
 
 	add psgptr,psgptr,#pcm0CurrentAddr
 	ldmia psgptr!,{r4-r11}		;@ r12 = PCE wavebuffer
 ;@--------------------------
 
-	ldmfd sp,{r0,r1}			;@ r0=len, r1=dest buffer
 	b pcmMix
 pcmMixReturn:
 	sub psgptr,psgptr,#ch0Waveform	;@ Get correct psgptr
@@ -266,22 +265,22 @@ pcmMixReturn:
 ;@----------------------------------------------------------------------------
 getVolumeDS:				;@ r0=chCtrl,r1=chBalance,r2=globalBalance
 ;@----------------------------------------------------------------------------
-	and r4,r0,#0xC0
-	cmp r4,#0x80				;@ Should channel be played?
+	and r6,r2,#0xC0
+	cmp r6,#0x80				;@ Should channel be played?
 
-	movne r0,#0
-	and r0,r0,#0x1F				;@ Channel master
+	movne r2,#0
+	and r2,r2,#0x1F				;@ Channel master
 
-	mov r1,r1,ror#4
-	add r4,r0,r1,lsr#28-1		;@ Channel right
-	add r4,r4,r2,lsr#28-1		;@ Global right
+	mov r3,r3,ror#4
+	add r6,r2,r3,lsr#28-1		;@ Channel right
+	add r6,r6,r4,lsr#28-1		;@ Global right
 
-	add r0,r0,r1,lsl#1			;@ Channel left
-	add r0,r0,r2,lsl#1			;@ Global left
-	and r0,r0,#0x7F
+	add r2,r2,r3,lsl#1			;@ Channel left
+	add r2,r2,r4,lsl#1			;@ Global left
+	and r2,r2,#0x7F
 
-	ldr r0,[r3,r0,lsl#2]
-	ldr r1,[r3,r4,lsl#2]
+	ldr r2,[r5,r2,lsl#2]
+	ldr r3,[r5,r6,lsl#2]
 	bx lr
 ;@----------------------------------------------------------------------------
 attenuation:
@@ -335,8 +334,8 @@ _0803W:						;@ Frequency byte 1
 ;@----------------------------------------------------------------------------
 	and r0,r0,#0xF
 	ldrb r1,[psgptr,#psgChannel]
-	add r2,psgptr,#ch0Freq+1
-	strb r0,[r2,r1,lsl#1]
+	add r2,psgptr,r1,lsl#1
+	strb r0,[r2,#ch0Freq+1]
 	add r2,psgptr,#pcm0CurrentAddr+1
 	ldrb r1,[r2,r1,lsl#2]!
 	bic r1,r1,#0x1F
@@ -353,7 +352,7 @@ _0804W:						;@ Channel Enable, DDA & Volume
 	bxeq lr
 	add r2,psgptr,#pcm0CurrentAddr+3
 	ldrb r0,[r2,r1,lsl#2]
-	bic r0,#0xF8
+	bic r0,#0xF8				;@ Clear channel X index
 	strb r0,[r2,r1,lsl#2]
 	bx lr
 ;@----------------------------------------------------------------------------
