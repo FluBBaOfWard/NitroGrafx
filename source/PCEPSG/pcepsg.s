@@ -251,7 +251,6 @@ PCEPSGMixer:				;@ r0=len, r1=dest, r12=psgptr
 	strb r2,[r7,#vol5_L-vol0_L]
 	strb r3,[r7,#vol5_R-vol0_L]
 
-	add psgptr,psgptr,#pcm0CurrentAddr
 	ldmia psgptr!,{r4-r11}		;@ r12 = PCE wavebuffer
 ;@--------------------------
 
@@ -324,43 +323,40 @@ _0801W:						;@ Main Volume
 _0802W:						;@ Frequency byte 0
 ;@----------------------------------------------------------------------------
 	ldrb r1,[psgptr,#psgChannel]
-	add r2,psgptr,#ch0Freq
-	strb r0,[r2,r1,lsl#1]
-	add r2,psgptr,#pcm0CurrentAddr
-	strb r0,[r2,r1,lsl#2]
+	add r2,psgptr,r1,lsl#2
+	strb r0,[r2,#ch0Freq]
+	strb r0,[r2,#pcm0CurrentAddr]
 	bx lr
 ;@----------------------------------------------------------------------------
 _0803W:						;@ Frequency byte 1
 ;@----------------------------------------------------------------------------
 	and r0,r0,#0xF
 	ldrb r1,[psgptr,#psgChannel]
-	add r2,psgptr,r1,lsl#1
+	add r2,psgptr,r1,lsl#2
 	strb r0,[r2,#ch0Freq+1]
-	add r2,psgptr,#pcm0CurrentAddr+1
-	ldrb r1,[r2,r1,lsl#2]!
+	ldrb r1,[r2,#pcm0CurrentAddr+1]
 	bic r1,r1,#0x1F
 	orr r1,r1,r0
-	strb r1,[r2]
+	strb r1,[r2,#pcm0CurrentAddr+1]
 	bx lr
 ;@----------------------------------------------------------------------------
 _0804W:						;@ Channel Enable, DDA & Volume
 ;@----------------------------------------------------------------------------
 	ldrb r1,[psgptr,#psgChannel]
-	add r2,psgptr,r1
+	add r2,psgptr,r1,lsl#2
 	strb r0,[r2,#ch0Control]
 	tst r0,#0x40
 	bxeq lr
-	add r2,psgptr,#pcm0CurrentAddr+3
-	ldrb r0,[r2,r1,lsl#2]
+	ldrb r0,[r2,#pcm0CurrentAddr+3]
 	bic r0,#0xF8				;@ Clear channel X index
-	strb r0,[r2,r1,lsl#2]
+	strb r0,[r2,#pcm0CurrentAddr+3]
 	bx lr
 ;@----------------------------------------------------------------------------
 _0805W:						;@ Channel Balance
 ;@----------------------------------------------------------------------------
 	ldrb r1,[psgptr,#psgChannel]
-	add r2,psgptr,#ch0Balance
-	strb r0,[r2,r1]
+	add r2,psgptr,r1,lsl#2
+	strb r0,[r2,#ch0Balance]
 	bx lr
 ;@----------------------------------------------------------------------------
 _0806W:						;@ Waveform Data
@@ -399,11 +395,11 @@ noise4W:
 	rsb r0,r0,#0x1F
 
 	ldr r2,[psgptr,#pcm4CurrentAddr]
-	ldrheq r1,[psgptr,#ch4Freq]
+	ldreq r1,[psgptr,#ch4Freq]
 	mov r2,r2,lsr#12
-	orreq r2,r1,r2,lsl#12
+	orreq r2,r2,r1,lsl#20
 	orrne r2,r2,r0,ror#5
-	movne r2,r2,ror#20
+	mov r2,r2,ror#20
 	str r2,[psgptr,#pcm4CurrentAddr]
 
 	bx lr
@@ -421,11 +417,11 @@ noise5W:
 	rsb r0,r0,#0x1F
 
 	ldr r2,[psgptr,#pcm5CurrentAddr]
-	ldrheq r1,[psgptr,#ch5Freq]
+	ldreq r1,[psgptr,#ch5Freq]
 	mov r2,r2,lsr#12
-	orreq r2,r1,r2,lsl#12
+	orreq r2,r2,r1,lsl#20
 	orrne r2,r2,r0,ror#5
-	movne r2,r2,ror#20
+	mov r2,r2,ror#20
 	str r2,[psgptr,#pcm5CurrentAddr]
 
 	bx lr
