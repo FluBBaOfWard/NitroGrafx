@@ -1,6 +1,6 @@
 //
 //  pcepsg.h
-//  NitroGrafx
+//  NitroGrafx PC-Engine PSG emulator
 //
 //  Created by Fredrik Ahlström on 2003-01-01.
 //  Copyright © 2003-2026 Fredrik Ahlström. All rights reserved.
@@ -13,42 +13,12 @@ extern "C" {
 #endif
 
 typedef struct {
-	u8 psgChannel;			// Channel select
-	u8 globalBalance;		//
-	u8 noiseCtrl4;			// Noise control ch4
-	u8 noiseCtrl5;			// Noise control ch5
-	u8 lfoFreq;				// LFO frequency
-	u8 lfoCtrl;				// LFO control
-	u8 ch3Change;			//
-	u8 padding[1];
+	u16 Freq;
+	u8 Control;
+	u8 Balance;
+} PSGChannel;
 
-	u8 ch0Control;
-	u8 ch1Control;
-	u8 ch2Control;
-	u8 ch3Control;
-	u8 ch4Control;
-	u8 ch5Control;
-	u8 ch6Control;			// Dummy
-	u8 ch7Control;			// Dummy
-
-	u8 ch0Balance;
-	u8 ch1Balance;
-	u8 ch2Balance;
-	u8 ch3Balance;
-	u8 ch4Balance;
-	u8 ch5Balance;
-	u8 ch6Balance;			// Dummy
-	u8 ch7Balance;			// Dummy
-
-	u16 ch0Freq;
-	u16 ch1Freq;
-	u16 ch2Freq;
-	u16 ch3Freq;
-	u16 ch4Freq;
-	u16 ch5Freq;
-	u16 ch6Freq;			// Dummy
-	u16 ch7Freq;			// Dummy
-
+typedef struct {
 	u32 pcm0CurrentAddr;	// Current addr
 	u32 pcm1CurrentAddr;	// Current addr
 	u32 pcm2CurrentAddr;	// Current addr
@@ -66,6 +36,24 @@ typedef struct {
 	u8 ch5Waveform[32];
 	u8 ch6Waveform[32];		// Dummy
 	u8 ch7Waveform[32];		// Dummy
+
+	PSGChannel ch0;
+	PSGChannel ch1;
+	PSGChannel ch2;
+	PSGChannel ch3;
+	PSGChannel ch4;
+	PSGChannel ch5;
+	PSGChannel ch6;			// Dummy
+	PSGChannel ch7;			// Dummy
+
+	u8 psgChannel;			// Channel select
+	u8 globalBalance;		//
+	u8 noiseCtrl4;			// Noise control ch4
+	u8 noiseCtrl5;			// Noise control ch5
+	u8 lfoFreq;				// LFO frequency
+	u8 lfoCtrl;				// LFO control
+	u8 amplitudeChg;		// bit0-5 is channel
+	u8 padding[1];
 } PCEPSGCore;
 
 /**

@@ -18,7 +18,7 @@ extern "C" {
 //#define sample_rate  32768
 //#define sample_rate  55930
 #define sample_rate  44100
-#define buffer_size  512
+#define buffer_size  1470
 
 extern PCEPSGCore PSG_0;
 

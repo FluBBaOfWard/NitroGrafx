@@ -62,7 +62,7 @@ noiseCtrl4:		.byte 0			;@ Noise control ch4
 noiseCtrl5:		.byte 0			;@ Noise control ch5
 lfoFreq:		.byte 0			;@ LFO frequency
 lfoCtrl:		.byte 0			;@ LFO control
-ch3Change:		.byte 0
+amplitudeChg:	.byte 0			;@ Bit0-5 is channel
 				.skip 1
 
 pcePsgSize:

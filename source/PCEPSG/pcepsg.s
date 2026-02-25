@@ -26,23 +26,39 @@
 	.syntax unified
 	.arm
 
-	.section .itcm, "ax", %progbits
+#ifdef NDS
+	.section .itcm, "ax", %progbits		;@ For the NDS ARM9
+#elif GBA
+	.section .iwram, "ax", %progbits	;@ For the GBA
+#endif
 	.align 2
 ;@----------------------------------------------------------------------------
-;@ r0 = length.
-;@ r1 = mixerbuffer1.
-;@ r2 = mixer reg.
-;@ r3 = sample reg.
-;@ r4 -> r9 = pos+freq.
-;@ r10,r11 = noise regs.
-;@ r12 = PCE samplebuffers.
-;@ r14 = volume.
+;@ r0  = Length
+;@ r1  = Destination
+;@ r2  = Mixer register
+;@ r3  = Current sample
+;@ r4  = Channel 0 pos+freq
+;@ r5  = Channel 1 pos+freq
+;@ r6  = Channel 2 pos+freq
+;@ r7  = Channel 3 pos+freq
+;@ r8  = Channel 4 pos+freq
+;@ r9  = Channel 5 pos+freq
+;@ r10 = Ch4 noise reg
+;@ r11 = Ch5 noise reg
+;@ r12 = PCE samplebuffers
+;@ lr  = Current volume
 ;@ Waveforms should not be signed!!!
 ;@----------------------------------------------------------------------------
-pcmMix:
 // IIIIIVCCCCCCCCCCCC10FFFFFFFFFFFF
 // I=sampleindex, V=overflow, C=counter, F=frequency
 ;@----------------------------------------------------------------------------
+PCEPSGMixer:				;@ r0=len, r1=dest, r12=psgptr
+;@----------------------------------------------------------------------------
+	stmfd sp!,{r0,r1,r4-r11,lr}
+	ldrb r8,[psgptr,#amplitudeChg]
+	cmp r8,#0
+	blne updateAmplitudes
+	ldmia psgptr!,{r4-r11}		;@ r12 = PCE wavebuffer
 pcmMixLoop:
 	add r4,r4,#PSGADDITION
 	orrs r3,r12,r4,lsr#27
@@ -129,7 +145,8 @@ vol5_R:
 	strpl r2,[r1],#4
 	bgt pcmMixLoop				;@ 91 cycles according to No$gba
 
-	b pcmMixReturn
+	stmdb psgptr!,{r4-r11}		;@ Write back counters
+	ldmfd sp!,{r0,r1,r4-r11,pc}
 ;@----------------------------------------------------------------------------
 
 	.section .text
@@ -203,14 +220,12 @@ pcePSGGetStateSize:			;@ Out r0=state size.
 ;@----------------------------------------------------------------------------
 	mov r0,#pcePsgSize
 	bx lr
+;@----------------------------------------------------------------------------
+updateAmplitudes:
+;@----------------------------------------------------------------------------
+	stmfd sp!,{lr}
 
-;@----------------------------------------------------------------------------
-PCEPSGMixer:				;@ r0=len, r1=dest, r12=psgptr
-;@----------------------------------------------------------------------------
-	stmfd sp!,{r0,r1,r4-r11,lr}
-;@--------------------------
 	ldr r7,=vol0_L
-
 	ldrb r4,[psgptr,#globalBalance]
 	adr r5,attenuation
 	mov r4,r4,ror#4
@@ -251,16 +266,9 @@ PCEPSGMixer:				;@ r0=len, r1=dest, r12=psgptr
 	strb r2,[r7,#vol5_L-vol0_L]
 	strb r3,[r7,#vol5_R-vol0_L]
 
-	ldmia psgptr!,{r4-r11}		;@ r12 = PCE wavebuffer
-;@--------------------------
-
-	b pcmMix
-pcmMixReturn:
-	sub psgptr,psgptr,#ch0Waveform	;@ Get correct psgptr
-	add r0,psgptr,#pcm0CurrentAddr	;@ Counters
-	stmia r0,{r4-r11}			;@ Write back counters
-
-	ldmfd sp!,{r0,r1,r4-r11,pc}
+	mov r8,#0
+	strb r8,[psgptr,#amplitudeChg]
+	ldmfd sp!,{pc}
 ;@----------------------------------------------------------------------------
 getVolumeDS:				;@ r0=chCtrl,r1=chBalance,r2=globalBalance
 ;@----------------------------------------------------------------------------
@@ -318,6 +326,8 @@ _0800W:
 _0801W:						;@ Main Volume
 ;@----------------------------------------------------------------------------
 	strb r0,[psgptr,#globalBalance]
+	mov r1,#0x3F
+	strb r1,[psgptr,#amplitudeChg]
 	bx lr
 ;@----------------------------------------------------------------------------
 _0802W:						;@ Frequency byte 0
@@ -346,6 +356,11 @@ _0804W:						;@ Channel Enable, DDA & Volume
 	add r2,psgptr,r1,lsl#2
 	strb r0,[r2,#ch0Control]
 	tst r0,#0x40
+	mov r0,#1
+	mov r0,r0,lsl r1
+	ldrb r1,[psgptr,#amplitudeChg]
+	orr r1,r1,r0
+	strb r1,[psgptr,#amplitudeChg]
 	bxeq lr
 	ldrb r0,[r2,#pcm0CurrentAddr+3]
 	bic r0,#0xF8				;@ Clear channel X index
