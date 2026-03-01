@@ -22,7 +22,6 @@
 	.global PSG_0_R
 	.global PSG_0_W
 	.global setMuteSoundGUI
-	.global setMuteSoundGame
 	.global soundUpdate
 
 #define SOUND_BUFFER_SIZE (0x800)
@@ -72,22 +71,14 @@ setMuteSoundGUI:
 	strb r0,muteSoundGUI
 	bx lr
 ;@----------------------------------------------------------------------------
-setMuteSoundGame:			;@ For System E ?
-;@----------------------------------------------------------------------------
-	strb r0,muteSoundGame
-	bx lr
-;@----------------------------------------------------------------------------
 VblSound2:					;@ r0=length, r1=pointer
 	.type VblSound2 STT_FUNC
 ;@----------------------------------------------------------------------------
-	stmfd sp!,{r0,r1,r4-r8,lr}
-
 	ldr r2,muteSound
 	cmp r2,#0
 	bne silenceMix
 
-//	mov r0,r0,lsl#2
-//	ldr r1,=MixSpace
+	stmfd sp!,{r0,r1,lr}
 	ldr psgptr,=PSG_0
 	bl PCEPSGMixer
 
@@ -103,54 +94,26 @@ seeking:
 	sub r0,r0,#1
 	ldr r2,[r1,r0,lsl#2]
 	str r2,silenceWave
-	ldmfd sp!,{r0,r1,r4-r8,lr}
+	ldmfd sp!,{r0,r1,lr}
 	bx lr
 
-	ldmfd sp,{r0,r1}
-//	ldr r2,=MixSpace
-mixLoop00:
-	ldrsh r12,[r2],#2
-	ldrsh r4,[r2],#2
-	ldrsh r3,[r2],#2
-	ldrsh r5,[r2],#2
-	add r12,r12,r3
-	add r4,r4,r5
-	ldrsh r3,[r2],#2
-	ldrsh r5,[r2],#2
-	add r12,r12,r3
-	add r4,r4,r5
-	ldrsh r3,[r2],#2
-	ldrsh r5,[r2],#2
-	add r12,r12,r3
-	add r4,r4,r5
-
-	mov r4,r4,asr#2
-	mov r12,r12,lsl#16-2
-	mov r4,r4,lsl#16
-	orr r12,r4,r12,lsr#16
-	str r12,[r1],#4
-	subs r0,r0,#1
-	bhi mixLoop00
-
-	str r12,silenceWave
-
-	ldmfd sp!,{r0,r1,r4-r8,lr}
-	bx lr
-
+;@----------------------------------------------------------------------------
 silenceMix:
+;@----------------------------------------------------------------------------
+	mov r3,r0
 	ldr r2,silenceWave
 silenceLoop:
-	subs r0,r0,#1
+	subs r3,r3,#1
 	strpl r2,[r1],#4
 	bhi silenceLoop
 
-	ldmfd sp!,{r0,r1,r4-r8,lr}
 	bx lr
 
 ;@----------------------------------------------------------------------------
 mixCDData:
 ;@----------------------------------------------------------------------------
-	ldmfd sp,{r0,r1}
+	ldmfd sp!,{r0,r1,lr}
+	stmfd sp!,{r0,r1,r4-r8,lr}
 
 	ldr r3,=sectorPtr
 	ldr r2,[r3]
@@ -163,15 +126,14 @@ sectLoop:
 	str r2,[r3]
 	str r4,sectorCountDown
 
-//	ldr r1,=MixSpace
 	ldr r6,=cdBuffer
 	ldr r8,=cdReadPtr
 	ldr r7,[r8]
+	mov r7,r7,lsl#18			;@ 16kB
 mixLoop01:
 	ldr r2,[r1]
-	mov r4,r7,lsl#18			;@ 16kB
-	ldr r3,[r6,r4,lsr#18]
-	add r7,r7,#4
+	ldr r3,[r6,r7,lsr#18]
+	add r7,r7,#0x00100000		;@ 4
 
 	and r4,r2,r3
 	eor r2,r2,r3
@@ -184,6 +146,7 @@ mixLoop01:
 	subs r0,r0,#1
 	bhi mixLoop01
 
+	mov r7,r7,lsr#18			;@ 16kB
 	str r7,[r8]					;@ cd_readptr
 	str r2,silenceWave
 
@@ -204,10 +167,26 @@ PSG_0_W:
 	ldr psgptr,=PSG_0
 	b PCEPSGWrite
 ;@----------------------------------------------------------------------------
+soundUpdate:				;@ r0 = samples to render
+;@----------------------------------------------------------------------------
+	ldr r1,=WAVBUFFER
+	ldr r2,sndWritePtr
+	mov r0,#2					;@ 24kHz / (75Hz * 160 scanlines) = 2 samples
+	add r1,r1,r2,lsr#SHIFTVAL-2
+	add r2,r2,r0,lsl#SHIFTVAL	;@ Only use top 11 bits
+	str r2,sndWritePtr
+	b PCEPSGMixer
+
+;@----------------------------------------------------------------------------
+sndWritePtr:	.long 0
+pcmWritePtr:	.long 0
+pcmReadPtr:		.long 0
+neededExtra:	.long 0
+
 sectorCountDown:
-	.space 4
+	.long 0
 silenceWave:
-	.space 4
+	.long 0
 
 muteSound:
 muteSoundGUI:
@@ -218,13 +197,13 @@ muteSoundGame:
 
 ;@----------------------------------------------------------------------------
 #ifdef GBA
-//	.section .sbss				;@ This is EWRAM on GBA with devkitARM
+	.section .sbss				;@ This is EWRAM on GBA with devkitARM
 #else
-//	.section .bss
+	.section .bss
 #endif
-//	.align 2
-//WAVBUFFER:
-//	.space SOUND_BUFFER_SIZE*4
+	.align 2
+WAVBUFFER:
+	.space SOUND_BUFFER_SIZE*4
 ;@----------------------------------------------------------------------------
 #ifdef NDS
 	.section .sbss				;@ This is DTCM on NDS with devkitARM
