@@ -1,4 +1,4 @@
-# NitroGrafx V0.9.0
+# NitroGrafx V0.9.1
 
 <img align="right" width="220" src="./logo.png" alt="The PC-Engine logo" />
 

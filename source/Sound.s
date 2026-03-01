@@ -23,7 +23,10 @@
 	.global PSG_0_W
 	.global setMuteSoundGUI
 	.global setMuteSoundGame
+	.global soundUpdate
 
+#define SOUND_BUFFER_SIZE (0x800)
+#define SHIFTVAL (21)
 
 	.syntax unified
 	.arm
@@ -214,9 +217,14 @@ muteSoundGame:
 	.space 2
 
 ;@----------------------------------------------------------------------------
+#ifdef GBA
+//	.section .sbss				;@ This is EWRAM on GBA with devkitARM
+#else
 //	.section .bss
-//MixSpace:
-//	.space 0x10000
+#endif
+//	.align 2
+//WAVBUFFER:
+//	.space SOUND_BUFFER_SIZE*4
 ;@----------------------------------------------------------------------------
 #ifdef NDS
 	.section .sbss				;@ This is DTCM on NDS with devkitARM

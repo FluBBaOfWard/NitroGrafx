@@ -48,6 +48,7 @@ Sound:
 	Add LFO emulation? (Hanii in the Sky, Juuouki, and Flash Hiders use LFO).
 
 Games:
+	Altered Beast, stage 2, sprite cache glitches.
 	Benkei Gaiden, crashes in intro.
 	Cadash. Vertical flickering alot.
 	Chikudenya Toubee, hangs at start.
@@ -280,6 +281,7 @@ mirrorLoop:
 	7E				
 	7F				
 	80				
+
 Code:
 	Add 4+4 bytes and get an average. ex. 24bit RGB.
 	eor r2,r0,r1

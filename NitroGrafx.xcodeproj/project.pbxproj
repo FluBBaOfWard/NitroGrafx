@@ -17,6 +17,10 @@
 		9C7BB95125FCE08B00EA9C9C /* EmuFont.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = EmuFont.png; sourceTree = "<group>"; };
 		9C7CC8842F45A77900A49004 /* CDROM_readme.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = CDROM_readme.txt; sourceTree = "<group>"; };
 		9C7CC8852F45BCEA00A49004 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		9C7CC8862F5343DD00A49004 /* IPSPatch.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IPSPatch.h; sourceTree = "<group>"; };
+		9C7CC8872F5343DD00A49004 /* IPSPatch.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = IPSPatch.c; sourceTree = "<group>"; };
+		9C7CC8882F53451B00A49004 /* LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE.txt; sourceTree = "<group>"; };
+		9C7CC8892F53451B00A49004 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		9C8F33F0248ACAF400996E5A /* nds_asm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = nds_asm.h; sourceTree = "<group>"; };
 		9CBE3EFC2F2E097B00A4A0FF /* PCEngine.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PCEngine.h; sourceTree = "<group>"; };
 		9CBE3EFD2F2E097B00A4A0FF /* PCEngine.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = PCEngine.c; sourceTree = "<group>"; };
@@ -134,6 +138,8 @@
 			children = (
 				9C7BB94F25FCE08B00EA9C9C /* graphics */,
 				A47F093C2087673C004E1DA6 /* Unzip */,
+				9C7CC8892F53451B00A49004 /* README.md */,
+				9C7CC8882F53451B00A49004 /* LICENSE.txt */,
 				9C8F33F0248ACAF400996E5A /* nds_asm.h */,
 				9CBEE0D026EDE1440095347A /* EmuSettings.h */,
 				9CF752362B6FF7BD00001220 /* EmuMenu.i */,
@@ -141,6 +147,8 @@
 				A47F09202085F2D9004E1DA6 /* EmuMenu.c */,
 				A47F093620873FEC004E1DA6 /* FileHelper.h */,
 				A47F093520873FEB004E1DA6 /* FileHelper.c */,
+				9C7CC8862F5343DD00A49004 /* IPSPatch.h */,
+				9C7CC8872F5343DD00A49004 /* IPSPatch.c */,
 				A47F0946208771F3004E1DA6 /* crc32.h */,
 				A47F0945208771F3004E1DA6 /* crc32.c */,
 				A4D0E1262089EBA000401463 /* AsmExtra.h */,
