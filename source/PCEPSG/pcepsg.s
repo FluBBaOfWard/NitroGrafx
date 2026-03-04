@@ -54,7 +54,7 @@
 ;@----------------------------------------------------------------------------
 PCEPSGMixer:				;@ r0=len, r1=dest, r12=psgptr
 ;@----------------------------------------------------------------------------
-	stmfd sp!,{r0,r1,r4-r11,lr}
+	stmfd sp!,{r0,r1,r3-r11,lr}
 	ldrb r8,[psgptr,#amplitudeChg]
 	cmp r8,#0
 	blne updateAmplitudes
@@ -146,7 +146,7 @@ vol5_R:
 	bgt pcmMixLoop				;@ 91 cycles according to No$gba
 
 	stmdb psgptr!,{r4-r11}		;@ Write back counters
-	ldmfd sp!,{r0,r1,r4-r11,pc}
+	ldmfd sp!,{r0,r1,r3-r11,pc}
 ;@----------------------------------------------------------------------------
 
 	.section .text
@@ -274,8 +274,10 @@ getVolumeDS:				;@ r0=chCtrl,r1=chBalance,r2=globalBalance
 ;@----------------------------------------------------------------------------
 	and r6,r2,#0xC0
 	cmp r6,#0x80				;@ Should channel be played?
-
 	movne r2,#0
+//	tst r2,#0x80				;@ Should channel be played?
+//	moveq r2,#0
+
 	and r2,r2,#0x1F				;@ Channel master
 
 	mov r3,r3,ror#4
@@ -345,7 +347,7 @@ _0803W:						;@ Frequency byte 1
 	add r2,psgptr,r1,lsl#2
 	strb r0,[r2,#ch0Freq+1]
 	ldrb r1,[r2,#pcm0CurrentAddr+1]
-	bic r1,r1,#0x1F
+	bic r1,r1,#0xF
 	orr r1,r1,r0
 	strb r1,[r2,#pcm0CurrentAddr+1]
 	bx lr
@@ -355,16 +357,18 @@ _0804W:						;@ Channel Enable, DDA & Volume
 	ldrb r1,[psgptr,#psgChannel]
 	add r2,psgptr,r1,lsl#2
 	strb r0,[r2,#ch0Control]
-	tst r0,#0x40
+	tst r0,#0x40				;@ Lock index?
 	mov r0,#1
 	mov r0,r0,lsl r1
 	ldrb r1,[psgptr,#amplitudeChg]
 	orr r1,r1,r0
 	strb r1,[psgptr,#amplitudeChg]
-	bxeq lr
-	ldrb r0,[r2,#pcm0CurrentAddr+3]
-	bic r0,#0xF8				;@ Clear channel X index
-	strb r0,[r2,#pcm0CurrentAddr+3]
+	ldr r0,[r2,#pcm0CurrentAddr]
+	bic r0,r0,#0x3000
+	orreq r0,r0,#0x2000
+	orrne r0,r0,#0x1000			;@ No index update
+	bicne r0,#0xF8000000		;@ Clear channel X index
+	str r0,[r2,#pcm0CurrentAddr]
 	bx lr
 ;@----------------------------------------------------------------------------
 _0805W:						;@ Channel Balance
@@ -406,14 +410,13 @@ noise4W:
 	bic r1,r1,#0x80
 	orr r1,r1,r2
 	strb r1,[psgptr,#noise4CurrentAddr]
-	and r0,r0,#0x1F
 	rsb r0,r0,#0x1F
 
 	ldr r2,[psgptr,#pcm4CurrentAddr]
 	ldreq r1,[psgptr,#ch4Freq]
 	mov r2,r2,lsr#12
 	orreq r2,r2,r1,lsl#20
-	orrne r2,r2,r0,ror#5
+	orrne r2,r2,r0,lsl#27
 	mov r2,r2,ror#20
 	str r2,[psgptr,#pcm4CurrentAddr]
 
@@ -428,14 +431,13 @@ noise5W:
 	bic r1,r1,#0x80
 	orr r1,r1,r2
 	strb r1,[psgptr,#noise5CurrentAddr]
-	and r0,r0,#0x1F
 	rsb r0,r0,#0x1F
 
 	ldr r2,[psgptr,#pcm5CurrentAddr]
 	ldreq r1,[psgptr,#ch5Freq]
 	mov r2,r2,lsr#12
 	orreq r2,r2,r1,lsl#20
-	orrne r2,r2,r0,ror#5
+	orrne r2,r2,r0,lsl#27
 	mov r2,r2,ror#20
 	str r2,[psgptr,#pcm5CurrentAddr]
 

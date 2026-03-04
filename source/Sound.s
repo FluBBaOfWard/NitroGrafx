@@ -14,6 +14,7 @@
 	.extern powerIsOn
 
 	.global PSG_0
+	.global missingSamplesCnt
 
 	.global soundInit
 	.global soundReset
@@ -23,7 +24,7 @@
 	.global setMuteSoundGUI
 	.global soundUpdate
 
-#define SOUND_BUFFER_SIZE (0x800)
+#define SOUND_BUFFER_SIZE (0x1000)
 #define SHIFTVAL (21)
 
 	.syntax unified
@@ -100,6 +101,18 @@ seeking:
 	bx lr
 
 ;@----------------------------------------------------------------------------
+soundCopyBuff:				;@ r0=length, r1=destination
+;@----------------------------------------------------------------------------
+	ldr r2,=WAVBUFFER			;@ Source
+	mov r4,r4,lsl#SHIFTVAL
+sndCopyLoop:
+	subs r0,r0,#1
+	ldrpl r3,[r2,r4,lsr#SHIFTVAL-2]
+	add r4,r4,#1<<SHIFTVAL
+	strpl r3,[r1],#4
+	bhi sndCopyLoop
+	bx lr
+;@----------------------------------------------------------------------------
 silenceMix:
 ;@----------------------------------------------------------------------------
 	mov r3,r0
@@ -173,10 +186,11 @@ soundUpdate:				;@ r0 = samples to render
 ;@----------------------------------------------------------------------------
 	ldr r1,=WAVBUFFER
 	ldr r2,sndWritePtr
-	mov r0,#2					;@ 24kHz / (75Hz * 160 scanlines) = 2 samples
+	mov r0,#2					;@ 31440Hz / (60Hz * 262 scanlines) = 2 samples
 	add r1,r1,r2,lsr#SHIFTVAL-2
 	add r2,r2,r0,lsl#SHIFTVAL	;@ Only use top 11 bits
 	str r2,sndWritePtr
+	ldr psgptr,=PSG_0
 	b PCEPSGMixer
 
 ;@----------------------------------------------------------------------------
@@ -184,6 +198,7 @@ sndWritePtr:	.long 0
 pcmWritePtr:	.long 0
 pcmReadPtr:		.long 0
 neededExtra:	.long 0
+missingSamplesCnt:	.long 0
 
 sectorCountDown:
 	.long 0

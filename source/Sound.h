@@ -15,8 +15,10 @@ extern "C" {
 #include <maxmod9.h>
 #include "PCEPSG/pcepsg.h"
 
-//#define sample_rate  32768
-//#define sample_rate  55930
+//#define sample_rate  47160
+//#define buffer_size  1572
+//#define sample_rate  31440
+//#define buffer_size  1048
 #define sample_rate  44100
 #define buffer_size  1470
 
