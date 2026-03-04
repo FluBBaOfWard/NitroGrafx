@@ -365,8 +365,8 @@ _0804W:						;@ Channel Enable, DDA & Volume
 	strb r1,[psgptr,#amplitudeChg]
 	ldr r0,[r2,#pcm0CurrentAddr]
 	bic r0,r0,#0x3000
-	orreq r0,r0,#0x2000
-	orrne r0,r0,#0x1000			;@ No index update
+	orreq r0,r0,#0x2000			;@ Normal index update
+	orrne r0,r0,#0x0050			;@ No index update, make sure freq is not to high.
 	bicne r0,#0xF8000000		;@ Clear channel X index
 	str r0,[r2,#pcm0CurrentAddr]
 	bx lr
@@ -381,6 +381,9 @@ _0805W:						;@ Channel Balance
 _0806W:						;@ Waveform Data
 ;@----------------------------------------------------------------------------
 	ldrb r1,[psgptr,#psgChannel]
+	add r2,psgptr,r1,lsl#2
+	ldrb r2,[r2,#ch0Control]
+	tst r2,#0x40				;@ Lock index?
 	mov r2,#pcm0CurrentAddr+3
 	add r2,r2,r1,lsl#2
 	add r1,psgptr,r1,lsl#5
@@ -389,7 +392,7 @@ _0806W:						;@ Waveform Data
 	and r0,r0,#0x1f
 	sub r0,r0,#0x10
 	strb r0,[r1,#ch0Waveform]
-	add r2,r2,#0x08
+	addeq r2,r2,#0x08
 	strb r2,[psgptr]			;@ Write back channel X index
 	bx lr
 ;@----------------------------------------------------------------------------

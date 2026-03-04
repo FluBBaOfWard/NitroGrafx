@@ -25,7 +25,7 @@
 	.global soundUpdate
 
 #define SOUND_BUFFER_SIZE (0x1000)
-#define SHIFTVAL (21)
+#define SHIFTVAL (20)
 
 	.syntax unified
 	.arm
