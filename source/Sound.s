@@ -17,7 +17,6 @@
 
 	.global soundInit
 	.global soundReset
-	.global soundSetFrequency
 	.global VblSound2
 	.global PSG_0_R
 	.global PSG_0_W
@@ -44,17 +43,20 @@ soundInit:
 ;@----------------------------------------------------------------------------
 soundReset:
 ;@----------------------------------------------------------------------------
+	stmfd sp!,{lr}
+	mov r0,#SOUND_BUFFER_SIZE/2
+	str r0,pcmWritePtr
+	mov r0,r0,lsl#SHIFTVAL		;@ Only keep 11 bits
+	str r0,sndWritePtr
 	mov r0,#0
+	str r0,pcmReadPtr
 	str r0,silenceWave
 	str r0,sectorCountDown
-
 	ldr psgptr,=PSG_0
-	b PCEPSGReset				;@ Sound
-;@----------------------------------------------------------------------------
-soundSetFrequency:
-;@----------------------------------------------------------------------------
-	stmfd sp!,{lr}
-	ldr r1,=3579545				;@ NTSC freq
+	bl PCEPSGReset				;@ Sound
+	mov r0,#SOUND_BUFFER_SIZE
+	ldr r1,=WAVBUFFER
+	bl silenceMix
 	ldmfd sp!,{lr}
 	bx lr
 
