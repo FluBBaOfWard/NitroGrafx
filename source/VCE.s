@@ -501,4 +501,4 @@ MAPPED_RGB:
 ;@...update load/savestate if you move things around in here
 ;@----------------------------------------------------------------------------
 	.end
-#endif // #ifdef __arm__
+#endif // __arm__

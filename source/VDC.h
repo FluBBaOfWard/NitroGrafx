@@ -87,4 +87,4 @@ int vdcGetStateSize(void);
 } // extern "C"
 #endif
 
-#endif // VDC_HEADER
+#endif // !VDC_HEADER

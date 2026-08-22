@@ -43,4 +43,4 @@ void mirrorBytes(u8 *memory, int length);
 } // extern "C"
 #endif
 
-#endif // CART_HEADER
+#endif // !CART_HEADER

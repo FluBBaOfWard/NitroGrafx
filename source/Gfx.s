@@ -511,14 +511,13 @@ vblIrqHandler:
 	cmp r0,#SCALED_ASPECT
 	ldreq r1,=0x20000001		;@ yScale, 1.14 (8/7) in Ypixel per out Y
 
-	ldrb r0,gFlicker
-	ldrb r2,gTwitch
-	eors r2,r2,r0
-	strb r2,gTwitch
+	ldr r0,gFlicker
+	eors r0,r0,r0,lsl#31
+	str r0,gFlicker
 	mov r9,#0
-	orrne r9,r9,#0x56			;@ H flicker.
-	addne r4,r4,r1
-	subne r4,r4,#1
+	orrmi r9,r9,#0x56			;@ H flicker.
+	addmi r4,r4,r1
+	submi r4,r4,#1
 
 	ldr r10,windowVValue
 	orr r10,r10,r10,lsl#16
@@ -611,12 +610,14 @@ windowVValue:
 ;@----------------------------------------------------------------------------
 bgYScaleValue:	.long 0x0000FFFF	;@ was 0xE2AB
 obXScaleValue:	.long 0x00010000
-gTwitch:		.byte 0
+
 gFlicker:		.byte 1
+				.skip 2
+gTwitch:		.byte 0
+
 gColorValue:	.byte 4
 gGfxMask:		.byte 0
-				.byte 0
-				.byte 0,0,0
+				.skip 2
 
 ;@----------------------------------------------------------------------------
 midFrame:					;@ Called at line 96
@@ -1473,4 +1474,4 @@ BGR_DECODE:
 
 ;@----------------------------------------------------------------------------
 	.end
-#endif // #ifdef __arm__
+#endif // __arm__

@@ -11,7 +11,7 @@
 #include "VCE.h"
 #include "PCEPSG/pcepsg.h"
 
-int packState(void *statePtr) {
+int pcePackState(void *statePtr) {
 	int size = 0;
 	memcpy(statePtr+size, pceSRAM, sizeof(pceSRAM));
 	size += sizeof(pceSRAM);
@@ -26,7 +26,7 @@ int packState(void *statePtr) {
 	return size;
 }
 
-void unpackState(const void *statePtr) {
+void pceUnpackState(const void *statePtr) {
 	int size = 0;
 	memcpy(pceSRAM, statePtr+size, sizeof(pceSRAM));
 	size += sizeof(pceSRAM);
@@ -40,7 +40,7 @@ void unpackState(const void *statePtr) {
 	size += pcePSGLoadState(&PSG_0, statePtr+size);
 }
 
-int getStateSize() {
+int pceGetStateSize() {
 	int size = 0;
 	size += sizeof(pceRAM);
 	size += sizeof(pceSRAM);

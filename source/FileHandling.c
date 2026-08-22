@@ -9,6 +9,7 @@
 #include "Shared/FileHelper.h"
 #include "Shared/AsmExtra.h"
 #include "Gui.h"
+#include "PCEngine.h"
 #include "Equates.h"
 #include "cueparser/cue2toc.h"
 #include "cdrom.h"
@@ -47,7 +48,6 @@ void applyConfigData(void) {
 	gFlicker     = cfg.flicker & 1;
 	gGammaValue  = cfg.gammaValue & 0x7;
 	gColorValue  = (cfg.gammaValue >> 4) & 0x7;
-	sleepTime    = cfg.sleepTime;
 	joyCfg       = (joyCfg &~ 0x04000400) | ((cfg.controller & 1) << 10) | ((cfg.controller & 2) << 25); // SwapAB & multitap.
 	strlcpy(currentDir, cfg.currentPath, sizeof(currentDir));
 	pauseEmulation = emuSettings & AUTOPAUSE_EMULATION;
@@ -62,7 +62,6 @@ void updateConfigData(void) {
 	cfg.display     = (gScalingSet & 3) | ((vceState.rgbYCbCr & 1) << 3);
 	cfg.flicker     = gFlicker & 1;
 	cfg.gammaValue  = (gGammaValue & 0x7) | ((gColorValue & 0x7) << 4);
-	cfg.sleepTime   = sleepTime;
 	cfg.controller  = ((joyCfg >> 10) & 1) | ((joyCfg >> 25) & 2);
 	strlcpy(cfg.currentPath, currentDir, sizeof(cfg.currentPath));
 }
@@ -75,7 +74,6 @@ void initSettings() {
 	cfg.display     = SCALED_ASPECT;
 	cfg.flicker     = 1;
 	cfg.gammaValue  = 0x40; // ColorValue = 4
-	cfg.sleepTime   = 60*60*5;
 
 	applyConfigData();
 }
@@ -170,6 +168,16 @@ void loadState() {
 
 void saveState() {
 	saveDeviceState(folderName);
+}
+
+int packState(void *statePtr) {
+	return pcePackState(statePtr);
+}
+void unpackState(const void *statePtr) {
+	pceUnpackState(statePtr);
+}
+int getStateSize(void) {
+	return pceGetStateSize();
 }
 
 bool loadGame(const char *gameName) {

@@ -18,11 +18,11 @@
 
 	.global soundInit
 	.global soundReset
-	.global VblSound2
+	.global soundRender
+	.global soundSetMuteGUI
+	.global soundUpdate
 	.global PSG_0_R
 	.global PSG_0_W
-	.global setMuteSoundGUI
-	.global soundUpdate
 
 #define SOUND_BUFFER_SIZE (0x1000)
 #define SHIFTVAL (20)
@@ -62,8 +62,8 @@ soundReset:
 	bx lr
 
 ;@----------------------------------------------------------------------------
-setMuteSoundGUI:
-	.type   setMuteSoundGUI STT_FUNC
+soundSetMuteGUI:
+	.type   soundSetMuteGUI STT_FUNC
 ;@----------------------------------------------------------------------------
 	ldr r1,=pauseEmulation		;@ Output silence when emulation paused.
 	ldrb r0,[r1]
@@ -74,8 +74,8 @@ setMuteSoundGUI:
 	strb r0,muteSoundGUI
 	bx lr
 ;@----------------------------------------------------------------------------
-VblSound2:					;@ r0=length, r1=pointer
-	.type VblSound2 STT_FUNC
+soundRender:				;@ r0=length, r1=pointer
+	.type soundRender STT_FUNC
 ;@----------------------------------------------------------------------------
 	ldr r2,muteSound
 	cmp r2,#0
@@ -234,4 +234,4 @@ PSG_0:
 	.space pcePsgSize
 ;@----------------------------------------------------------------------------
 	.end
-#endif // #ifdef __arm__
+#endif // __arm__

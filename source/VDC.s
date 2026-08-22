@@ -1085,4 +1085,4 @@ vdcStateSize = vdcStateEnd - vdcState
 
 ;@----------------------------------------------------------------------------
 	.end
-#endif // #ifdef __arm__
+#endif // __arm__

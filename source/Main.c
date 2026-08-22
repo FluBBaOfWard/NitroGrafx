@@ -210,7 +210,6 @@ static void setupStream(void) {
 	//----------------------------------------------------------------
 	// initialize maxmod without any soundbank (unusual setup)
 	//----------------------------------------------------------------
-//	mm_ds_system sys;
 	sys.mod_count 			= 0;
 	sys.samp_count			= 0;
 	sys.mem_bank			= 0;
@@ -220,11 +219,9 @@ static void setupStream(void) {
 	//----------------------------------------------------------------
 	// open stream
 	//----------------------------------------------------------------
-//	mm_stream myStream;
 	myStream.sampling_rate	= sample_rate;				// sampling rate =
 	myStream.buffer_length	= buffer_size;				// buffer length =
-//	myStream.callback		= mix_sound;				// set callback function
-	myStream.callback		= VblSound2;				// set callback function
+	myStream.callback		= soundRender;				// set callback function
 	myStream.format			= MM_STREAM_16BIT_STEREO;	// format = stereo 16-bit
 	myStream.timer			= MM_TIMER0;				// use hardware timer 0
 	myStream.manual			= false;					// use manual filling

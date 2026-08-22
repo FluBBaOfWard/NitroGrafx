@@ -13,7 +13,7 @@
 #include "io.h"
 #include "ARMH6280/Version.h"
 
-#define EMUVERSION "V0.9.1 2026-03-01"
+#define EMUVERSION "V0.9.1 2026-08-22"
 
 // Asm functions
 extern void paletteTxAll(void);		// VCE.s
@@ -57,7 +57,7 @@ const MItem fileItems[] = {
 	{"Load CDROM", selectCDROM},
 	{"Load State", loadState},
 	{"Save State", saveState},
-	{"Save Settings", saveSettings},
+	{"Save Settings", (void(*)(void))saveSettings},
 	{"Eject Game", ejectGame},
 	{"Power On/Off", powerOnOff},
 	{"Reset Game", resetGame},

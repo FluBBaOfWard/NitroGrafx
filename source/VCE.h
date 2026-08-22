@@ -49,4 +49,4 @@ int vceGetStateSize(void);
 } // extern "C"
 #endif
 
-#endif // VCE_HEADER
+#endif // !VCE_HEADER

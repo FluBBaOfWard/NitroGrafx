@@ -27,4 +27,4 @@ void cdInit(void);				// cdrom.s
 } // extern "C"
 #endif
 
-#endif // CDROM_HEADER
+#endif // !CDROM_HEADER

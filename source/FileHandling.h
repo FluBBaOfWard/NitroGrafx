@@ -16,15 +16,18 @@ extern bool hucardLoaded;
 void initSettings(void);
 int loadSettings(void);
 int saveSettings(void);
+bool loadGame(const char *pceName);
+void loadState();
+void saveState(void);
+int packState(void *statePtr);
+void unpackState(const void *statePtr);
+int getStateSize(void);
 int loadNVRAM(void);
 int loadBRAM(void);
 void saveNVRAM(void);
 void saveBRAM(void);
-bool loadGame(const char *pceName);
 int loadPCEROM(void *dest, const char *fName, const int maxSize);
 int loadBIOS(void *dest, const char *fPath, const int maxSize);
-void loadState();
-void saveState(void);
 void selectGame(void);
 void selectCDROM(void);
 void selectBios(void);
@@ -43,4 +46,4 @@ void CD_ConvertCueFile(const char *fName);
 } // extern "C"
 #endif
 
-#endif // FILEHANDLING_HEADER
+#endif // !FILEHANDLING_HEADER

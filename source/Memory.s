@@ -204,4 +204,4 @@ membic_:					;@ r0=dest r1=data r2=word count
 	bx lr
 ;@----------------------------------------------------------------------------
 	.end
-#endif // #ifdef __arm__
+#endif // __arm__

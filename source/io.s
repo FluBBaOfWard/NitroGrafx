@@ -71,7 +71,7 @@ convertInput:			;@ Convert from device keys to target r0=input/output
 ;@----------------------------------------------------------------------------
 	mvn r1,r0
 	tst r1,#KEY_L|KEY_R				;@ Keys to open menu
-	orreq r0,r0,#KEY_OPEN_MENU
+	orreq r0,r0,#ACT_OPEN_MENU
 	bx lr
 ;@----------------------------------------------------------------------------
 refreshEMUjoypads:			;@ Call every frame
@@ -274,4 +274,4 @@ EMPTY_IO_R:					;@ 0x0800-0x0BFF
 	bx lr
 ;@----------------------------------------------------------------------------
 	.end
-#endif // #ifdef __arm__
+#endif // __arm__

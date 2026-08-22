@@ -332,6 +332,8 @@
 		A45BB8CA1618FB840009569D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				BLOCKSDS = /opt/wonderful/thirdparty/blocksds/core;
+				BLOCKSDSEXT = /opt/wonderful/thirdparty/blocksds/external;
 				DEVKITPRO = /opt/devkitpro;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -340,6 +342,8 @@
 		A45BB8CB1618FB840009569D /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				BLOCKSDS = /opt/wonderful/thirdparty/blocksds/core;
+				BLOCKSDSEXT = /opt/wonderful/thirdparty/blocksds/external;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
