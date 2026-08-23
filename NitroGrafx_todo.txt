@@ -2,7 +2,6 @@
 NitroGrafx To Do:
 -----------------
 	Add vertical offset to GUI.
-	Add debug menu, "Step Frame".
 	Fix click when a cd track starts and stops playing.
 	Exile needs 2kB BRAM only?
 
@@ -36,7 +35,6 @@ Graphic:
 	Optimise tile(map), rendering.
 
 Sound:
-	Update once per scanline.
 	PSG waveforms are not signed, optimize! Is this different between revisions?
 	Check sound levels, figure out correct gain per level. Not -1.5dB per step.
 	PSG volume is only updated at 2kHz?
@@ -48,7 +46,6 @@ Sound:
 	Add LFO emulation? (Hanii in the Sky, Juuouki, and Flash Hiders use LFO).
 
 Games:
-	Altered Beast, stage 2, sprite cache glitches.
 	Benkei Gaiden, crashes in intro.
 	Cadash. Vertical flickering alot.
 	Chikudenya Toubee, hangs at start.

@@ -24,8 +24,8 @@
 	.global PSG_0_R
 	.global PSG_0_W
 
-#define SOUND_BUFFER_SIZE (0x1000)
 #define SHIFTVAL (20)
+#define SOUND_BUFFER_SIZE (1<<(32-SHIFTVAL))
 
 	.syntax unified
 	.arm
@@ -80,7 +80,59 @@ soundRender:				;@ r0=length, r1=pointer
 	ldr r2,muteSound
 	cmp r2,#0
 	bne silenceMix
+#ifdef SAMPLE_PLAYING
+	stmfd sp!,{r0,r1,r4,r5,lr}
+	ldr r4,pcmReadPtr
+	add r5,r4,r0
+	str r5,pcmReadPtr
 
+;@------------------------------
+soundCopyBuff:				;@ r0=length, r1=destination
+	ldr r2,=WAVBUFFER			;@ Source
+	mov r4,r4,lsl#SHIFTVAL
+sndCopyLoop:
+	subs r0,r0,#1
+	ldrpl r3,[r2,r4,lsr#SHIFTVAL-2]
+	addpl r4,r4,#1<<SHIFTVAL
+	strpl r3,[r1],#4
+	bhi sndCopyLoop
+;@------------------------------
+
+	ldr r2,sndWritePtr
+	ldr r0,pcmWritePtr
+	sub r2,r2,r0,lsl#SHIFTVAL
+	add r0,r0,r2,lsr#SHIFTVAL
+	str r0,pcmWritePtr
+	sub r0,r5,r0
+	add r0,r0,#SOUND_BUFFER_SIZE/2
+	ldr r2,neededExtra
+	rsb r2,r2,r2,lsl#3			;@ mul 7
+	add r0,r2,r0
+	mov r0,r0,asr#3
+	str r0,neededExtra
+//	bic r0,r0,#1		// 7
+	mov r0,r0,asr#3
+	ldr r1,=44100*256/60/262
+	adds r0,r0,r1
+	movmi r0,#10
+	str r0,samplesCnt
+//	blne debugIOUnmappedR
+
+	ldmfd sp!,{r0,r1,r4,r5,lr}
+	ldr r2,=cdSeekTime
+	ldr r2,[r2]
+	cmp r2,#0
+	bne seeking
+	ldr r2,=cdAudioPlaying
+	ldrb r2,[r2]
+	cmp r2,#0
+	bne mixCDData2
+seeking:
+	add r1,r1,r0,lsl#2
+	ldr r2,[r1,#-4]
+	str r2,silenceWave
+	bx lr
+#else
 	stmfd sp!,{r0,r1,lr}
 	ldr psgptr,=PSG_0
 	bl PCEPSGMixer
@@ -94,24 +146,13 @@ soundRender:				;@ r0=length, r1=pointer
 	cmp r2,#0
 	bne mixCDData
 seeking:
-	sub r0,r0,#1
-	ldr r2,[r1,r0,lsl#2]
+	add r1,r1,r0,lsl#2
+	ldr r2,[r1,#-4]
 	str r2,silenceWave
 	ldmfd sp!,{r0,r1,lr}
 	bx lr
+#endif // SAMPLE_PLAYING
 
-;@----------------------------------------------------------------------------
-soundCopyBuff:				;@ r0=length, r1=destination
-;@----------------------------------------------------------------------------
-	ldr r2,=WAVBUFFER			;@ Source
-	mov r4,r4,lsl#SHIFTVAL
-sndCopyLoop:
-	subs r0,r0,#1
-	ldrpl r3,[r2,r4,lsr#SHIFTVAL-2]
-	add r4,r4,#1<<SHIFTVAL
-	strpl r3,[r1],#4
-	bhi sndCopyLoop
-	bx lr
 ;@----------------------------------------------------------------------------
 silenceMix:
 ;@----------------------------------------------------------------------------
@@ -128,6 +169,7 @@ silenceLoop:
 mixCDData:
 ;@----------------------------------------------------------------------------
 	ldmfd sp!,{r0,r1,lr}
+mixCDData2:
 	stmfd sp!,{r0,r1,r4-r8,lr}
 
 	ldr r3,=sectorPtr
@@ -167,13 +209,6 @@ mixLoop01:
 	ldmfd sp!,{r0,r1,r4-r8,lr}
 	bx lr
 ;@----------------------------------------------------------------------------
-fetchCDData:
-;@----------------------------------------------------------------------------
-	mov r0,r0,lsl#2
-	blx CD_FetchAudio
-	ldmfd sp!,{r0,r1,r4-r8,lr}
-	bx lr
-;@----------------------------------------------------------------------------
 PSG_0_W:
 ;@----------------------------------------------------------------------------
 	strb r0,[h6280ptr,#h6280IoBuffer]
@@ -183,21 +218,39 @@ PSG_0_W:
 ;@----------------------------------------------------------------------------
 soundUpdate:				;@ r0 = samples to render
 ;@----------------------------------------------------------------------------
+	stmfd sp!,{r3,r4,lr}
 	ldr r1,=WAVBUFFER
 	ldr r2,sndWritePtr
-	mov r0,#2					;@ 31440Hz / (60Hz * 262 scanlines) = 2 samples
-	add r1,r1,r2,lsr#SHIFTVAL-2
-	add r2,r2,r0,lsl#SHIFTVAL	;@ Only use top 11 bits
-	str r2,sndWritePtr
+	ldr r0,samplesCnt
+	mov r4,#0
+	adds r3,r2,r0,lsl#SHIFTVAL-8	;@ Only use top 11 bits
+	movcs r4,r3,lsr#SHIFTVAL
+	subcs r3,r3,r4,lsl#SHIFTVAL
+	str r3,sndWritePtr
+	mov r2,r2,lsr#SHIFTVAL
+	rsb r0,r2,r3,lsr#SHIFTVAL
+	and r0,#7
+	add r1,r1,r2,lsl#2
+
 	ldr psgptr,=PSG_0
-	b PCEPSGMixer
+	bl PCEPSGMixer
+	cmp r4,#0
+	ldmfdeq sp!,{r3,r4,pc}
+
+	ldr r1,=WAVBUFFER
+	ldr r3,sndWritePtr
+	add r3,r3,r4,lsl#SHIFTVAL
+	str r3,sndWritePtr
+	mov r0,r4
+	bl PCEPSGMixer
+	ldmfd sp!,{r3,r4,pc}
 
 ;@----------------------------------------------------------------------------
 sndWritePtr:	.long 0
 pcmWritePtr:	.long 0
 pcmReadPtr:		.long 0
 neededExtra:	.long 0
-missingSamplesCnt:	.long 0
+samplesCnt:		.long 0
 
 sectorCountDown:
 	.long 0

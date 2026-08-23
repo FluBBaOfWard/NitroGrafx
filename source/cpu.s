@@ -87,6 +87,9 @@ SGXFrameLoop:
 	bl VDCDoScanline
 ;@----------------------------------------
 PCEFrameLoop:
+#ifdef SAMPLE_PLAYING
+	bl soundUpdate
+#endif
 	bl VDCDoScanline
 	cmp r0,#0
 	ldreq r0,scanlineCycles
@@ -145,6 +148,9 @@ stepFrame:					;@ Return after 1 frame
 ;@----------------------------------------------------------------------------
 stepLoop:
 ;@----------------------------------------------------------------------------
+#ifdef SAMPLE_PLAYING
+	bl soundUpdate
+#endif
 	bl VDCDoScanline
 	cmp r0,#0
 	ldreq r0,scanlineCycles

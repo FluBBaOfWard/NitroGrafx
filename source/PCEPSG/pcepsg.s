@@ -272,11 +272,14 @@ updateAmplitudes:
 ;@----------------------------------------------------------------------------
 getVolumeDS:				;@ r0=chCtrl,r1=chBalance,r2=globalBalance
 ;@----------------------------------------------------------------------------
+#ifdef SAMPLE_PLAYING
+	tst r2,#0x80				;@ Should channel be played?
+	moveq r2,#0
+#else
 	and r6,r2,#0xC0
 	cmp r6,#0x80				;@ Should channel be played?
 	movne r2,#0
-//	tst r2,#0x80				;@ Should channel be played?
-//	moveq r2,#0
+#endif
 
 	and r2,r2,#0x1F				;@ Channel master
 

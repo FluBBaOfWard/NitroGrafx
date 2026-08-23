@@ -11,6 +11,7 @@
 #include "VCE.h"
 #include "Gfx.h"
 #include "io.h"
+#include "cpu.h"
 #include "ARMH6280/Version.h"
 
 #define EMUVERSION "V0.9.1 2026-08-23"
@@ -108,7 +109,7 @@ const MItem debugItems[] = {
 	{"Debug Output:", debugTextSet, getDebugText},
 	{"Disable Background:", bgrLayerSet, getBgrLayerText},
 	{"Disable Sprites:", sprLayerSet, getSprLayerText},
-	//{"Step Frame", stepFrame},
+	{"Step Frame", stepFrame},
 };
 const MItem quitItems[] = {
 	{"Yes ", exitEmulator},
