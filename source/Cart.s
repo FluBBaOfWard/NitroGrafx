@@ -110,7 +110,7 @@ rawRom:
 //	.incbin "roms/Wonder Momo (J).pce"
 //	.incbin "roms/Youkai Douchuuki (J).pce"
 rawRomEnd:
-#endif
+#endif // EMBEDDED_ROM
 isoFile:
 //	.incbin "bloCs.iso"
 //	.incbin "rayxanber3.iso"
@@ -150,7 +150,7 @@ loadCart: 		;@ called from C:
 	str r2,g_ROM_Size
 	bl bytecopy_
 	ldmfd sp!,{r0-r4,lr}
-#endif
+#endif // EMBEDDED_ROM
 	ldr r3,=isoFile
 	ldr r1,=isoBase
 	str r3,[r1]

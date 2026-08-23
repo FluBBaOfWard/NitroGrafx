@@ -1,8 +1,10 @@
 NitroGrafx.xcodeproj/project.xcworkspace/xcuserdata
+build
+compile_commands.json
+Release
 *.pce
 *.iso
 *.tcd
-Release
-build
 *.elf
 *.nds
+include/roms

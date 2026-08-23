@@ -1,7 +1,7 @@
 Using CD-ROM with NitroGrafx:
 --------------------------------------------------------------------------------
 To be able to use PC-Engine/TurboGrafx16 CD-ROM games you have to:
-1) Select a CD-ROM System rom from Options-Machine-BiosSettings-SelectBios.
+1) Select a CD-ROM System rom from Options-Machine-SelectBios.
 2) Select a .iso file or a .cue file from a bin/cue combo.
 3) Press the Start button when the CD-ROM System screen shows up.
 

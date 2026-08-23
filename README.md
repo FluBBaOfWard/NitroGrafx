@@ -27,8 +27,8 @@ it to resume.
 When you first run the emulator I suggest you take a peak through the options
 and change the settings to your liking and then save them. To be able to use
 CD-ROM games you have to select a CD-ROM System rom (bios) from
-Options-Machine-BiosSettings-SelectBios. You can use .iso files or .bin/.cue
-files see CDROM_readme.txt for more info.
+Options-Machine-SelectBios. You can use .iso files or .bin/.cue files see
+CDROM_readme.txt for more info.
 
 Now load up a game and you should be good to go.
 

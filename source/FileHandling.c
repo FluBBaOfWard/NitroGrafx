@@ -334,10 +334,13 @@ void selectCDROM() {
 		}
 		else {
 			infoOutput("Couldn't open CD file:");
+			infoOutput(cdGamePath);
 			cdInserted = 0;
 		}
 	}
 }
+
+//---------------------------------------------------------------------------------
 
 int CD_ReadByte() {
 	int i = 0;
@@ -424,7 +427,7 @@ void CD_ConvertCueFile(const char *fName) {
 	}
 	strlcpy(cdGamePath, binName, sizeof(cdGamePath));
 
-	strcpy(CDROM_TOC,"TGCD0100");
+	strcpy(CDROM_TOC, "TGCD0100");
 	CDROM_TOC[0x08] = 0;
 	CDROM_TOC[0x09] = 0;
 	CDROM_TOC[0x0A] = 0;
