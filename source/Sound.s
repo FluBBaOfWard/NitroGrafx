@@ -144,11 +144,11 @@ sectLoop:
 	ldr r6,=cdBuffer
 	ldr r8,=cdReadPtr
 	ldr r7,[r8]
-	mov r7,r7,lsl#18			;@ 16kB
 mixLoop01:
 	ldr r2,[r1]
-	ldr r3,[r6,r7,lsr#18]
-	add r7,r7,#0x00100000		;@ 4
+	mov r4,r7,lsl#18			;@ 16kB
+	ldr r3,[r6,r4,lsr#18]
+	add r7,r7,#4
 
 	and r4,r2,r3
 	eor r2,r2,r3
@@ -161,7 +161,6 @@ mixLoop01:
 	subs r0,r0,#1
 	bhi mixLoop01
 
-	mov r7,r7,lsr#18			;@ 16kB
 	str r7,[r8]					;@ cd_readptr
 	str r2,silenceWave
 
