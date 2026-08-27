@@ -13,7 +13,6 @@ NitroGrafx To Do:
 	Check the Games Express games. Data in track 1 is the problem?
 		Or should their BIOS lay "over" the normal?
 		Is both the normal BIOS and GE loaded at the same time?
-	Fix so you can load roms even if the path is gone from the disc. Fixed?
 	Fix V flicker position (all games with statusbar etc.). Done?
 
 Misc:
@@ -35,11 +34,11 @@ Graphic:
 	Optimise tile(map), rendering.
 
 Sound:
+	Fix ADPCM emulation (MSM5205).
 	PSG waveforms are not signed, optimize! Is this different between revisions?
 	Check sound levels, figure out correct gain per level. Not -1.5dB per step.
 	PSG volume is only updated at 2kHz?
 	Only load 3k per frame before music starts playing.
-	Add ADPCM emulation (MSM5205).
 	Load variable number of bytes?
 	Louder CD-sound. Add CD-Fade.
 	Optimise. Lower quality?

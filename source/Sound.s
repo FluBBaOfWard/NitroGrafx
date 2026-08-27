@@ -119,6 +119,9 @@ sndCopyLoop:
 //	blne debugIOUnmappedR
 
 	ldmfd sp!,{r0,r1,r4,r5,lr}
+	stmfd sp!,{r0,r1,lr}
+	bl renderADPCM
+	ldmfd sp!,{r0,r1,lr}
 	ldr r2,=cdSeekTime
 	ldr r2,[r2]
 	cmp r2,#0

@@ -8,6 +8,7 @@
 
 /* Begin PBXFileReference section */
 		746D78E114ED9A8400CC738F /* Makefile */ = {isa = PBXFileReference; explicitFileType = sourcecode.make; fileEncoding = 4; path = Makefile; sourceTree = "<group>"; };
+		9C1C894E303E356F00732991 /* ADPCM.s */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm; path = ADPCM.s; sourceTree = "<group>"; };
 		9C2138BF3039BDC300808645 /* PCEngine.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; path = PCEngine.bmp; sourceTree = "<group>"; };
 		9C294940260746FD00EDA7C9 /* H6280.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = H6280.h; sourceTree = "<group>"; };
 		9C294941260746FD00EDA7C9 /* H6280.i */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c.preprocessed; path = H6280.i; sourceTree = "<group>"; };
@@ -217,6 +218,7 @@
 				A49024FE207BC1400086B28E /* VCE.s */,
 				A47F091A2084ECB6004E1DA6 /* cdrom.h */,
 				A48CC0311618E65300465E20 /* cdrom.s */,
+				9C1C894E303E356F00732991 /* ADPCM.s */,
 				A47F09142084B325004E1DA6 /* ArcadeCard.i */,
 				A48CC0261618E65200465E20 /* ArcadeCard.s */,
 			);

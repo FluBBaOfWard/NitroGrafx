@@ -14,7 +14,7 @@
 #include "cpu.h"
 #include "ARMH6280/Version.h"
 
-#define EMUVERSION "V0.9.1 2026-08-23"
+#define EMUVERSION "V0.9.1 2026-08-27"
 
 // Asm functions
 extern void paletteTxAll(void);		// VCE.s

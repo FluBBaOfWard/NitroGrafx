@@ -15,6 +15,7 @@
 	.global CDROM_R
 	.global CDROM_W
 	.global updateCDROM
+	.global renderADPCM
 	.global bramAccess
 	.global currentPos
 	.global currentTrack
@@ -289,6 +290,58 @@ CD_Check_IRQ:				;@ Don´t use r0 as it may be used as return data.
 
 	bx lr
 ;@----------------------------------------------------------------------------
+renderADPCM:				;@ in r0 = len, r1 = dest, out r0 = rendered len.
+;@----------------------------------------------------------------------------
+	ldr r2,adLen
+	movs r2,r2,lsr#16
+	moveq r0,#0
+	bxeq lr
+
+	stmfd sp!,{r4-r11,lr}
+	mov r4,r0
+	mov r5,r1
+	mov r6,r2,lsl#16
+	ldrb r7,adpcmRate
+	and r7,r7,#0x0F
+	rsb r7,r7,#0x10
+	mul r0,r7,r2
+	cmp r4,r0,lsl#1
+	movpl r4,r0,lsl#1
+	stmfd sp!,{r4}
+	ldr r8,=CD_PCM_RAM
+	ldr r9,adRdPtr
+adpcmLoop:
+	ldrb r10,[r8,r9,lsr#16]
+	mov r0,r10
+	bl adpcmConvert
+	mov r1,r7
+adpcmInnerLoop:
+	ldr r2,[r5]
+	add r2,r2,r0
+	str r2,[r5],#4
+	subs r1,r1,#1
+	bne adpcmInnerLoop
+
+	mov r0,r10
+	bl adpcmConvert
+	mov r1,r7
+adpcmInnerLoop2:
+	ldr r2,[r5]
+	add r2,r2,r0
+	str r2,[r5],#4
+	subs r1,r1,#1
+	bne adpcmInnerLoop2
+
+	add r9,r9,#0x10000
+	subs r6,r6,#0x10000
+	beq adEnd
+	subs r4,r4,r7,lsl#1
+	bpl adpcmLoop
+adEnd:
+	str r6,adLen
+	str r9,adRdPtr
+	ldmfd sp!,{r0,r4-r11,pc}
+;@----------------------------------------------------------------------------
 AdpcmDMA:					;@ r0=length to transfer now.
 ;@----------------------------------------------------------------------------
 	stmfd sp!,{r3-r5,lr}
@@ -495,7 +548,7 @@ CD07_R:						;@ Read Sub Q-Channel, clear
 	mov r0,#0
 	bx lr
 ;@----------------------------------------------------------------------------
-CD08_R:
+CD08_R:						;@ CD data
 ;@----------------------------------------------------------------------------
 	ldrb r0,scsiSignal
 	cmp r0,#0xC8				;@ Data out?
@@ -821,6 +874,9 @@ CD0D_W:						;@ ADPCM adr control
 	strne r2,adPtr
 	strne r2,adWrPtr
 	strne r2,adRdPtr
+	stmfd sp!,{r0,lr}
+	blne adpcmReset
+	ldmfd sp!,{r0,lr}
 	tst r1,#0x60
 	ldrb r1,cdIrqReq
 	bicne r1,r1,#0x0C			;@ Clear ADPCM IRQ flags
@@ -1054,7 +1110,8 @@ SCSI_SendResponse:
 	strb r1,scsiSignal
 	bx lr
 ;@----------------------------------------------------------------------------
-CMD_TestUnitReady:
+CMD_TestUnitReady:			;@ Command 0x00
+;@----------------------------------------------------------------------------
 	mov r0,#0xD8				;@ No data only status
 	strb r0,scsiSignal
 
@@ -1075,7 +1132,8 @@ noTur:
 	b debugOutput_asm
 //	bx lr
 ;@----------------------------------------------------------------------------
-CMD_RequestSense:
+CMD_RequestSense:			;@ Command 0x03
+;@----------------------------------------------------------------------------
 	mov r0,#0
 	mov r2,#10
 	str r2,dataLen
@@ -1113,7 +1171,8 @@ noSense:
 	b debugOutput_asm
 //	bx lr
 ;@----------------------------------------------------------------------------
-CMD_Read6:
+CMD_Read6:					;@ Command 0x08
+;@----------------------------------------------------------------------------
 	stmfd sp!,{lr}
 
 	mov r0,#0					;@ Audio isn't playing anymore
@@ -1149,7 +1208,8 @@ r6Txt:
 	.string "Read6"
 	.align 2
 ;@----------------------------------------------------------------------------
-CMD_PlayCD:
+CMD_PlayCD:					;@ Command 0xD8
+;@----------------------------------------------------------------------------
 	stmfd sp!,{r3-r5,lr}
 
 	mov r0,#60
@@ -1250,7 +1310,8 @@ foundDataTrack:
 	ldmfd sp!,{r4-r5,lr}
 	bx lr
 ;@----------------------------------------------------------------------------
-CMD_PlayCD2:
+CMD_PlayCD2:				;@ Command 0xD9
+;@----------------------------------------------------------------------------
 	stmfd sp!,{r3-r5,lr}
 
 	mov r0,#0					;@ Audio must be stopped before we can seek.
@@ -1308,7 +1369,8 @@ pc2Txt:
 	.string "PlayCD_D9"
 	.align 2
 ;@----------------------------------------------------------------------------
-CMD_PausCD:
+CMD_PausCD:					;@ Command 0xDA
+;@----------------------------------------------------------------------------
 	mov r0,#0xD8				;@ No data only status
 	strb r0,scsiSignal
 	mov r0,#0
@@ -1321,7 +1383,8 @@ paTxt:
 	.string "PauseCD"
 	.align 2
 ;@----------------------------------------------------------------------------
-CMD_SubQ:
+CMD_SubQ:					;@ Command 0xDD
+;@----------------------------------------------------------------------------
 ;@	mov r11,r11					;@ No$GBA Debugg
 	stmfd sp!,{r3-r5,lr}
 	adrl r5,scsiResponse
@@ -1379,7 +1442,8 @@ sqTxt:
 	.string "SubQ"
 	.align 2
 ;@----------------------------------------------------------------------------
-CMD_GetInfo:
+CMD_GetInfo:				;@ Command 0xDE
+;@----------------------------------------------------------------------------
 	mov r0,#0
 	mov r2,#4
 	str r2,dataLen
@@ -1580,6 +1644,7 @@ Bcd2Hex:					;@ r0 input & output, uses r1.
 	bx lr
 ;@----------------------------------------------------------------------------
 CMD_Unknown:
+;@----------------------------------------------------------------------------
 ;@	mov r11,r11					;@ No$GBA Debugg
 	adr r1,ukTxt
 	stmfd sp!,{lr}

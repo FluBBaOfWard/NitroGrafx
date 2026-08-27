@@ -376,7 +376,7 @@ int CD_FetchAudioSample(void) {
 
 void CD_FillBuffer(void) {
 	int ptr, len, i, dLen;
-	int left = 0x1000;
+	int left = 0xC00;
 
 	while ( (len = cdReadPtr+sizeof(cdBuffer)-cdWritePtr) > 0) {
 		if (len > left) {
