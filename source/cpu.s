@@ -84,7 +84,7 @@ skipYPan:
 
 ;@----------------------------------------
 SGXFrameLoop:
-	bl VDCDoScanline
+//	bl VDCDoScanline
 ;@----------------------------------------
 PCEFrameLoop:
 #ifdef SAMPLE_PLAYING

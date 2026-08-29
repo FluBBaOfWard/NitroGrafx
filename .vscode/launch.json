@@ -17,7 +17,7 @@
             "externalConsole": true,
             "cwd": "${workspaceFolder}",
             "targetArchitecture": "arm",
-            "miDebuggerServerAddress": "localhost:2345",
+            "miDebuggerServerAddress": "localhost:3333",
             "windows": {
                 "miDebuggerPath": "C:/devkitPro/devkitARM/bin/arm-none-eabi-gdb.exe",
                 "setupCommands": [

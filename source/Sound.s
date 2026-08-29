@@ -173,7 +173,7 @@ mixCDData:
 ;@----------------------------------------------------------------------------
 	ldmfd sp!,{r0,r1,lr}
 mixCDData2:
-	stmfd sp!,{r0,r1,r4-r8,lr}
+	stmfd sp!,{r0,r1,r4-r7}
 
 	ldr r3,=sectorPtr
 	ldr r2,[r3]
@@ -186,14 +186,14 @@ sectLoop:
 	str r2,[r3]
 	str r4,sectorCountDown
 
-	ldr r6,=cdBuffer
-	ldr r8,=cdReadPtr
-	ldr r7,[r8]
+	ldr r5,=cdBuffer
+	ldr r7,=cdReadPtr
+	ldr r6,[r7]
 mixLoop01:
 	ldr r2,[r1]
-	mov r4,r7,lsl#18			;@ 16kB
-	ldr r3,[r6,r4,lsr#18]
-	add r7,r7,#4
+	mov r4,r6,lsl#18			;@ 16kB
+	ldr r3,[r5,r4,lsr#18]
+	add r6,r6,#4
 
 	and r4,r2,r3
 	eor r2,r2,r3
@@ -206,10 +206,10 @@ mixLoop01:
 	subs r0,r0,#1
 	bhi mixLoop01
 
-	str r7,[r8]					;@ cd_readptr
+	str r6,[r7]					;@ cd_readptr
 	str r2,silenceWave
 
-	ldmfd sp!,{r0,r1,r4-r8,lr}
+	ldmfd sp!,{r0,r1,r4-r7}
 	bx lr
 ;@----------------------------------------------------------------------------
 PSG_0_W:

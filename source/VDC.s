@@ -67,7 +67,7 @@ vdcReset:					;@ Called from gfxReset
 	bl memset_					;@ Clear VDC regs
 
 	ldr r0,=gMachineSet
-	ldrb r0,[r11]
+	ldrb r0,[r0]
 	cmp r0,#HW_AUTO
 	moveq r3,#0
 	movne r3,#-1

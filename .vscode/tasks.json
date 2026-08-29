@@ -7,10 +7,10 @@
             "label": "stop emulation",
             "type": "shell",
             "windows": {
-                "command": "taskkill /im mGBA.exe /F"
+                "command": "taskkill /im melonDS.exe /F"
             },
             "osx": {
-                "command": "killall mGBA"
+                "command": "killall melonDS"
             }
         },
         {
@@ -48,12 +48,11 @@
             ],
             "isBackground": false,
             "windows": {
-                "command": "C:/mGBA/mGBA.exe -g ${workspaceFolder}/${workspaceFolderBasename}.nds;sleep 5;echo debuggerReady"
+                "command": "C:/melonDS/melonDS.exe -g ${workspaceFolder}/${workspaceFolderBasename}.nds;sleep 5;echo debuggerReady"
             },
             "osx": {
-                "command": "/Applications/desmume.app/Contents/MacOS/desmume",
+                "command": "/Applications/melonDS.app/Contents/MacOS/melonDS",
                 "args": [
-                    "-g",
                     "${workspaceFolder}/${workspaceFolderBasename}.nds"
                 ]
             },
@@ -75,7 +74,7 @@
             "label": "run",
             "type": "shell",
             "isBackground": true,
-            "command": "C:/NO$GBADebugger/NO$GBA.exe  ${workspaceFolder}/${workspaceFolderBasename}.elf",
+            "command": "C:/NO$GBADebugger/NO$GBA.exe ${workspaceFolder}/${workspaceFolderBasename}.elf",
             "problemMatcher": []
         }
     ]

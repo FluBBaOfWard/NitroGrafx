@@ -1427,12 +1427,12 @@ sprCollision:
 #else
 	.section .bss
 #endif
-	.align 2
+	.align 8
 pceVRAM:
 	.space 0x10000
 DELAYED_TILEMAP:
 	.space 0x4000*2
-DELAYED_SPRITETILES:
+DELAYED_SPRITETILES:			;@ This needs to be aligned to 0x100 at least.
 	.space 0x8000
 //	.space 0x400
 //DirtyTilesBackup:
@@ -1459,10 +1459,8 @@ OAM_BUFFER2:
 
 #ifdef NDS
 	.section .sbss				;@ This is DTCM on NDS with devkitARM
-#elif GBA
-	.section .bss				;@ This is IWRAM on GBA with devkitARM
 #else
-	.section .bss
+	.section .bss				;@ This is IWRAM on GBA with devkitARM
 #endif
 	.align 2
 DIRTYTILES:						;@ bit0 = map, bit5=bgtiles, bit6=32spr, bit7=16spr
