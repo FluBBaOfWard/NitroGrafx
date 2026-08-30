@@ -115,7 +115,7 @@ xPalLoop:
 	bne xPalLoop
 
 	mov r0,#0x8C				;@ VRAM enable, MST=4, OFS=1.
-	strb r0,[r12]				;@ so we can write to VRAM_F
+	strb r0,[r12]				;@ so we can use VRAM_F
 
 	ldmfd sp!,{r4-r11,lr}
 	bx lr
@@ -246,20 +246,21 @@ ppi1:
 ;@----------------------------------------------------------------------------
 resetScrollBuffers:
 ;@----------------------------------------------------------------------------
-	stmfd sp!,{lr}
+	stmfd sp!,{r4-r7,lr}
 
 	ldr r0,=SCROLLBUFF1
 	adr r1,defaultScroll
-	ldr r2,=16
-	blx memcpy
-	ldr r1,=SCROLLBUFF1
-	add r0,r1,#16
-	ldr r2,=263*16
-	blx memcpy
+	ldmia r1,{r4-r7}
+	mov r2,#264
+resScrlBuf:
+	stmia r0!,{r4-r7}
+	subs r2,r2,#1
+	bne resScrlBuf
+
 	ldr r0,=SCROLLBUFF2
 	ldr r1,=SCROLLBUFF1
 	ldr r2,=264*16
-	blx memcpy
+	bl memcpy
 
 	mov r1,#REG_BASE
 	mov r0,#0x0000
@@ -271,7 +272,7 @@ resetScrollBuffers:
 	strh r0,[r1,#REG_BG2PD]		;@ 1.25 Ypixel per Y
 	strh r0,[r1,#REG_BG3PD]
 
-	ldmfd sp!,{pc}
+	ldmfd sp!,{r4-r7,pc}
 ;@----------------------------------------------------------------------------
 gfxReset:					;@ Called with cpuReset
 	.type gfxReset STT_FUNC

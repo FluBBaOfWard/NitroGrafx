@@ -5,6 +5,7 @@ NitroGrafx revision history
 V0.9.1 - 2026-08-30 (FluBBa)
 	Added support for PSG sample playing.
 	Added support for CD-ROM ADPCM.
+	Ported from devkitARM to BlocksDS, smaller binary.
 
 V0.9.0 - 2026-02-15 (FluBBa)
 	Fixed unscaled & aspect scaling.
