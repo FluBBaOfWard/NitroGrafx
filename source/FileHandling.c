@@ -11,7 +11,7 @@
 #include "Gui.h"
 #include "PCEngine.h"
 #include "Equates.h"
-#include "cueparser/cue2toc.h"
+#include "cueparser/CUEParser.h"
 #include "cdrom.h"
 #include "VCE.h"
 #include "Gfx.h"
@@ -415,10 +415,9 @@ void CD_ResetBuffer(void) {
 
 void CD_ConvertCueFile(const char *fName) {
 	int i, val = 0;
-	struct cuesheet *cs;
 	const char *binName;
 
-	cs = read_cue(fName);
+	CueSheet *cs = readCue(fName);
 	if ((binName = strrchr(cs->file, '\\')) || (binName = strrchr(cs->file, '/'))) {
 		binName += 1;
 	}
@@ -427,33 +426,27 @@ void CD_ConvertCueFile(const char *fName) {
 	}
 	strlcpy(cdGamePath, binName, sizeof(cdGamePath));
 
-	strcpy(CDROM_TOC, "TGCD0100");
-	CDROM_TOC[0x08] = 0;
-	CDROM_TOC[0x09] = 0;
-	CDROM_TOC[0x0A] = 0;
-	CDROM_TOC[0x0B] = 0;
-	CDROM_TOC[0x0C] = cs->trackcount;
+	strcpy(cdRomToc.magic, "TGCD0100");
+	cdRomToc.padding0 = 0;
+	cdRomToc.trackCount = cs->trackCount;
 
-	for (i = 0; i < cs->trackcount; i++) {
-		if (cs->tracklist[i].mode == AUDIO) {
-			CDROM_TOC[0x10 + i*8] = 0;
+	for (i = 0; i < cs->trackCount; i++) {
+		CD_TRACK *track = &cdRomToc.tracks[i];
+		if (cs->tracks[i].mode == TRK_MODE_AUDIO) {
+			track->mode = 0;
 		}
-		else if (cs->tracklist[i].mode == MODE1_RAW) {
-			cdDatatrackMode = CDROM_TOC[0x10 + i*8] = 8;
+		else if (cs->tracks[i].mode == TRK_MODE_MODE1_2352) {
+			cdDatatrackMode = track->mode = 8;
 		}
 		else {
-			cdDatatrackMode = CDROM_TOC[0x10 + i*8] = 4;
+			cdDatatrackMode = track->mode = 4;
 		}
-		val = cs->tracklist[i].start * 2352;
-		CDROM_TOC[0x14 + i*8] = val;
-		CDROM_TOC[0x15 + i*8] = (val>>8);
-		CDROM_TOC[0x16 + i*8] = (val>>16);
-		CDROM_TOC[0x17 + i*8] = (val>>24);
+		val = cs->tracks[i].LBA;
+		track->LBA_0 = (val>>16);
+		track->LBA_1 = (val>>8);
+		track->LBA_2 = val;
 
-		val = cs->tracklist[i].LBA;
-		CDROM_TOC[0x11 + i*8] = (val>>16);
-		CDROM_TOC[0x12 + i*8] = (val>>8);
-		CDROM_TOC[0x13 + i*8] = val;
+		track->start = cs->tracks[i].start;
 	}
 	free(cs);
 }

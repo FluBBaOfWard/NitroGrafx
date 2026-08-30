@@ -119,8 +119,14 @@ Some dumb info about the emulator...
 ```text
 Thanks to:
 Zeograd for a lot of help with the debugging.
-Charles MacDonald (http://cgfm2.emuviews.com) &
+Charles MacDonald (http://cgfm2.emuviews.com).
 David Shadoff for a lot of the info on the PC-Engine.
+```
+
+```text
+Uses:
+puff.c & crc32.c from ZLIB.
+CUEParser from Rabbit Hole Computing.
 ```
 
 Fredrik Ahlström

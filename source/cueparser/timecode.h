@@ -1,25 +1,14 @@
-/* timecode.h - declarations for timecode conversion routines
- * Copyright (C) 2004 Matthias Czapla <dermatsch@gmx.de>
- *
- * This file is part of cue2toc.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+/* timecode.h - timecode parsing routine
+ * Calculates frames/sectors from timecode string.
  */
 #ifndef TIMECODE_H
 #define TIMECODE_H
 
+/* Calculates number of frames/sectors from a timecode string ("MM:SS:FF").
+ * Tries to be lenient, skips leading whitespace, ignoring any trailing
+ * non-timecode junk. Recognizes simple values like "0" (interpreted as
+ * "00:00:00"), "1:2" ("00:01:02") etc.
+ * Returns -1 on error (argument NULL or some value out of range) */
 long tc2fr(const char *);
 
-#endif /* TIMECODE_H */
+#endif // !TIMECODE_H

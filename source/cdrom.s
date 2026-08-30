@@ -7,6 +7,7 @@
 //
 #ifdef __arm__
 
+#include "cdrom.i"
 #include "ARMH6280/H6280.i"
 #include "Equates.h"
 
@@ -28,7 +29,7 @@
 	.global cdFileSize
 	.global TGCD_D_Header
 	.global TGCD_M_Header
-	.global CDROM_TOC
+	.global cdRomToc
 
 #define SCSISTATUS_OK				0x00
 #define SCSISTATUS_CHECKCONDITION	0x02
@@ -106,12 +107,13 @@ cdReset:
 	cmp r0,#0
 	beq createTCD
 
-	ldr r12,=CDROM_TOC
+	ldr r12,=cdRomToc
 	str r12,tgcdBase
-	ldrb r0,[r12,#0x0C]			;@ Number of tracks
+	ldrb r0,[r12,#cdTOCTrackCount]	;@ Number of tracks
 	add r12,r12,r0,lsl#3		;@ (Track number x 8)
-	ldr r0,[r12,#0x0C]			;@ Offset for this track
-	ldrb r2,[r12,#0x08]			;@ Mode for this track
+	add r12,r12,#cdTOCSize-cdTrackSize
+	ldr r0,[r12,#cdTrackstart]	;@ Offset for this track
+	ldrb r2,[r12,#cdTrackMode]	;@ Mode for this track
 	ldr r1,cdFileSize
 	sub r0,r1,r0				;@ Calculate size of track in bytes
 	cmp r2,#4					;@ Sector size for track
@@ -119,10 +121,10 @@ cdReset:
 	umullne r2,r0,r1,r0
 	moveq r0,r0,lsr#11
 
-	ldrb r1,[r12,#0x09]			;@ Track LBA
-	ldrb r2,[r12,#0x0A]
+	ldrb r1,[r12,#cdTrackLBA0]	;@ Track LBA
+	ldrb r2,[r12,#cdTrackLBA1]
 	orr r1,r2,r1,lsl#8
-	ldrb r2,[r12,#0x0B]
+	ldrb r2,[r12,#cdTrackLBA2]
 	orr r1,r2,r1,lsl#8
 	add r0,r1,r0
 
@@ -140,7 +142,7 @@ cdReset:
 copyTCD:
 ;@----------------------------------------------------------------------------
 	ldr r1,=TGCD_T_Header
-	ldr r2,=CDROM_TOC
+	ldr r2,=cdRomToc
 	str r2,tgcdBase
 	mov r12,#0x100
 cTocLoop:
@@ -156,7 +158,7 @@ createTCD:
 	stmfd sp!,{r3-r6,lr}
 
 	ldr r1,=TGCD_D_Header
-	ldr r2,=CDROM_TOC
+	ldr r2,=cdRomToc
 	str r2,tgcdBase
 	ldr r5,cdFileSize
 	ldr r0,[r1],#4
@@ -1680,8 +1682,9 @@ TGCD_M_Header:
 	.section .bss
 	.align 2
 ;@----------------------------------------------------------------------------
-CDROM_TOC:
-	.space 8*128				;@ Max 99 tracks
+cdRomToc:
+	.space cdTOCSize		;@ TOC
+	.space cdTrackSize*99	;@ Max 99 tracks
 ;@----------------------------------------------------------------------------
 	.end
 #endif // __arm__
