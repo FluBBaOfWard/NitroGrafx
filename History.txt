@@ -2,7 +2,7 @@ NitroGrafx revision history
 -=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 
-V0.9.1 - 2026-08-29 (FluBBa)
+V0.9.1 - 2026-08-30 (FluBBa)
 	Added support for PSG sample playing.
 	Added support for CD-ROM ADPCM.
 

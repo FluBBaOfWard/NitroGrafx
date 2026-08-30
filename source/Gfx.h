@@ -28,8 +28,9 @@ extern void *dmaOamBuffer;
 
 void gfxInit(void);
 void vblIrqHandler(void);
-void paletteInit(u8 gammaVal);
+void antWarsInit(void);
 void antWars(void);
+void paletteInit(u8 gammaVal);
 void refreshSprites(void);
 
 #ifdef __cplusplus

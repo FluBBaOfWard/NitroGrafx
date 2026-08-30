@@ -1,5 +1,4 @@
 #include <nds.h>
-
 #include <maxmod9.h>
 
 #include "Main.h"
@@ -10,7 +9,6 @@
 #include "FileHandling.h"
 #include "EmuFont.h"
 #include "Cart.h"
-#include "cdrom.h"
 #include "cpu.h"
 #include "Gfx.h"
 #include "io.h"
@@ -63,12 +61,10 @@ int main(int argc, char **argv) {
 	setupStream();
 	irqSet(IRQ_VBLANK, myVblank);
 	setupGUI();
-	getInput();
 	initSettings();
 	bool fsOk = initFileHelper();
 	loadSettings();
 	machineInit();
-	ejectCart();
 	if (fsOk) {
 		loadBRAM();
 		if (argc > 1) {
@@ -78,6 +74,10 @@ int main(int argc, char **argv) {
 	else {
 		infoOutput("fatInitDefault() failure.");
 	}
+	if ( !powerIsOn ) {
+		antWarsInit();
+	}
+	getInput();
 //	loadCart();
 //	powerIsOn = true;
 
@@ -159,8 +159,10 @@ static void setupGraphics() {
 	vramSetBankB(VRAM_B_MAIN_SPRITE);
 	vramSetBankC(VRAM_C_SUB_BG);
 	vramSetBankD(VRAM_D_MAIN_BG_0x06020000);
+//	vramSetBankE(VRAM_E_MAIN_SPRITE);
 	vramSetBankF(VRAM_F_LCD);
 	vramSetBankG(VRAM_G_LCD);
+//	vramSetBankH(VRAM_H_SUB_BG);
 	vramSetBankI(VRAM_I_SUB_SPRITE);
 
 	// Set up the main display

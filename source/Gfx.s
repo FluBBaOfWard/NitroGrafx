@@ -34,6 +34,7 @@
 	.global sprCollision
 
 
+	.global antWarsInit
 	.global antWars
 	.global gfxInit
 	.global gfxReset
@@ -123,11 +124,9 @@ xPalLoop:
 antSeed:
 	.long 0x800000
 ;@----------------------------------------------------------------------------
-antWars:
-	.type   antWars STT_FUNC
+antWarsInit:
+	.type antWarsInit STT_FUNC
 ;@----------------------------------------------------------------------------
-	stmfd sp!,{r4,lr}
-
 	mov r0,#0x00
 	ldr r1,=gGfxMask
 	strb r0,[r1]
@@ -137,8 +136,23 @@ antWars:
 	ldr r0,=0x7FFF
 	strh r0,[r1,#0x1E]
 
-	ldr r3,=BGoffset1
-	ldr r4,[r3],#4
+	ldr r1,=BGOffset1
+	ldr r1,[r1]
+	mov r0,#BG_GFX
+	add r0,r0,r1,lsl#3
+
+	ldr r1,=0x03000300
+	mov r2,#0x800/4
+	b memset_					;@ BG2 clear
+
+;@----------------------------------------------------------------------------
+antWars:
+	.type   antWars STT_FUNC
+;@----------------------------------------------------------------------------
+	stmfd sp!,{r4,lr}
+
+	ldr r3,=BGOffset1
+	ldr r4,[r3]
 	mov r0,#BG_GFX
 	add r4,r0,r4,lsl#3
 	mov r0,#0
@@ -151,11 +165,6 @@ tmLoop:
 	add r0,r0,#1
 	cmp r0,#1024*4
 	bne tmLoop
-
-	mov r0,r4
-	ldr r1,=0x03000300
-	mov r2,#0x800/4
-	bl memset_					;@ BG2 clear
 
 	ldr r0,=BG_GFX+0x10000
 	ldr r3,antSeed
@@ -310,7 +319,7 @@ gfxReset:					;@ Called with cpuReset
 ;@----------------------------------------------------------------------------
 setBGOffsetsNormal:
 ;@----------------------------------------------------------------------------
-	ldr r1,=BGoffset1
+	ldr r1,=BGOffset1
 	mov r0,#0x0000
 	str r0,[r1],#4
 	mov r0,#0x0800
@@ -591,7 +600,7 @@ scrolLoop2:
 	bic r0,r0,r2,lsl#8
 	strh r0,[r9,#REG_DISPCNT]
 
-	ldr r2,=BGoffset1
+	ldr r2,=BGOffset1
 	ldr r2,[r2]
 	ldr r0,=0xE002				;@ 1024x1024, wrap BG & prio.
 	add r0,r0,r2
@@ -686,10 +695,10 @@ vdcRet:
 	str r1,scrollBuff
 	str r0,dmaScrollBuff
 
-	ldr r0,BGoffset1
-	ldr r1,BGoffset2
-	str r0,BGoffset2
-	str r1,BGoffset1
+	ldr r0,BGOffset1
+	ldr r1,BGOffset2
+	str r0,BGOffset2
+	str r1,BGOffset1
 
 	mov r0,#1
 	str r0,oamBufferReady
@@ -1232,7 +1241,7 @@ tileMapCont:
 	str r3,sHeight
 
 	mov r9,#BG_GFX
-	ldr r0,BGoffset2
+	ldr r0,BGOffset2
 	add r9,r9,r0,lsl#3
 	str r9,tMapAdr
 
@@ -1398,9 +1407,9 @@ windowTop:
 	.long 0
 wTop:
 	.long 0,0,0		;@ windowTop  (this label too)   L/R scrolling in unscaled mode
-BGoffset1:		.long 0
-BGoffset2:		.long 0
-BGoffset333:	.long 0
+BGOffset1:		.long 0
+BGOffset2:		.long 0
+BGOffset333:	.long 0
 
 GFX_DISPCNT:
 	.long 0
