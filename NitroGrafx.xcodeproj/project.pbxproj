@@ -9,7 +9,7 @@
 /* Begin PBXFileReference section */
 		746D78E114ED9A8400CC738F /* Makefile */ = {isa = PBXFileReference; explicitFileType = sourcecode.make; fileEncoding = 4; path = Makefile; sourceTree = "<group>"; };
 		9C1C894E303E356F00732991 /* ADPCM.s */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm; path = ADPCM.s; sourceTree = "<group>"; };
-		9C2138BF3039BDC300808645 /* PCEngine.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; path = PCEngine.bmp; sourceTree = "<group>"; };
+		9C1C894F3044871700732991 /* PCEngine.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = PCEngine.png; sourceTree = "<group>"; };
 		9C294940260746FD00EDA7C9 /* H6280.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = H6280.h; sourceTree = "<group>"; };
 		9C294941260746FD00EDA7C9 /* H6280.i */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c.preprocessed; path = H6280.i; sourceTree = "<group>"; };
 		9C443D77278AD1B40029EE11 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
@@ -108,7 +108,7 @@
 				A49024F820793BFC0086B28E /* History.txt */,
 				9C4C21D226E50551007D0280 /* README.md */,
 				9C7CC8842F45A77900A49004 /* CDROM_readme.txt */,
-				9C2138BF3039BDC300808645 /* PCEngine.bmp */,
+				9C1C894F3044871700732991 /* PCEngine.png */,
 				A49024F9207B78DA0086B28E /* Docs */,
 				746D78E014ED9A6D00CC738F /* makefile */,
 				A48CC0251618E65200465E20 /* source */,
