@@ -1040,9 +1040,21 @@ LBA2RealOffset:			;@ in r0=real LBA, out r0=data file offset
 	ldmfd sp!,{r4-r5,lr}
 	bx lr
 ;@----------------------------------------------------------------------------
+calcSeekTime:
+;@----------------------------------------------------------------------------
+	stmfd sp!,{r0,r4-r5,lr}
+	ldr r1,sectorPtr
+	mov r1,r1,lsr#2				;@ Remove the extra bits
+	mov r0,#5
+	str r0,cdSeekTime
+	ldmfd sp!,{r0,r4-r5,pc}
+;@----------------------------------------------------------------------------
 LBA2AudioOffset:			;@ in r0=real LBA
 ;@----------------------------------------------------------------------------
 	stmfd sp!,{r3,lr}
+	bl calcSeekTime
+	mov r1,r0,lsl#2				;@ 2 extra bits for the cd frame vs gba frame.
+	str r1,sectorPtr
 	bl LBA2RealOffset
 	blx CD_SeekPos
 	blx CD_ResetBuffer
@@ -1052,6 +1064,11 @@ LBA2AudioOffset:			;@ in r0=real LBA
 LBA2DataOffset:				;@ in r0=real LBA
 ;@----------------------------------------------------------------------------
 	stmfd sp!,{r3,lr}
+	bl calcSeekTime
+	mov r1,r0,lsl#2				;@ 2 extra bits for the cd frame vs gba frame.
+	str r1,sectorPtr
+	mov r1,r0,lsl#11
+	str r1,currentPos
 	bl LBA2RealOffset
 	blx CD_SeekPos
 	ldmfd sp!,{r3,lr}
@@ -1187,16 +1204,12 @@ CMD_Read6:					;@ Command 0x08
 	moveq r0,#0x80000
 	str r0,dataLen
 
-	mov r0,#5
-	str r0,cdSeekTime			;@ This should probably be calculated from old pos to new pos.
 	ldrb r0,[r2,#1]				;@ LBA1
 	and r0,r0,#0x1F
 	ldrb r1,[r2,#2]				;@ LBA2
 	orr r0,r1,r0,lsl#8			;@
 	ldrb r1,[r2,#3]				;@ LBA3
 	orr r0,r1,r0,lsl#8
-	mov r1,r0,lsl#11
-	str r1,currentPos
 
 	bl LBA2DataOffset			;@ r0 = real LBA, out data file offset
 
@@ -1220,8 +1233,6 @@ CMD_PlayCD:					;@ Command 0xD8
 ;@----------------------------------------------------------------------------
 	stmfd sp!,{r3-r5,lr}
 
-	mov r0,#10
-	str r0,cdSeekTime			;@ This should probably be calculated from old pos to new pos.
 	adrl r4,scsiCmd
 	ldrb r2,[r4,#9]				;@ LBA, Track or MSF
 	ands r2,r2,#0xC0
@@ -1251,8 +1262,6 @@ cdGetLBA:
 	orr r0,r1,r0,lsl#8
 writeSec:
 	str r0,cddaStart
-	mov r1,r0,lsl#2				;@ 2 extra bits for the cd frame vs gba frame.
-	str r1,sectorPtr
 	bl LBA2AudioOffset			;@ r0 = real LBA, set audio file offset
 	bl CD_FindSetEnd
 
@@ -1288,8 +1297,6 @@ pcTxt:
 CD_DoRepeat:
 ;@----------------------------------------------------------------------------
 	ldr r0,cddaStart
-	mov r1,r0,lsl#2				;@ 2 extra bits for the cd frame vs gba frame.
-	str r1,sectorPtr
 	b LBA2AudioOffset			;@ r0 = real LBA, set audio file offset
 ;@----------------------------------------------------------------------------
 CD_FindSetEnd:
