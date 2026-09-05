@@ -1,0 +1,812 @@
+
+ TurboGrafx-16 Hardware Notes
+
+ ----------------------------------------------------------------------------
+ 8.) CD-ROM
+ ----------------------------------------------------------------------------
+
+ Overview
+
+ The TurboGrafx-16 CD hardware consists of the following:
+
+ - 64K general purpose RAM for the CD software to use
+ - 64K ADPCM RAM for sample storage
+ - 2K battery backed RAM for save game data and high scores
+ - Base unit which holds the above items, has stereo A/V outputs
+ - Stand-alone single speed CD drive that attaches to above base unit
+ - System Card (HuCard) that holds related libraries for using CD hardware
+ - NEC uPD78C14 MCU, 16kB ROM, 256 bytes RAM, 8kB ext RAM ~ 0x4000-0xFEFF. (IFU-30).
+
+ The CD drive is a SCSI compatible device. It supports the following
+ commands:
+
+ 00 - TEST UNIT READY
+ 03 - REQUEST SENSE
+ 08 - READ6
+
+ Command 00 is used when the machine is booting up, command 03 is used when a
+ command fails to get more information, and command 08 is used for many
+ operations, such as CD_READ, AD_TRANS, AD_CPLAY, and CD_SEEK.
+
+ Everything else is assigned to the vendor specific commands:
+
+ D8     - Play CD audio (set start pos)
+ D9     - Play CD audio (set end pos)
+ DA     - Pause CD audio
+ DD     - Read Q sub-channel
+ DE     - CD INFO, returns various information about the CD
+
+ The READ function uses logical block addressing (LBA), which is a 21-bit
+ address that specifies 2048 byte blocks. This provides 4 gigabytes of space,
+ which is more than enough to span an entire CD-ROM. The READ function uses
+ this.
+
+ Most of the vendor specific functions use a different form of addressing,
+ where the position on the disc is given by the track number, or the minutes,
+ seconds, and frames (MSF). A CD has 75 frames per second, 60 seconds per
+ minute, and typically 74 minutes per disc. Also, these numbers are
+ represented in BCD format (base 10), not hexadecimal.
+
+ For example CD_DINFO accepts a track number as the parameter, in BCD format
+ from 00 to 99. Track 15 would be represented as $15, not $0F.
+
+ Likewise, one of the CD_PLAY modes uses the MSF format, so specifying a
+ range of 08:16:32 to 10:32:00 would look like $08,$16,$32,$10,$32,$00 in
+ the command's parameter string, instead of $08,$10,$20,$0A,$20,$00.
+
+ Reading data from the CD is done in units of a single byte. It has a buffer
+ which holds return information or sector data, and the data is sent to the
+ CPU each time $1801 or $1808 is read. (the address depends on the command
+ used) The CD has no capability to transfer entire sectors or other data
+ directly to RAM using DMA.
+
+ On the other hand, the CD hardware can use DMA to send a single sector
+ at a time to ADPCM RAM. This is used in the AD_TRANS function and AD_CPLAY
+ which streams audio data from the CD to ADPCM RAM while audio is playing.
+
+ Battery backed RAM (BRAM)
+
+ The base unit has 2K of battery backed RAM which is used to save high
+ scores or the current progress in a game. The battery backed RAM is said
+ to hold it's contents for at least two months, at which point NEC advises
+ you to power on your unit or else the contents will eventually be lost.
+
+ BRAM is mapped to physical addresses $1EE000-1EE7FF, e.g. the first 2K of
+ page $F7. It is not mirrored outside of this range. On power-up BRAM is
+ locked, meaning that writes to it are ignored and reads from it always
+ return $FF regardless of the actual contents. BRAM can be unlocked by
+ setting bit 7 of port $1807. Likewise, you can lock BRAM by reading from
+ port $1803.
+
+ Some games unlock BRAM by writing the sequence $48, $75, $80 to $1807, but
+ the only value of importance is the last byte which has bit 7 set. The
+ System Card and Tennokoe Bank programs always access BRAM in the low speed
+ mode, which would seem to indicate that BRAM is slow enough that it cannot
+ be reliably used in high speed mode.
+
+ Page 0x88-0xF6 returns #0xFF.
+
+ Page 0xF7 returns #0xC0 for 0x0000-0x00FF, #0xC1 for 0x0100-0x01FF, #0xC2 for 0x0200-0x02FF, #0xC3 for 0x0300-0x03FF, #0xC4 for 0x0400-0x04FF, #0xC5 for 0x0500-0x05FF, #0xC6 for 0x0600-0x06FF, #0xC7 for 0x0700-0x07FF, #0xFF for 0x0800-0x1FFF
+ Page 0xF8 is RAM.
+ Page 0xF9-0xFB mirrors 0xF8.
+ Page 0xFC-0xFE returns #0xFF.
+ 
+
+ CD-ROM registers
+ Registers are not mirrored anywhere else.
+
+ ----------------------------------------------------------------------------
+ $1800 - SCSI BUS SIGNAL (R/W)
+ ----------------------------------------------------------------------------
+
+ Bit7 - BSY: Busy=1.
+ Bit6 - REQ: Request=1?
+ Bit5 - MSG: Message=1.
+ Bit4 - C/D: Control=1,Data=0.
+ Bit3 - I/O: In=1,Out=0.
+ Bit2 - not used.
+ Bit1 - not used.
+ Bit0 - SEL: Select?.
+ When sending a command, $1800 is written to 1 or 2 times.
+
+ $00  - ready to start. (BUS FREE PHASE)
+ $D0  - waiting to receive command. (COMMAND OUT PHASE)
+ $C8  - going to send data. (DATA IN PHASE)
+ $D8  - going to send status. (STATUS IN PHASE)
+ $F8  - going to send message. (MESSAGE IN PHASE)
+ $00  - ready to start again.
+
+
+ ----------------------------------------------------------------------------
+ $1801 - SCSI BUS DATA (R/W)
+ ----------------------------------------------------------------------------
+
+ This register is only written to when a command is being sent.
+ The sequence is $81, $FF, and then the command byte and it's parameters.
+ Otherwise, it seems to return a status byte and sometimes data.
+
+ Several System Card functions which read a few bytes worth of CD data at a
+ time retrieve the data from an internal sector buffer through $1801.
+
+
+ ----------------------------------------------------------------------------
+ $1802 - IRQ2 enable (R/W)
+ ----------------------------------------------------------------------------
+
+ Bit 7 SCSI ACK: Acknowledge.
+ Bit 6 CD to ADPCM DMA finnished? or 64kB? AD_LEN?
+ Bit 5 CD read finnished? set in CD_PLAY/CD_SEARCH.
+ Bit 4 ready to read SUBCH? on/off sense bit for the CD-ROM spindle motor?
+ Bit 3 ADPCM playback finnished.
+ Bit 2 ADPCM playback has played half of the samples (or 32kByte?).
+ Bit 1 -
+ Bit 0 -
+
+ Several functions which read data from the CD, as well as one function
+ which sends a SCSI command to the CD hardware, will call a subroutine
+ at $EC0B after reading or writing each byte which sets bit 7, polls bit 6
+ of $1800, then clears bit 7. Perhaps this is used to tell the CD that data
+ has been read or written and it should prepare for the next read or write.
+
+
+ ----------------------------------------------------------------------------
+ $1803 - BRAM lock / IRQ2 request (R/O).
+ ----------------------------------------------------------------------------
+
+ Reading from this address locks BRAM (and clears any IRQ2?).
+
+ Bit 7 -
+ Bit 6 CD to ADPCM DMA finnished?. Or is it to do with the CD being ready to supply data?
+ Bit 5 CD read finnished? polled in AD_TRANS.
+ Bit 4 ready to read SUBCH? on/off sense bit for the CD-ROM spindle motor?
+ Bit 3 ADPCM playback finnished.
+ Bit 2 ADPCM playback has played half of the samples (or 32kByte?).
+ Bit 1 left/right bit when reading 16bit audio data from $1805/$1806.
+ Bit 0 -
+
+P_INTMON	equ	$1803	;(R/O) interrupt monitor
+			;+------+------+------+------+-------+------+------+------+
+			;| ---- | INTD | INTM |INTSUB|INTSTOP| INTA |AUDL/R| ---- |
+			;+------+------+------+------+-------+------+------+------+
+
+
+ ----------------------------------------------------------------------------
+ $1804 - Sub I/O (R/W)
+ ----------------------------------------------------------------------------
+
+ Bit 1 is used to reset the CD hardware. The CD_RESET function sets bit 1,
+ waits for a few cycles, and then clears bit 1.
+
+ Bit 7 -
+ Bit 6 -
+ Bit 5 -
+ Bit 4 P3
+ Bit 3 P0 I/O
+ Bit 2 P2
+ Bit 1 Reset
+ Bit 0 P0
+
+ ----------------------------------------------------------------------------
+ $1805 - PCM data (LSB) (R) / Convert PCM data (W)
+ $1806 - PCM data (MSB) (R/O)
+ ----------------------------------------------------------------------------
+
+ When $1805 is written to, the current audio data from the CD can be read
+ from $1805 and $1806 after about 112 cycles. They will return the same data
+ until $1805 is written to again. The exact value written seems unimportant.
+
+ $1805 is the LSB and $1806 is the MSB of the 16bit data.
+ The data is signed (-32768 -> +32767).
+ When bit 1 of $1803 is set the left channel is received.
+ When bit 1 of $1803 is clear the right channel is received.
+
+
+ ----------------------------------------------------------------------------
+ $1807 - BRAM unlock (W) / CD SUBChannel (R)
+ ----------------------------------------------------------------------------
+
+ Setting bit 7 will unlock BRAM.
+
+ Reading this register returns the same random value when read, however
+ when a seeking to a track or when the spindle motor is spinning up or down
+ the return value fluctuates rapidly. This does not occur after an audio
+ track begins playing, or when it is paused and unpaused. This also occurs
+ at the same time bit 4 is set or cleared in $1803, so they are most likely
+ related to each other.
+
+ The BIOS function CD_SUBRD copies the value of this register to $227E,
+ though I don't know what it's purpose is. It will also ensure that bit 4
+ of $1803 is set prior to reading, so it's safe to say CD_SUBRD is only
+ valid when a CD is being accessed.
+
+
+ ----------------------------------------------------------------------------
+ $1808 - ADPCM address (LSB) (W) / Auto handshake data input (R)
+ ----------------------------------------------------------------------------
+
+ Writing to this port loads the lower 8 bits of a 16-bit address that
+ can be copied to the ADPCM read or write pointers.
+
+ Several System Card functions which read a sector's worth of data at a
+ time retrieve the data from an internal sector buffer through $1808.
+
+
+ ----------------------------------------------------------------------------
+ $1809 - ADPCM address (MSB) (W/O)
+ ----------------------------------------------------------------------------
+
+ Writing to this port loads the upper 8 bits of a 16-bit address that
+ can be copied to the ADPCM read or write pointers.
+
+
+ ----------------------------------------------------------------------------
+ $180A - ADPCM RAM data port (R/W)
+ ----------------------------------------------------------------------------
+
+ $180A allows access to the ADPCM RAM at the offset pointed to by the
+ write and read pointer. After each access, the read or write pointer is
+ incremented.
+
+ There is a seperate address for reading and writing. So after setting the
+ read and write address, doing additional writes wouldn't change the read
+ address, nor would doing additional reads change the write address.
+
+ Reads are buffered, after setting the read address you have to read
+ and discard a byte from $180A. After each read, a byte from the current
+ address is loaded into the buffer and the address is then incremented.
+
+ If you read or write beyond $FFFF, the respective address will wrap to zero.
+
+ The current pointer value will change if you leave bits in $180D set when
+ reading or writing $180A. The exact effects are described later.
+
+
+ ----------------------------------------------------------------------------
+ $180B - ADPCM DMA control (R/W)
+ ----------------------------------------------------------------------------
+
+ Bits 1 and/or 0 of $180B are set when an CD to ADPCM DMA transfer is in
+ progress. The AD_TRANS and AD_WRITE functions check these bits and abort
+ if they are set. Maybe this means reading ADPCM RAM at the same time would
+ still work, it does have a seperate read and write pointer, after all.
+
+ Bit 1 seems to request the transfer itself. The AD_TRANS function sets
+ the ADPCM write address, sends a READ command, and then sets bit 1 while
+ polling flags in bit 2 of $180C and bit 5 of $1803. Afterwards, it clears
+ bit 1 and exits.
+
+P_TRCTL		equ	$180b	;(R/W) ADPCM data trans control
+			;+------+------+------+------+------+------+------+------+
+			;| ---- | ---- | ---- | ---- | ---- | ---- |ADTR 1|ADTR 0|
+			;+------+------+------+------+------+------+------+------+
+
+
+ ----------------------------------------------------------------------------
+ $180C - ADPCM status (R/O)
+ ----------------------------------------------------------------------------
+
+ If bit 7 is set, the ADPCM controller is busy processing the last read
+ from $180A. The BIOS polls this bit before each read from $180A in AD_READ.
+ I've observed that bit 7 is cleared in about 24 cycles in high-speed mode,
+ immediately following a read from $180A.
+
+ If bit 3 is set, the ADPCM controller is busy. (according to AD_STAT)
+
+ If bit 2 is set, the ADPCM controller is busy processing the last write
+ to $180A. The BIOS polls this bit after each write to $180A in AD_WRITE.
+
+ If bit 0 is set, sample playback has been halted. (according to AD_STAT)
+
+
+ ----------------------------------------------------------------------------
+ $180D - ADPCM address control (R/W)
+ ----------------------------------------------------------------------------
+
+ Bit 7 will cause the ADPCM hardware to be reset when it is set to one and
+ then zero. When this happens, the read buffer (at $180A) keeps it's contents
+ and the read and write pointers are set to zero.
+
+ Bits 6 and 5 seem to be used to start ADPCM Play, though I'm not sure how.
+
+ Bit 4 copies the contents of $1808/$1809 to a length counter which is used
+ when playing back a sample. A length of zero is treated as 64K. The AD_READ
+ function sets the length before reading data, but I've found this is not
+ necessary.
+
+ ADPCM RAM can be accessed in units of single nibbles. The CPU always reads
+ or writes a byte, but the ADPCM controller can spread this over two nibbles
+ of two adjacent bytes. The primary reason for this is that ADPCM samples
+ are one nibble in size.
+
+ Bits 3 and 2 copy the current address in $1808/09 to the write pointer,
+ and optionally set the nibble offset to 1 or zero.
+
+ Bits 1 and 0 copy the current address in $1808/09 to the read pointer,
+ and optionally set the nibble offset to 1 or zero.
+
+ How exactly these bits are used seems to be dependant on the state of
+ one bit while the other changes state from 1 to 0.
+
+ I'm currently trying to document the various settings, which I will include
+ in a future update.
+
+ Bit 7 RST AD
+ Bit 6 AUTSTP
+ Bit 5 ADP ON
+ Bit 4 LN LDC
+ Bit 3 RD LD
+ Bit 2 RD CK
+ Bit 1 WR LD
+ Bit 0 WR CK
+
+ ----------------------------------------------------------------------------
+ $180E - ADPCM playback rate (R/W)
+ ----------------------------------------------------------------------------
+
+ The lower four bits of this register set the playback rate for ADPCM
+ samples. According to a tghack-list post, the playback rate is as
+ follows:
+        Sample rate (KHz) = 32 / (16 - (value & $0F))
+
+ Bit 7 -
+ Bit 6 -
+ Bit 5 -
+ Bit 4 -
+ Bit 3 Div D
+ Bit 2 Div C
+ Bit 1 Div B
+ Bit 0 Div A
+
+ ----------------------------------------------------------------------------
+ $180F - ADPCM and CD audio fade timer (R/W)
+ ----------------------------------------------------------------------------
+
+ I haven't tested the ADPCM fade, just the CD audio one.
+
+ When $180F is written to, a timer is started depending on the the lower 4
+ bits of the data which gradually fades the CD audio (PCM) and/or ADPCM audio
+ over a period of time. Writing the same value multiple times has no effect,
+ writing different data is described later. Valid settings are:
+
+ 0-7 : No effect
+ 8-9 : Fade CD audio (silence in about 8 seconds)
+ A-B : No effect
+ C-D : Fade CD audio (silence in about 2 seconds)
+ E-F : CD audio is unchanged, but canceling the fade causes the sound
+       to mute for an instant.
+
+ When a fade is in effect, writing different data again has some unusual
+ results. If 0-7 is written, the fade is cancelled and the fade timer is
+ reset, so another fade later on will restart from the beginning.
+ If A, B, E, or F is written for a fade value of 8 or C, the fade is
+ cancelled but the timer still runs, so if you fade again it the audio level
+ is reduced to whatever point the timer is currently at. If C is written for
+ a fade of 8, the fade timer speed is increased, and if 8 is written for a
+ fade of C, the fade timer speed is decreased.
+
+ When the audio is fading or is completely silent, cancelling the fade
+ restarts the audio. The CD never actually stops playing, only the volume
+ is controlled.
+
+ Bit 7 Test
+ Bit 6 -
+ Bit 5 -
+ Bit 4 -
+ Bit 3 Fadeout
+ Bit 2 TC SEL
+ Bit 1 AD/LIN
+ Bit 0 MUTE
+
+
+ ----------------------------------------------------------------------------
+ 8.1) Super System Card
+ ----------------------------------------------------------------------------
+ P_EXMOPN_I		equ	$18c0	;(W/O) Internal EXT Memory Open
+ P_EXMSTS_I0	equ	$18c1	;(R/O) $AA
+ P_EXMSTS_I1	equ	$18c2	;(R/O) $55
+ P_EXMSTS_I2	equ	$18c3	;(R/O) size (* 64Kbytes)
+
+ P_EXMOPN_C		equ	$18c4	;(W/O) Card EXT Memory Open
+ P_EXMSTS_C0	equ	$18c5	;(R/O) $AA
+ P_EXMSTS_C1	equ	$18c6	;(R/O) $55
+ P_EXMSTS_C2	equ	$18c7	;(R/O) size (* 64Kbytes)
+
+ Registers mapped @ $18C0-$18C7, not mirrored anywhere.
+ The Super System Card is an upgraded version of the original System Card
+ with more memory. It has 192K of RAM mapped to pages $68-$7F, which is
+ used in conjunction with the CD-ROM base unit's built in memory for a
+ total of 256K.
+
+ The only 'new' BIOS function (that I know of) is EX_MEMOPEN, which uses
+ entry $E0DE in the jump table. (replacing KEY_BIOS in earlier BIOS
+ revisions) It's purpose is to read some new registers mapped to $18Cx area
+ for identification. It does the following checks:
+
+US version:
+ if ($18C5 == $55 && $18C6 == $AA)
+ {
+    X = $03, A = $68, carry = 0
+ }
+ else
+ if ($18C1 == $AA && $18C2 == $55)
+ {
+    X = $18C3 | $80, A = $68, carry = 0
+ }
+ else
+ {
+    /* Failure */
+    X = $00, carry = 1
+ }
+
+Japanese version:
+ if ($18C5 == $AA && $18C6 == $55)
+ {
+    X = $18C7, A = $68, carry = 0
+ }
+ else
+ if ($18C1 == $AA && $18C2 == $55)
+ {
+    X = $18C3 | $80, A = $68, carry = 0
+ }
+ else
+ {
+    /* Failure */
+    X = $00, carry = 1
+ }
+
+ If the first test fails but second is ok it writes #$AA and then #$55 to
+ $18C0, to enable the extra ram. Order or writes inbetween doesn't matter
+ as long as the two values are written to $18C0.
+
+ The X is supposed to be the number of 64kB pages of EXTRA RAM available
+ (making $18C3/$18C7 storage for the RAM size), and A might be the first page where
+ the RAM is found.
+
+ If you assume EX_MEMOPEN is only available on Super System Cards to begin
+ with, checking the extra registers as $18Cx seems unecessary. However, they
+ do solve the unlikely situation of having the SCD BIOS running on a regular
+ HuCard with no extra memory or special registers; the tests will fail in
+ this case. Not that you couldn't patch the BIOS to force a SCD game to run
+ anyway. (Dragon Slayer will run for a bit like this :)
+
+ ----------------------------------------------------------------------------
+ 8.2) CD-ROM Commands
+ ----------------------------------------------------------------------------
+ TestUnitReady, ReqSense & Read commands are 6 bytes long the others are 10.
+
+ $00 = Test Unit Ready: no parameters.
+ $03 = Request Sense: no parameters.
+ $08 = Read Data
+     param1,2,3: LBA
+     param4: number of sectors
+ $15 = Mode Select?
+ $D8 = Play CD audio, set start.
+ $D9 = Play CD audio, set end.
+ $DA = Pause CD audio: no parameters.
+ $DD = Read sub channel:
+     parameter1: number of bytes?
+
+ $DE = Get info:
+     parameter1:
+	00 : Get first and last track numbers.
+	01 : Get total running time of disc.
+	02 : Get track starting position and mode.
+     parameter2:
+	Track number for 02.
+
+ -----------------------------
+ Command 0x00: Test Unit Ready
+ -----------------------------
+ Input: 00 00 00 00 00 00
+ Output: No data, only status.
+ Info: Used to test if the unit is ready/ok.
+ Status:
+	0x00 = OK
+	0x02 = Check condition (Bios will do a RequestSense, and if that doesn't give anything back it will retry the TestUnitReady command)
+	0x04 = Condition met
+	0x06 = Time Out
+	0x08 = Busy
+	0x10 = Intermediate
+	0x14 = Intermediate - Condition met
+	0x18 = Reservation conflict
+	0x22 = Command terminated
+	0x28 = Queue (task set) full
+	0x30 = ACA active
+	0x40 = Task aborted
+ 
+ -----------------------------
+ Command 0x03: Request Sense
+ -----------------------------
+ Input: 03 00 00 00 0A 00
+ Output: RC ?? KK ?? ?? ?? ?? ?? ?? CC
+	RC=Response Code, bit7=valid if set?
+	KK=Sense key - 4 bits.
+	CC=Sense Code?
+ Info: Used to get more info on errors.
+SenseKey:
+			0x00 = NO_SENSE
+			0x01 = RECOVERED_ERROR
+			0x02 = NOT_READY
+			0x03 = MEDIUM_ERROR
+			0x04 = HARDWARE_ERROR
+			0x05 = ILLEGAL_REQUEST
+			0x06 = UNIT_ATTENTION
+			0x07 = DATA_PROTECT
+			0x08 = BLANK_CHECK
+			0x09 = FIRMWARE_ERROR/UNIQUE
+			0x0A = COPY_ABORTED
+			0x0B = ABORTED_COMMAND
+			0x0C = Equal
+			0x0D = VOLUME_OVERFLOW
+			0x0E = MISCOMPARE
+			0x0F = RESERVED/Vendor specific
+
+ SenseCode:
+			0x00 = No error
+			0x04 = Non fatal, 4 written to $2247(notrdyflg). Not ready?
+			0x0B = Fatal. Used when no disc inserted.
+			0x0D = Fatal. Used when door/cover is open.
+			0x11 = Non fatal (Unrecovered Read Error?)
+			0x15 = Non fatal (Positioning/Seek Error?)
+			0x16 = Non fatal (Header Read Error)
+			0x1C = Fatal (Not Audio Track)
+			0x1D = Fatal (Not Data Track)
+			0x20 = Fatal (Invalid command?)
+			0x21 = Fatal (Invalid Block Address?)
+			0x22 = Fatal (Invalid Parameter?)
+			0x25 = Fatal (End of Volume)
+			0x2A = Fatal (Mode Parameters Changed?)
+			0x2C = Fatal (Audio Not Playing)
+ -----------------------------
+ Command 0x08: Read6 (Read Data)
+ -----------------------------
+ Input: 08 LL BB AA SS 00
+	LBA=Logical Block Address
+	SS=Size in sectors
+ Output: DD DD DD ...
+	DD=Data the size specified in the command
+
+ -----------------------------
+ Command 0x15: Mode Select
+ -----------------------------
+ Input: 15 UU UU UU UU UU UU UU UU UU
+	UU=Unknown
+ Output: ?? ??
+
+ -----------------------------
+ Command 0xD8: CD Audio (Set start)
+ -----------------------------
+ Input: D8 0V TT SS FF AA 00 00 00 H0
+	V=0 Don't Play (repeat mode?), V=1 Play
+	TT=Track, Minutes or 0, depending on H
+	SS=Seconds or LBA MSB.
+	FF=Frames or LBA middle byte.
+	AA=LBA LSB.
+	H=8 Tracks, H=4 MSF, H=0 LBA, H=C don't set new pos?
+ Output: No data, only status.
+ Info: Used to seek, and play CD audio.
+
+ -----------------------------
+ Command 0xD9: CD Audio (Set end)
+ -----------------------------
+ Input: D9 0V TT SS FF AA 00 00 00 H0
+	V=0 Don't Play, V=1 Play (repeat?), V=2 Play (irq2?), V=3 Play(norepeat?), V=4?
+	TT=Track, Minutes or 0, depending on H
+	SS=Seconds or LBA MSB.
+	FF=Frames or LBA middle byte.
+	AA=LBA LSB.
+	H=8 Tracks, H=4 MSF, H=0 LBA, H=C don't set new pos?
+ Output: No data, only status.
+ Info:	Used to play CD audio.
+	Games often seem to set the start position with command D8
+	and then set the end position and start playing with D9.
+
+ -----------------------------
+ Command 0xDA: Pause CD audio
+ -----------------------------
+ Input: DA 00 00 00 00 00 00 00 00 00
+ Output: No data, only status.
+ Info:	Used to pause CD audio.
+
+ -----------------------------
+ Command 0xDC: Eject?
+ -----------------------------
+
+ -----------------------------
+ Command 0xDD: Read SubQ channel
+ -----------------------------
+ Input: DD 0A 00 00 00 00 00 00 00 00
+	A=number of bytes to get? allways 0x0A?
+ Output: NN HH TT II MM SS FF AM AS AF
+	NN=Audio Status, 0 when music playing, 2 paused, 3 completed.
+	HH=?? preemphasis, digital copy, 2ch/4ch, music/data.
+	TT=Track
+	II=Index (data tracks (and music allmost) allways 1)
+	MM=Minutes on this track
+	SS=Seconds on this track
+	FF=Frames on this track
+	AM=Minutes from the begining of disc
+	AS=Seconds from the begining of disc
+	AF=Frames from the begining of disc
+ Info:	Only usable on audio tracks?
+	All data in bcd format.
+
+ -----------------------------
+ Command 0xDE: Get disc info
+ -----------------------------
+ Input: DE 0F TT 00 00 00 00 00 00 00
+	F=0 Get first and last track number
+	F=1 Get total running time of disc
+	F=2 Get info about a specific track
+	TT=Track number for command 2
+ Output:F=0, TT TT, 2 bytes with the tracknumbers in BCD format.
+	F=1, MM FF SS, 3 bytes in MSF format.
+	F=2, LL BB AA MM, LBA and Mode (bit 2 is set on data tracks).
+
+
+ ----------------------------------------------------------------------------
+ 8.3) Arcade Card
+ ----------------------------------------------------------------------------
+ The Arcade card is mapped to IO addresses 0x1A00-1AFF.
+ It contains four sets of access registers at 0x1A00-1A0A, 0x1A10-1A1A,
+ 0x1A20-1A2A & 0x1A30-1A3A, a set of shift/rotate registers at 0x1AE0-1AE5
+ and some ID registers at 0x1AFC-0x1AFF which are readonly.
+ All other addresses return 0xFF when read.
+ Bit 4 & 5 of address is which port, eg 0x1A10 has the same function as 0x1A00
+ but a different port. It contains 2MByte RAM and a 32bit shift register.
+
+ 0x1A00/0x1A01 - AC_Memory access  (R/W)
+  0x1A09 controls if base or offset is incremented after access, and if both
+  offset and base are used to calculate address or only base.
+
+
+ 0x1A02 - AC_Base Address bit 0-7 (R/W)
+
+ 0x1A03 - AC_Base Address bit 8-15 (R/W)
+
+ 0x1A04 - AC_Base Address bit 16-23 (R/W)
+
+
+ 0x1A05 - AC_Offset Address bit 0-7 (R/W)
+  (W) If bit 6 is 0 and bit 5 is 1 in 0x1A09, add offset to base.
+
+ 0x1A06 - AC_Offset Address bit 8-15 (R/W)
+  (W) If bit 6 is 1 and bit 5 is 0 in 0x1A09, add offset to base.
+
+
+ 0x1A07 - AC_Increment Address bit 0-7 (R/W)
+
+ 0x1A08 - AC_Increment Address bit 8-15 (R/W)
+
+
+ 0x1A09 - AC_Control (R/W)
+  Bit 7: Unknown/unused??? (some documents claim it's Data port size: 0=byte, 1=word)
+  Bit 6 & 5: AC_ENABLE_OFFSET_BASE
+		00: none
+		01: add offset on low byte write (5)
+		10: add offset on high byte write (6)
+		11: add offset on write to A
+  Bit 4 AC_INCREMENT_BASE, selects if base(1) or offset(0) is increased when bit 0 is set.
+  Bit 3 Treat Increment reg as signed value.
+  Bit 2 Treat Offset reg as signed value.
+  Bit 1 AC_USE_OFFSET, use offset when accessing memory.
+  Bit 0 AC_ENABLE_INC, should base/offset be increased after accessing memory.
+
+
+ 0x1A0A - Offset Addition (W)(Reading allways returns 0)
+  If bit 6 & 5 of $1A09 is set, add offset to base.
+
+
+
+ 0x1AE0 - Shift reg byte 0 (LSB) (R/W)
+ 0x1AE1 - Shift reg byte 1       (R/W)
+ 0x1AE2 - Shift reg byte 2       (R/W)
+ 0x1AE3 - Shift reg byte 3 (MSB) (R/W)
+
+
+ 0x1AE4 - Shift left value (R/W)
+  Bit 0-3 two complent.
+  Bit 4-7 allways return 0.
+
+ When register is written all 4 bytes of the shiftreg are shifted.
+ Values 1 to 7 shift the contents to the left, values 8 to 15
+ shift the contents to the right (16-value).
+
+ 0x1AE5 - Rotate left value (R/W)
+  Bit 0-3 two complent.
+  Bit 4-7 allways return 0.
+
+ When register is written all 4 bytes of the shiftreg are rotated.
+ Values 1 to 7 shift the contents to the left, values 8 to 15
+ shift the contents to the right (16-value).
+ Bits shifted out of the top and bottom bytes are inserted at the other end.
+
+
+ 0x1AFC - unknown (R)
+  Bit 0-7 Readable, allways return 0x00?
+
+ 0x1AFD - unknown (R)
+  Bit 0-7 Readable, allways return 0x00?
+
+ 0x1AFE - Version number? (R)
+  Bit 0-7 Readable, allways return 0x10?
+
+ 0x1AFF - Arcade card identification? (R)
+  Bit 0-7 Readable, allways return 0x51?
+
+
+
+
+
+The Arcade Card can also be access via banks 0x40-43.
+Each and every byte in the bank is the same as the port of its corresponding
+register (0x1Ay0). With this method you can use the TIA to transfer data from
+the Arcade Card memory to the VDC(VRAM) directly and TAI from the VDC to AC
+memory. You can also use this method to read from the CD directly to the
+Arcade Card memory with the CD_READ function by using MPR argument with any
+of the AC banks.
+
+0x40 = Arcade Card port 0 register 0
+0x41 = Arcade Card port 1 register 0
+0x42 = Arcade Card port 2 register 0
+0x43 = Arcade Card port 3 register 0
+ ----------------------------------------------------------------------------
+ 15.) CD Play test
+ ----------------------------------------------------------------------------
+
+CD Player:
+	D8 01 01 00 00 00 00 00 00 80		Play Track 1
+	D8 00 01 00 00 00 00 00 00 80		Stop (after PauseCD), alltid track 01 oberoende utav vilket track som var valt innan.
+	D8 01 07 00 00 00 00 00 00 80		Play Track 7
+	D8 00 02 15 67 00 00 00 00 40		Search when paused
+	D8 01 02 15 67 00 00 00 00 40		Search when playing
+	D9 03 38 27 43 00 00 00 00 40		Play after Pause. 1 frame less then total length?
+
+	Vad händer efter en Fade out på HW? Stannar skivan eller fortsätter den på nästa spår?
+	Skickar ju:
+	D8 00 TT 00 00 00 00 00 00 80
+
+Dracula X:
+	D8 00 07 37 09 00 00 00 00 40		track 06
+	D9 01 09 00 61 00 00 00 00 40		track 07
+
+Rayxanber2:
+	D8 00 01 27 14 00 00 00 00 40		track 03 (menu)
+	D9 01 04 49 09 00 00 00 00 40		track 04
+
+	D8 00 04 49 09 00 00 00 00 40		track 04 (level 1)
+	D9 01 08 12 12 00 00 00 00 40		track 05
+
+	D8 00 37 08 10 00 00 00 00 40		track 14 (GameOver)
+	D9 02 37 18 41 00 00 00 00 40		track 15
+
+Valis 3:
+	D8 01 05 38 52 00 00 00 00 40
+	D8 01 06 17 74 00 00 00 00 40
+	D8 01 06 45 15 00 00 00 00 40
+	D8 01 07 27 61 00 00 00 00 40
+	D8 01 08 30 29 00 00 00 00 40
+	D8 01 01 12 00 00 00 00 00 40
+	D8 01 02 57 74 00 00 00 00 40
+	D8 01 03 17 37 00 00 00 00 40
+	D8 01 09 35 39 00 00 00 00 40
+
+	D9 01 39 00 00 00 00 00 00 80
+
+Valis 2:
+	D8 01 01 23 70 00 00 00 00 40
+	D8 01 02 19 07 00 00 00 00 40
+	D8 01 03 00 38 00 00 00 00 40
+	D8 01 06 45 26 00 00 00 00 40
+	D8 01 07 30 52 00 00 00 00 40
+
+	D8 00 34 00 00 00 00 00 00 80
+	D8 ?? ??
+	D9 01 35 00 00 00 00 00 00 80
+
+
+Check chapter 8 of this document for info about SCSI signals.
+http://www.uni-mainz.de/~neuffer/scsi/docs/spi-r12c.txt
+or chapter 5.5 here.
+http://www.t10.org/ftp/t10/drafts/s2/s2-r10l.pdf
+

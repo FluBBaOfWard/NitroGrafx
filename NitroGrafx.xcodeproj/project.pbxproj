@@ -9,6 +9,7 @@
 /* Begin PBXFileReference section */
 		746D78E114ED9A8400CC738F /* Makefile */ = {isa = PBXFileReference; explicitFileType = sourcecode.make; fileEncoding = 4; path = Makefile; sourceTree = "<group>"; };
 		9C00C63230488037001BCC36 /* cdrom.i */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c.preprocessed; path = cdrom.i; sourceTree = "<group>"; };
+		9C00C633304C2C36001BCC36 /* pcecdrom.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = pcecdrom.txt; sourceTree = "<group>"; };
 		9C1C894E303E356F00732991 /* ADPCM.s */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm; path = ADPCM.s; sourceTree = "<group>"; };
 		9C1C894F3044871700732991 /* PCEngine.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = PCEngine.png; sourceTree = "<group>"; };
 		9C294940260746FD00EDA7C9 /* H6280.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = H6280.h; sourceTree = "<group>"; };
@@ -271,6 +272,7 @@
 				A49024FA207B78DA0086B28E /* pcetech_edit.txt */,
 				A49024FB207B78DA0086B28E /* vdcdox.txt */,
 				A4DA867520808A0B00E7404E /* VceDoc.txt */,
+				9C00C633304C2C36001BCC36 /* pcecdrom.txt */,
 				A49024FC207B78DA0086B28E /* AC_Regs_WIP.txt */,
 				A49024FD207B78DA0086B28E /* sgxtech.txt */,
 			);

@@ -131,11 +131,11 @@ cdReset:
 	mov r1,r0,lsl#2				;@ 2 extra bits for the cd frame vs gba frame.
 	str r1,sectorEnd
 	ldr r2,tgcdBase
-	strb r0,[r2,#0x0F]
+	strb r0,[r2,#cdTOCEndLBA2]
 	mov r0,r0,lsr#8
-	strb r0,[r2,#0x0E]
+	strb r0,[r2,#cdTOCEndLBA1]
 	mov r0,r0,lsr#8
-	strb r0,[r2,#0x0D]
+	strb r0,[r2,#cdTOCEndLBA0]
 
 	bx lr
 ;@----------------------------------------------------------------------------
@@ -200,27 +200,26 @@ tocLoop:
 	mov r1,r0,lsl#2				;@ 2 extra bits for the cd frame vs gba frame.
 	str r1,sectorEnd
 	ldr r2,tgcdBase
-	strb r0,[r2,#0x0F]
+	strb r0,[r2,#cdTOCEndLBA2]
 	mov r0,r0,lsr#8
-	strb r0,[r2,#0x0E]
+	strb r0,[r2,#cdTOCEndLBA1]
 	mov r0,r0,lsr#8
-	strb r0,[r2,#0x0D]
+	strb r0,[r2,#cdTOCEndLBA0]
 
 	ldmfd sp!,{r3-r6,lr}
 	bx lr
 ;@----------------------------------------------------------------------------
 updateCDROM:				;@ Called every frame
 ;@----------------------------------------------------------------------------
-	stmfd sp!,{r0,r3,lr}
+	ldr r0,cdSeekTime
+	subs r0,r0,#1
+	strpl r0,cdSeekTime
+	bxhi lr
+	stmfd sp!,{r3,lr}
 	ldrb r0,cdAudioPlaying
 	cmp r0,#0
 	beq noCDAudio
 
-	ldr r0,cdSeekTime
-	subs r0,r0,#1
-	strpl r0,cdSeekTime
-	cmp r0,#4
-	bpl noCDAudio
 	blx CD_FillBuffer
 	mov r0,#0
 	str r0,ampPtr
@@ -229,8 +228,6 @@ updateCDROM:				;@ Called every frame
 	strb r0,cdIrqReq
 
 	ldr r0,sectorPtr			;@ This is now updated in sound.s
-//	add r0,r0,#5
-//	str r0,sectorPtr
 	mov r1,r0,lsl#11-2
 	str r1,currentPos
 	ldr r1,sectorEnd
@@ -257,7 +254,7 @@ noCDAudio:
 	tst r0,#0x03
 	movne r0,#0xA00				;@ 2048*(75/60). CD frames/TV frames.
 	blne AdpcmDMA
-	ldmfd sp!,{r0,r3,lr}
+	ldmfd sp!,{r3,lr}
 
 	ldr r0,adPlayTime
 	cmp r0,#0
@@ -1057,7 +1054,7 @@ SCSI_SendData:
 
 	ldr r0,dataLen
 	subs r0,r0,#1
-	str r0,dataLen
+	strpl r0,dataLen
 	bmi noMoreScsiData
 
 	ldr r0,currentPos
@@ -1098,7 +1095,7 @@ SCSI_SendResponse:
 ;@----------------------------------------------------------------------------
 	ldr r0,dataLen
 	subs r0,r0,#1
-	str r0,dataLen
+	strpl r0,dataLen
 
 	ldrpl r1,dataOutPtr
 	ldrbpl r2,[r1],#1
@@ -1214,10 +1211,8 @@ CMD_PlayCD:					;@ Command 0xD8
 ;@----------------------------------------------------------------------------
 	stmfd sp!,{r3-r5,lr}
 
-	mov r0,#60
+	mov r0,#10
 	str r0,cdSeekTime			;@ This should probably be calculated from old pos to new pos.
-	mov r0,#0					;@ Audio must be stopped before we can seek.
-	strb r0,cdAudioPlaying
 	adrl r4,scsiCmd
 	ldrb r2,[r4,#9]				;@ LBA, Track or MSF
 	ands r2,r2,#0xC0
@@ -1250,13 +1245,15 @@ writeSec:
 	mov r1,r0,lsl#2				;@ 2 extra bits for the cd frame vs gba frame.
 	str r1,sectorPtr
 	bl LBA2AudioOffset			;@ r0 = real LBA, set audio file offset
-	bl CD_FindEnd
+	bl CD_FindSetEnd
 
 notTrack:
-	ldrb r0,[r4,#1]				;@ To play or not.
-	strb r0,cdAudioPlaying
+	ldrb r0,[r4,#1]				;@ Play mode.
+	and r0,r0,#0x3F
+	cmp r0,#4					;@ Don't change since previous?
+	strbne r0,cdAudioPlaying
+	ldrbeq r0,cdAudioPlaying
 	cmp r0,#1					;@ Repeat after completion?
-	cmpne r0,#4					;@ Repeat after completion?
 	movne r0,#0
 	strb r0,cdAudioRepeat
 	mov r1,#0xD8				;@ No data only status
@@ -1286,13 +1283,13 @@ CD_DoRepeat:
 	str r1,sectorPtr
 	b LBA2AudioOffset			;@ r0 = real LBA, set audio file offset
 ;@----------------------------------------------------------------------------
-CD_FindEnd:
+CD_FindSetEnd:
 ;@----------------------------------------------------------------------------
 	stmfd sp!,{r4-r5,lr}
 	ldr r0,cddaStart
 	bl LBA2Track				;@ Get current track
 	ldr r5,tgcdBase
-	ldrb r4,[r5,#12]			;@ Last track
+	ldrb r4,[r5,#cdTOCTrackCount]	;@ Last track
 	add r5,r5,#8
 findLoop:
 	add r0,r0,#1
@@ -1316,8 +1313,6 @@ CMD_PlayCD2:				;@ Command 0xD9
 ;@----------------------------------------------------------------------------
 	stmfd sp!,{r3-r5,lr}
 
-	mov r0,#0					;@ Audio must be stopped before we can seek.
-	strb r0,cdAudioPlaying
 	adrl r4,scsiCmd
 	ldrb r2,[r4,#9]				;@ LBA, Tracks or MSF
 	ands r2,r2,#0xC0
@@ -1350,10 +1345,12 @@ writeSec2:
 	str r0,sectorEnd
 
 notTrack2:
-	ldrb r0,[r4,#1]				;@ To play or not.
-	strb r0,cdAudioPlaying
+	ldrb r0,[r4,#1]				;@ Play mode.
+	and r0,r0,#0x3F
+	cmp r0,#4					;@ Don't change since previous?
+	strbne r0,cdAudioPlaying
+	ldrbeq r0,cdAudioPlaying
 	cmp r0,#1					;@ Repeat after completion?
-	cmpne r0,#4					;@ Repeat after completion?
 	movne r0,#0
 	strb r0,cdAudioRepeat
 	mov r1,#0xD8				;@ No data only status
@@ -1478,21 +1475,24 @@ firstLastTrack:
 	ldr r4,tgcdBase
 	mov r0,#0x01				;@ First Track
 	strb r0,scsiResponse
-	ldrb r0,[r4,#12]			;@ Last Track
+	ldrb r0,[r4,#cdTOCTrackCount]	;@ Last Track
 	bl Hex2Bcd
 	strb r0,scsiResponse+1
-//	adrl r1,GIFL_txt
+	adr r1,GIFL_txt
 	ldmfd sp!,{r3-r4,lr}
 	b giBack
+GIFL_txt:
+	.string "GetInfo FL"
+	.align 2
 ;@--------------------------------
 totalTime:
 	stmfd sp!,{r3,r4,lr}
 
 	ldr r4,tgcdBase
-	ldrb r0,[r4,#0x0D]			;@ Total len, LBA
-	ldrb r2,[r4,#0x0E]
+	ldrb r0,[r4,#cdTOCEndLBA0]	;@ Total len, LBA
+	ldrb r2,[r4,#cdTOCEndLBA1]
 	orr r0,r2,r0,lsl#8
-	ldrb r2,[r4,#0x0F]
+	ldrb r2,[r4,#cdTOCEndLBA2]
 	orr r0,r2,r0,lsl#8
 
 	bl LBA2MSF
@@ -1596,7 +1596,7 @@ LBA2Track:					;@ r0 input & output, uses r1-r3.
 
 	mov r4,r0					;@ Save LBA to compare.
 	ldr r1,tgcdBase
-	ldrb r5,[r1,#12]			;@ How many tracks
+	ldrb r5,[r1,#cdTOCTrackCount]	;@ How many tracks
 trLoop:
 	mov r0,r5
 	bl Track2LBA				;@ r0 in & out
@@ -1610,7 +1610,7 @@ trLoop:
 Track2LBA:					;@ r0 input & output, uses r1-r2.
 ;@----------------------------------------------------------------------------
 	ldr r2,tgcdBase
-	ldrb r1,[r2,#12]			;@ Last track
+	ldrb r1,[r2,#cdTOCTrackCount]	;@ Last track
 	cmp r1,r0
 	addmi r2,r2,#4
 	addpl r2,r2,r0,lsl#3		;@ (Track number x 8)

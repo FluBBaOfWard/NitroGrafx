@@ -14,7 +14,9 @@
 cdTOCMagic:		.space 8
 cdTOCPadding0:	.space 4
 cdTOCTrackCount:.byte 0
-cdTOCPadding1:	.space 3
+cdTOCEndLBA0:	.byte 0
+cdTOCEndLBA1:	.byte 0
+cdTOCEndLBA2:	.byte 0
 cdTOCTracks:
 cdTOCSize:
 

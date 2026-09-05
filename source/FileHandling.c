@@ -442,9 +442,9 @@ void CD_ConvertCueFile(const char *fName) {
 			cdDatatrackMode = track->mode = 4;
 		}
 		val = cs->tracks[i].LBA;
-		track->LBA_0 = (val>>16);
-		track->LBA_1 = (val>>8);
-		track->LBA_2 = val;
+		track->LBA0 = (val>>16);
+		track->LBA1 = (val>>8);
+		track->LBA2 = val;
 
 		track->start = cs->tracks[i].start;
 	}
