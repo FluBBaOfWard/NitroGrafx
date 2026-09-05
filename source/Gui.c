@@ -14,7 +14,7 @@
 #include "cpu.h"
 #include "ARMH6280/Version.h"
 
-#define EMUVERSION "V0.9.1 2026-09-03"
+#define EMUVERSION "V0.9.1 2026-09-05"
 
 // Asm functions
 extern void paletteTxAll(void);		// VCE.s
@@ -210,7 +210,8 @@ void nullUIDebug(int key) {
 		char2HexStr(&dbgtxt[10], currentTrack);
 		drawText(dbgtxt, 1, 0);
 		strcpy(dbgtxt, "CD LBA: ");
-		char2HexStr(&dbgtxt[8], currentPos>>11);
+		char2HexStr(&dbgtxt[8], currentPos>>27);
+		short2HexStr(&dbgtxt[10], currentPos>>11);
 		drawText(dbgtxt, 2, 0);
 	}
 }

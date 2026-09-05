@@ -215,10 +215,17 @@ updateCDROM:				;@ Called every frame
 	subs r0,r0,#1
 	strpl r0,cdSeekTime
 	bxhi lr
+
+	ldrb r1,scsiSignal
+	tst r1,#0x80
+	orrne r1,r1,#0x40				;@ Ready for more data.
+	strb r1,scsiSignal
+
 	stmfd sp!,{r3,lr}
-	ldrb r0,cdAudioPlaying
+	ldrb r0,cdPlayMode
 	cmp r0,#0
 	beq noCDAudio
+	strb r0,cdAudioPlaying
 
 	blx CD_FillBuffer
 	mov r0,#0
@@ -355,8 +362,11 @@ AdpcmDMA:					;@ r0=length to transfer now.
 	ldr r4,=CD_PCM_RAM			;@ ADPCM-RAM base
 dmaLoop:
 	ldrb r0,scsiSignal
-	cmp r0,#0xC8				;@ Data out?
+	and r1,r0,#0xBF
+	cmp r1,#0x88				;@ Data out?
 	bne adpcmEnd
+	tst r0,#0x40				;@ REQ set?
+	ldmfdeq sp!,{r3-r5,lr}		;@ return
 	bl SCSI_SendData
 	strb r0,[r4,r3,lsr#16]
 	add r3,r3,#0x10000
@@ -552,7 +562,7 @@ CD08_R:						;@ CD data
 	ldrb r0,scsiSignal
 	cmp r0,#0xC8				;@ Data out?
 	beq SCSI_SendData
-//	bne NoRead08
+//	bne noRead08
 noRead08:
 //	adr r0,RD_txt + 0x08*8
 //	vbadebugg
@@ -584,7 +594,7 @@ CD0A_R:						;@ ADPCM data read
 
 	bx lr
 ;@----------------------------------------------------------------------------
-CD0B_R:
+CD0B_R:						;@ ADPCM DMA control
 ;@----------------------------------------------------------------------------
 ;@	mov r11,r11					;@ No$GBA Debugg
 	ldrb r0,adDma
@@ -727,8 +737,6 @@ getCommand:
 	bl printSCSICommand
 	ldmfd sp!,{r0-r1,lr}
 
-	mov r0,#0xC8				;@ SCSI data
-	strb r0,scsiSignal
 	cmp r1,#0x00				;@ Test Unit Ready
 	beq CMD_TestUnitReady
 	cmp r1,#0x03				;@ Request Sense
@@ -776,10 +784,11 @@ CD04_W:						;@ SCSI reset?
 	strb r1,scsiSignal
 	strb r1,scsiData
 	strb r1,cdAudioPlaying
+	strb r1,cdPlayMode
 	strb r1,cdIrqReq
 	bx lr
 ;@----------------------------------------------------------------------------
-CD05_W:						;@ start CD sound fetching
+CD05_W:						;@ Start CD sound fetching
 ;@----------------------------------------------------------------------------
 	ldrb r0,cdAudioPlaying
 	cmp r0,#0
@@ -957,6 +966,7 @@ adpcmStatus:	.byte 0			;@ ADPCM busy status.
 adpcmDmaOn:		.byte 0			;@ ADPCM -> CD DMA on?
 cdAudioFade:	.byte 0			;@ CD Audio fade ($180F)
 cdDAStatus:		.byte 0			;@ gomwing
+cdPlayMode:		.byte 0			;@ Which audio play mode?
 cdAudioPlaying:	.byte 0			;@ Is cd audio playing?
 cdAudioRepeat:	.byte 0			;@ Should music repeat after completion?
 scsiPtr:		.byte 0			;@ Which byte of the command
@@ -1036,7 +1046,6 @@ LBA2AudioOffset:			;@ in r0=real LBA
 	bl LBA2RealOffset
 	blx CD_SeekPos
 	blx CD_ResetBuffer
-
 	ldmfd sp!,{r3,lr}
 	bx lr
 ;@----------------------------------------------------------------------------
@@ -1120,19 +1129,18 @@ CMD_TestUnitReady:			;@ Command 0x00
 	moveq r0,#SCSISTATUS_CHECKCONDITION
 	strb r0,scsiData
 
-	mov r12,r12
-	b noTur
-	.short 0x6464,0x0000
-turTxt:
-	.string "TestUnitReady"
-	.align 2
-noTur:
 	adr r1,turTxt
 	b debugOutput_asm
 //	bx lr
+turTxt:
+	.string "TestUnitReady"
+	.align 2
 ;@----------------------------------------------------------------------------
 CMD_RequestSense:			;@ Command 0x03
 ;@----------------------------------------------------------------------------
+	mov r0,#0xC8				;@ SCSI data
+	strb r0,scsiSignal
+
 	mov r0,#0
 	mov r2,#10
 	str r2,dataLen
@@ -1159,16 +1167,12 @@ rsLoop:
 	bl SCSI_SendData
 	ldmfd sp!,{lr}
 
-	mov r12,r12
-	b noSense
-	.short 0x6464,0x0000
-rsTxt:
-	.string "RequestSense"
-	.align 2
-noSense:
 	adr r1,rsTxt
 	b debugOutput_asm
 //	bx lr
+rsTxt:
+	.string "RequestSense"
+	.align 2
 ;@----------------------------------------------------------------------------
 CMD_Read6:					;@ Command 0x08
 ;@----------------------------------------------------------------------------
@@ -1176,13 +1180,14 @@ CMD_Read6:					;@ Command 0x08
 
 	mov r0,#0					;@ Audio isn't playing anymore
 	strb r0,cdAudioPlaying
+	strb r0,cdPlayMode
 	adrl r2,scsiCmd
 	ldrb r0,[r2,#4]				;@ Number of sectors
 	movs r0,r0,lsl#11			;@ 0x800
 	moveq r0,#0x80000
 	str r0,dataLen
 
-	mov r0,#60
+	mov r0,#5
 	str r0,cdSeekTime			;@ This should probably be calculated from old pos to new pos.
 	ldrb r0,[r2,#1]				;@ LBA1
 	and r0,r0,#0x1F
@@ -1198,6 +1203,10 @@ CMD_Read6:					;@ Command 0x08
 	ldrb r0,cdIrqReq
 	orr r0,r0,#0x40				;@ CD ready to go?
 	strb r0,cdIrqReq
+
+	mov r0,#0x88				;@ SCSI data
+	strb r0,scsiSignal
+
 	ldmfd sp!,{lr}
 
 	adr r1,r6Txt
@@ -1251,12 +1260,12 @@ notTrack:
 	ldrb r0,[r4,#1]				;@ Play mode.
 	and r0,r0,#0x3F
 	cmp r0,#4					;@ Don't change since previous?
-	strbne r0,cdAudioPlaying
-	ldrbeq r0,cdAudioPlaying
+	strbne r0,cdPlayMode
+	ldrbeq r0,cdPlayMode
 	cmp r0,#1					;@ Repeat after completion?
 	movne r0,#0
 	strb r0,cdAudioRepeat
-	mov r1,#0xD8				;@ No data only status
+	mov r1,#0x98				;@ No data only status
 	strb r1,scsiSignal
 	mov r1,#0
 	strb r1,scsiData
@@ -1348,8 +1357,8 @@ notTrack2:
 	ldrb r0,[r4,#1]				;@ Play mode.
 	and r0,r0,#0x3F
 	cmp r0,#4					;@ Don't change since previous?
-	strbne r0,cdAudioPlaying
-	ldrbeq r0,cdAudioPlaying
+	strbne r0,cdPlayMode
+	ldrbeq r0,cdPlayMode
 	cmp r0,#1					;@ Repeat after completion?
 	movne r0,#0
 	strb r0,cdAudioRepeat
@@ -1375,6 +1384,7 @@ CMD_PausCD:					;@ Command 0xDA
 	mov r0,#0
 	strb r0,scsiData
 	strb r0,cdAudioPlaying
+	strb r0,cdPlayMode
 	adr r1,paTxt
 	b debugOutput_asm
 //	bx lr
@@ -1385,6 +1395,9 @@ paTxt:
 CMD_SubQ:					;@ Command 0xDD
 ;@----------------------------------------------------------------------------
 ;@	mov r11,r11					;@ No$GBA Debugg
+	mov r0,#0xC8				;@ SCSI data
+	strb r0,scsiSignal
+
 	stmfd sp!,{r3-r5,lr}
 	adrl r5,scsiResponse
 	ldrb r0,cdAudioPlaying
@@ -1443,6 +1456,9 @@ sqTxt:
 ;@----------------------------------------------------------------------------
 CMD_GetInfo:				;@ Command 0xDE
 ;@----------------------------------------------------------------------------
+	mov r0,#0xC8				;@ SCSI data
+	strb r0,scsiSignal
+
 	mov r0,#0
 	mov r2,#4
 	str r2,dataLen
@@ -1612,7 +1628,7 @@ Track2LBA:					;@ r0 input & output, uses r1-r2.
 	ldr r2,tgcdBase
 	ldrb r1,[r2,#cdTOCTrackCount]	;@ Last track
 	cmp r1,r0
-	addmi r2,r2,#4
+	addmi r2,r2,#8
 	addpl r2,r2,r0,lsl#3		;@ (Track number x 8)
 
 	ldrb r0,[r2,#9]				;@ LBA for this track
