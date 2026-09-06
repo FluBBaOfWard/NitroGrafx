@@ -11,14 +11,14 @@
 #include "Equates.h"
 #include "Shared/EmuMenu.i"
 
+	.global joyCfg
+	.global EMUinput
+
 	.global ioReset
 	.global IO_R
 	.global IO_W
 	.global refreshEMUjoypads
 	.global convertInput
-
-	.global joyCfg
-	.global EMUinput
 
 	.syntax unified
 	.arm

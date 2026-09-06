@@ -13,9 +13,9 @@
 adpcmReset:
 ;@----------------------------------------------------------------------------
 	mov r0,#0
+	str r0,accumulator
 	strb r0,adpcmOddEven
 	strb r0,adpcmIndex
-	str r0,accumulator
 	bx lr
 
 ;@----------------------------------------------------------------------------
@@ -111,8 +111,6 @@ accumulator:
 adpcmOddEven:
 	.byte 0
 adpcmIndex:
-	.byte 0
-adpcmIn:
 	.byte 0
 	.align 2
 

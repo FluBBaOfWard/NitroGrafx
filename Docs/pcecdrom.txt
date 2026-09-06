@@ -577,12 +577,12 @@ SenseKey:
  Command 0xD8: CD Audio (Set start)
  -----------------------------
  Input: D8 0V TT SS FF AA 00 00 00 H0
-	V=0 Don't Play (repeat mode?), V=1 Play
+	V=0 Don't Play, V=1 Play repeat, V=2 Play (irq2?), V=3 Play, V=4 don't chg mode.
 	TT=Track, Minutes or 0, depending on H
 	SS=Seconds or LBA MSB.
 	FF=Frames or LBA middle byte.
 	AA=LBA LSB.
-	H=8 Tracks, H=4 MSF, H=0 LBA, H=C don't set new pos?
+	H=8 Tracks, H=4 MSF, H=0 LBA, H=C don't set new pos.
  Output: No data, only status.
  Info: Used to seek, and play CD audio.
 
@@ -590,12 +590,12 @@ SenseKey:
  Command 0xD9: CD Audio (Set end)
  -----------------------------
  Input: D9 0V TT SS FF AA 00 00 00 H0
-	V=0 Don't Play, V=1 Play (repeat?), V=2 Play (irq2?), V=3 Play(norepeat?), V=4?
+	V=0 Don't Play, V=1 Play repeat, V=2 Play (irq2?), V=3 Play, V=4 don't chg mode.
 	TT=Track, Minutes or 0, depending on H
 	SS=Seconds or LBA MSB.
 	FF=Frames or LBA middle byte.
 	AA=LBA LSB.
-	H=8 Tracks, H=4 MSF, H=0 LBA, H=C don't set new pos?
+	H=8 Tracks, H=4 MSF, H=0 LBA, H=C don't set new pos.
  Output: No data, only status.
  Info:	Used to play CD audio.
 	Games often seem to set the start position with command D8

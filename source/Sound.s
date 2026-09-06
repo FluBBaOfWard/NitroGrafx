@@ -180,7 +180,7 @@ mixCDData2:
 	ldr r4,sectorCountDown
 	subs r4,r4,r0
 sectLoop:
-	addmi r2,r2,#4
+	addmi r2,r2,#4				;@ GBA frames vs CD frames.
 	addsmi r4,r4,#2352/4
 	bmi sectLoop
 	str r2,[r3]
@@ -210,25 +210,26 @@ mixLoop01:
 	subs r0,r0,#1
 	bhi mixLoop01
 
-	str r6,[r7]					;@ cd_readptr
+	str r6,[r7]					;@ cdReadPtr
 	str r2,silenceWave
 
 	ldmfd sp!,{r0,r1,r4-r8}
 	bx lr
 ;@----------------------------------------------------------------------------
-mixLoop02:
+mixLoop02:						;@ Handle CD audio volume adjust.
+	ldr r2,[r1]
 	mov r4,r6,lsl#18			;@ 16kB
 	ldr r3,[r5,r4,lsr#18]
 	add r6,r6,#4
-	mov r2,r3,asr#16
-	muls r2,r8,r2
+
+	mov r4,r3,asr#16
+	muls r4,r8,r4
 	mov r3,r3,lsl#16
 	mov r3,r3,asr#16
 	muls r3,r8,r3
-	mov r2,r2,lsr#16
+	mov r4,r4,lsr#16
 	mov r3,r3,lsr#16
-	orr r3,r3,r2,lsl#16
-	ldr r2,[r1]
+	orr r3,r3,r4,lsl#16
 
 	and r4,r2,r3
 	eor r2,r2,r3
@@ -241,7 +242,7 @@ mixLoop02:
 	subs r0,r0,#1
 	bhi mixLoop02
 
-	str r6,[r7]					;@ cd_readptr
+	str r6,[r7]					;@ cdReadPtr
 	str r2,silenceWave
 
 	ldmfd sp!,{r0,r1,r4-r8}

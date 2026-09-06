@@ -33,13 +33,12 @@ Graphic:
 	Optimise tile(map), rendering.
 
 Sound:
-	Fix ADPCM emulation (MSM5205).
 	PSG waveforms are not signed, optimize! Is this different between revisions?
 	Check sound levels, figure out correct gain per level. Not -1.5dB per step.
 	PSG volume is only updated at 2kHz?
-	Only load 3k per frame before music starts playing.
+	Only load 2.5k per frame before music starts playing.
 	Load variable number of bytes?
-	Louder CD-sound. Add CD-Fade.
+	Louder CD-sound.
 	Optimise. Lower quality?
 	Add LFO emulation? (Hanii in the Sky, Juuouki, and Flash Hiders use LFO).
 

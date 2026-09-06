@@ -11,16 +11,9 @@
 #include "ARMH6280/H6280.i"
 #include "Equates.h"
 
-	.global cdInit
-	.global cdReset
-	.global CDROM_R
-	.global CDROM_W
-	.global updateCDROM
-	.global renderADPCM
 	.global bramAccess
 	.global currentPos
 	.global currentTrack
-	.global currentSeek
 	.global sectorPtr
 	.global cddaVolume
 	.global cdAudioPlaying
@@ -31,6 +24,13 @@
 	.global TGCD_D_Header
 	.global TGCD_M_Header
 	.global cdRomToc
+
+	.global cdInit
+	.global cdReset
+	.global CDROM_R
+	.global CDROM_W
+	.global updateCDROM
+	.global renderADPCM
 
 #define SCSISTATUS_OK				0x00
 #define SCSISTATUS_CHECKCONDITION	0x02
@@ -954,7 +954,6 @@ dmaOutPtr:	.long 0				;@ DMA data byte ptr
 dataOutPtr:	.long 0				;@ SCSI data byte ptr
 currentPos:	.long 0				;@ Current position on disc
 currentTrack: .long 0			;@ Current track
-currentSeek: .long 0			;@ Current image byte position
 dataLen:	.long 0				;@ SCSI data length in bytes
 sectorPtr:	.long 0				;@ Audio sector pointer, shift 2 right to get real value.
 sectorEnd:	.long 0				;@ Audio end sector pointer, shift 2 right to get real value.
@@ -1287,7 +1286,8 @@ writeSec:
 
 notTrack:
 	ldrb r0,[r4,#1]				;@ Play mode.
-	and r0,r0,#0x3F
+	ands r0,r0,#0x3F
+	strbeq r0,cdAudioPlaying
 	cmp r0,#4					;@ Don't change since previous?
 	strbne r0,cdPlayMode
 	ldrbeq r0,cdPlayMode
@@ -1303,8 +1303,8 @@ notTrack:
 	orr r1,r1,#0x20				;@ SCSICD_IRQ_DATA_TRANSFER_DONE
 	strb r1,cdIrqReq
 
-	mov r0,#0x10000
-	str r0,cddaVolume
+	mov r1,#0x10000
+	str r1,cddaVolume
 
 	adr r1,pcTxt
 	bl debugOutput_asm
@@ -1385,7 +1385,8 @@ writeSec2:
 
 notTrack2:
 	ldrb r0,[r4,#1]				;@ Play mode.
-	and r0,r0,#0x3F
+	ands r0,r0,#0x3F
+	strbeq r0,cdAudioPlaying
 	cmp r0,#4					;@ Don't change since previous?
 	strbne r0,cdPlayMode
 	ldrbeq r0,cdPlayMode
@@ -1433,7 +1434,7 @@ CMD_SubQ:					;@ Command 0xDD
 	ldrb r0,cdAudioPlaying
 	cmp r0,#0
 	movne r0,#0					;@ 0 if playing, 1 paused, 2 (search?) paused, 3 complete (stopped?).
-	moveq r0,#0x03				;@ 3 if not playing.
+	moveq r0,#0x03				;@ 3 if stopped, 2 paused.
 //	ldr r1,cdSeekTime
 //	cmp r1,#0
 //	movne r0,#0x01
@@ -1664,7 +1665,7 @@ Track2LBA:					;@ r0 input & output, uses r1-r2.
 	ldr r2,tgcdBase
 	ldrb r1,[r2,#cdTOCTrackCount]	;@ Last track
 	cmp r1,r0
-	addmi r2,r2,#8
+	addmi r2,r2,#4
 	addpl r2,r2,r0,lsl#3		;@ (Track number x 8)
 
 	ldrb r0,[r2,#9]				;@ LBA for this track
