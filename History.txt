@@ -2,9 +2,10 @@ NitroGrafx revision history
 -=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 
-V0.9.1 - 2026-09-05 (FluBBa)
-	Added support for PSG sample playing.
-	Added support for CD-ROM ADPCM.
+V0.9.1 - 2026-09-06 (FluBBa)
+	Added PSG sample playing.
+	Added CD-ROM ADPCM.
+	Added CD audio fade.
 	Fixed seek times for CD-ROM.
 	Ported from devkitARM to BlocksDS, smaller binary.
 

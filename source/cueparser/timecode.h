@@ -9,6 +9,6 @@
  * non-timecode junk. Recognizes simple values like "0" (interpreted as
  * "00:00:00"), "1:2" ("00:01:02") etc.
  * Returns -1 on error (argument NULL or some value out of range) */
-long tc2fr(const char *);
+long tc2fr(const char *tc);
 
 #endif // !TIMECODE_H

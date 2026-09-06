@@ -22,6 +22,7 @@
 	.global currentTrack
 	.global currentSeek
 	.global sectorPtr
+	.global cddaVolume
 	.global cdAudioPlaying
 	.global cdSeekTime
 	.global isoBase
@@ -226,6 +227,12 @@ updateCDROM:				;@ Called every frame
 	cmp r0,#0
 	beq noCDAudio
 	strb r0,cdAudioPlaying
+
+	ldr r0,cddaVolume
+	ldr r1,cddaFade
+	subs r0,r0,r1
+	movmi r0,#0
+	str r0,cddaVolume
 
 	blx CD_FillBuffer
 	mov r0,#0
@@ -534,8 +541,8 @@ CD05_R:						;@ CD sound low(?) byte
 ;@	mov r11,r11					;@ No$GBA Debugg
 	ldrb r0,cdIrqReq
 	tst r0,#0x02				;@ L/R bit
-	ldrbeq r0,amplitude
-	ldrbne r0,amplitude+2
+	ldrbeq r0,cdSample
+	ldrbne r0,cdSample+2
 	bx lr
 ;@----------------------------------------------------------------------------
 CD06_R:						;@ CD sound high(?) byte
@@ -543,8 +550,8 @@ CD06_R:						;@ CD sound high(?) byte
 ;@	mov r11,r11					;@ No$GBA Debugg
 	ldrb r0,cdIrqReq
 	tst r0,#0x02				;@ L/R bit
-	ldrbeq r0,amplitude+1
-	ldrbne r0,amplitude+3
+	ldrbeq r0,cdSample+1
+	ldrbne r0,cdSample+3
 	bx lr
 ;@----------------------------------------------------------------------------
 CD07_R:						;@ Read Sub Q-Channel, clear
@@ -753,6 +760,8 @@ getCommand:
 	beq CMD_SubQ
 	cmp r1,#0xDE				;@ Get Info
 	beq CMD_GetInfo
+	cmp r1,#0xFF				;@ Abort
+	beq CMD_Abort
 	b CMD_Unknown
 
 sendStatus:
@@ -801,7 +810,7 @@ CD05_W:						;@ Start CD sound fetching
 	ldr r2,=cdBuffer
 	mov r1,r1,lsl#18			;@ 16kB
 	ldrne r0,[r2,r1,lsr#18]
-	str r0,amplitude
+	str r0,cdSample
 	bx lr
 ;@----------------------------------------------------------------------------
 CD06_W:						;@ PCM Audio high, R/O.
@@ -882,9 +891,6 @@ CD0D_W:						;@ ADPCM adr control
 	strne r2,adPtr
 	strne r2,adWrPtr
 	strne r2,adRdPtr
-	stmfd sp!,{r0,lr}
-	blne adpcmReset
-	ldmfd sp!,{r0,lr}
 	tst r1,#0x60
 	ldrb r1,cdIrqReq
 	bicne r1,r1,#0x0C			;@ Clear ADPCM IRQ flags
@@ -902,6 +908,9 @@ CD0D_W:						;@ ADPCM adr control
 	str r0,adPlayTime
 	mov r0,r0,lsr#1
 	str r0,adHalfTime
+	stmfd sp!,{lr}
+	bl adpcmReset
+	ldmfd sp!,{lr}
 	adr r1,PS_txt
 	b debugOutput_asm
 
@@ -923,6 +932,15 @@ PB_txt:
 CD0F_W:						;@ CD Audio fade
 ;@----------------------------------------------------------------------------
 	strb r0,cdAudioFade
+	mov r1,#0
+	and r0,r0,#0xE
+	cmp r0,#0xC
+	ldreq r1,=0x10000/(60*2)	;@ ~2 seconds fade
+	cmp r0,#0x8
+	moveq r1,#0x10000/(60*8)	;@ ~8 seconds fade
+	str r1,cddaFade
+	mov r0,#0x10000
+	str r0,cddaVolume
 	adr r1,AF_txt
 	b debugOutput_asm
 //	bx lr
@@ -949,8 +967,10 @@ adWrPtr:	.long 0				;@ ADPCM write ptr
 adRdPtr:	.long 0				;@ ADPCM read ptr
 adPlayTime:	.long 0				;@ ADPCM play timer (for emulation)
 adHalfTime:	.long 0				;@ ADPCM play timer (for emulation)
-amplitude:	.long 0				;@ CD Audio amplitude
-ampPtr:		.long 0				;@ CD Audio amplitude pointer
+cddaVolume:	.long 0x10000		;@ Used by fade command.
+cddaFade:	.long 0				;@ Fade value
+cdSample:	.long 0				;@ CD Audio sample
+ampPtr:		.long 0				;@ CD Audio sample pointer
 
 scsiSignal:		.byte 0			;@ bit7-3		($1800)
 scsiData:		.byte 0			;@				($1801)
@@ -1283,6 +1303,9 @@ notTrack:
 	orr r1,r1,#0x20				;@ SCSICD_IRQ_DATA_TRANSFER_DONE
 	strb r1,cdIrqReq
 
+	mov r0,#0x10000
+	str r0,cddaVolume
+
 	adr r1,pcTxt
 	bl debugOutput_asm
 	ldmfd sp!,{r3-r5,lr}
@@ -1564,6 +1587,12 @@ trackInfo:
 	adrl r1,gitiTxt
 	b giBack
 
+;@----------------------------------------------------------------------------
+CMD_Abort:					;@ Command 0xFF
+;@----------------------------------------------------------------------------
+	mov r0,#0xC8				;@ SCSI data
+	strb r0,scsiSignal
+	b CMD_Unknown
 ;@----------------------------------------------------------------------------
 LBA2MSF:					;@ r0 input & output, uses r1-r3.
 ;@----------------------------------------------------------------------------

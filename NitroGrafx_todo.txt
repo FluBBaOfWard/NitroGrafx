@@ -1,8 +1,7 @@
 
 NitroGrafx To Do:
 -----------------
-	Add vertical offset to GUI.
-	Fix click when a cd track starts and stops playing.
+	Fix ADPCM frequency!
 	Exile needs 2kB BRAM only?
 
 	Turbo switches? Gun Boat. http://www.gamefaqs.com/tg16/588987-gunboat/faqs/27685
