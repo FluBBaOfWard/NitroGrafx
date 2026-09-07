@@ -1,7 +1,10 @@
 #ifdef __arm__
 
+	.global adpcmAccumulator
+
 	.global adpcmReset
 	.global adpcmConvert
+	.global adpcmConvert4Bit
 
 	.syntax unified
 	.arm
@@ -13,9 +16,9 @@
 adpcmReset:
 ;@----------------------------------------------------------------------------
 	mov r0,#0
-	str r0,accumulator
+	str r0,adpcmAccumulator
+	str r0,adpcmIndex
 	strb r0,adpcmOddEven
-	strb r0,adpcmIndex
 	bx lr
 
 ;@----------------------------------------------------------------------------
@@ -25,34 +28,38 @@ adpcmConvert:				;@ r0=adpcm data
 	eors r1,r1,#1
 	strb r1,adpcmOddEven
 	movne r0,r0,lsr#4
-
+;@----------------------------------------------------------------------------
+adpcmConvert4Bit:			;@ r0=adpcm data
+;@----------------------------------------------------------------------------
 	movs r0,r0,lsl#29			;@ Check top bit (sign)
 	mov r0,r0,lsr#29
-	ldrb r1,adpcmIndex
+	ldr r1,adpcmIndex
 	adr r2,msm5205Step
-	add r2,r2,r1,lsl#3+1
 	add r2,r2,r0,lsl#1
-	ldrh r2,[r2]
+	ldrh r2,[r2,r1]
 	rsbcs r2,r2,#0
 
 	adr r3,msm5205IndexShift
 	ldrsb r3,[r3,r0]
 
-	adds r1,r1,r3
+	adds r1,r1,r3,lsl#4
 	movmi r1,#0
-	cmp r1,#48
-	movpl r1,#48
-	strb r1,adpcmIndex
+	cmp r1,#48<<4
+	movpl r1,#48<<4
+	str r1,adpcmIndex
 
-	ldr r0,accumulator
+	ldr r0,adpcmAccumulator
 	add r0,r0,r2,lsl#20
-	str r0,accumulator
+	str r0,adpcmAccumulator
 	mov r0,r0,asr#1
 	orr r0,r0,r0,lsr#16
 
 	bx lr
 ;@----------------------------------------------------------------------------
 
+	.align 3
+msm5205IndexShift:
+	.byte -1, -1, -1, -1, 2, 4, 6, 8
 msm5205Step:
 	.short 0x002, 0x006, 0x00A, 0x00E, 0x012, 0x016, 0x01A, 0x01E
 	.short 0x002, 0x006, 0x00A, 0x00E, 0x013, 0x017, 0x01B, 0x01F
@@ -103,14 +110,12 @@ msm5205Step:
 	.short 0x0A0, 0x1E0, 0x321, 0x461, 0x5A2, 0x6E2, 0x823, 0x963
 	.short 0x0B0, 0x210, 0x371, 0x4D1, 0x633, 0x793, 0x8F4, 0xA54
 	.short 0x0C2, 0x246, 0x3CA, 0x54E, 0x6D2, 0x856, 0x9DA, 0xB5E
-msm5205IndexShift:
-	.byte -1, -1, -1, -1, 2, 4, 6, 8
 
-accumulator:
+adpcmAccumulator:
+	.long 0
+adpcmIndex:
 	.long 0
 adpcmOddEven:
-	.byte 0
-adpcmIndex:
 	.byte 0
 	.align 2
 

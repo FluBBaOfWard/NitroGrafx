@@ -103,6 +103,9 @@ cdReset:
 //	bl copyTCD
 	ldmfd sp!,{lr}
 
+	ldr r0,=44100
+	str r0,adFreqToCD
+
 	ldr r0,=cdIsBinCue
 	ldr r0,[r0]
 	cmp r0,#0
@@ -303,57 +306,61 @@ CD_Check_IRQ:				;@ Don´t use r0 as it may be used as return data.
 
 	bx lr
 ;@----------------------------------------------------------------------------
-renderADPCM:				;@ in r0 = len, r1 = dest, out r0 = rendered len.
+renderADPCM:				;@ in r0 = len, r1 = dest.
 ;@----------------------------------------------------------------------------
 	ldr r2,adLen
-	movs r2,r2,lsr#16
+	movs r2,r2,lsr#15
 	moveq r0,#0
 	bxeq lr
 
 	stmfd sp!,{r4-r11,lr}
 	mov r4,r0
 	mov r5,r1
-	mov r6,r2,lsl#16
+	mov r6,r2,lsl#15
 	ldrb r7,adpcmRate
+	ldrb r10,adpcmRateCount
 	and r7,r7,#0x0F
 	rsb r7,r7,#0x10
-	mul r0,r7,r2
-	cmp r4,r0,lsl#1
-	movpl r4,r0,lsl#1
-	stmfd sp!,{r4}
+	ldr r0,=adpcmAccumulator
+	ldr r0,[r0]
+	mov r0,r0,asr#1
+	orr r0,r0,r0,lsr#16
+
 	ldr r8,=CD_PCM_RAM
 	ldr r9,adRdPtr
+	ldr r11,adFreqToCD
+	cmp r10,#0
+	bne noFetch
 adpcmLoop:
-	ldrb r10,[r8,r9,lsr#16]
-	mov r0,r10
-	bl adpcmConvert
-	mov r1,r7
-adpcmInnerLoop:
+	subs r6,r6,#0x8000
+	bcc adEnd0
+	ldrb r0,[r8,r9,lsr#16]
+	tst r9,#0x8000				;@ Even or odd?
+	moveq r0,r0,lsr#4
+	add r9,r9,#0x8000
+	mov r10,r7
+	bl adpcmConvert4Bit
+noFetch:
+	subs r4,r4,#1
+	bcc adEnd
 	ldr r2,[r5]
 	add r2,r2,r0
 	str r2,[r5],#4
-	subs r1,r1,#1
-	bne adpcmInnerLoop
+	subs r11,r11,#32000<<16
+	addcc r11,r11,r11,lsl#16
+	bcs noFetch
+	subs r10,r10,#1
+	bne noFetch
 
-	mov r0,r10
-	bl adpcmConvert
-	mov r1,r7
-adpcmInnerLoop2:
-	ldr r2,[r5]
-	add r2,r2,r0
-	str r2,[r5],#4
-	subs r1,r1,#1
-	bne adpcmInnerLoop2
-
-	add r9,r9,#0x10000
-	subs r6,r6,#0x10000
-	beq adEnd
-	subs r4,r4,r7,lsl#1
-	bpl adpcmLoop
+	b adpcmLoop
+adEnd0:
+	mov r6,#0
 adEnd:
 	str r6,adLen
 	str r9,adRdPtr
-	ldmfd sp!,{r0,r4-r11,pc}
+	str r11,adFreqToCD
+	strb r10,adpcmRateCount
+	ldmfd sp!,{r4-r11,pc}
 ;@----------------------------------------------------------------------------
 AdpcmDMA:					;@ r0=length to transfer now.
 ;@----------------------------------------------------------------------------
@@ -910,6 +917,7 @@ CD0D_W:						;@ ADPCM adr control
 	str r0,adHalfTime
 	stmfd sp!,{lr}
 	bl adpcmReset
+	strb r0,adpcmRateCount
 	ldmfd sp!,{lr}
 	adr r1,PS_txt
 	b debugOutput_asm
@@ -970,6 +978,7 @@ cddaVolume:	.long 0x10000		;@ Used by fade command.
 cddaFade:	.long 0				;@ Fade value
 cdSample:	.long 0				;@ CD Audio sample
 ampPtr:		.long 0				;@ CD Audio sample pointer
+adFreqToCD:	.long 44100			;@ Counter for converting 32kHz to 44.1kHz
 
 scsiSignal:		.byte 0			;@ bit7-3		($1800)
 scsiData:		.byte 0			;@				($1801)
@@ -981,6 +990,7 @@ adLatch:		.byte 0			;@ ADPCM read latch ($180A)
 adDma:			.byte 0			;@ ADPCM DMA ctrl ($180B)
 adAdrCtrl:		.byte 0			;@ ADPCM address control ($180D)
 adpcmRate:		.byte 0			;@ ADPCM playback rate ($180E)
+adpcmRateCount:	.byte 0			;@ ADPCM playback rate counter
 adpcmStatus:	.byte 0			;@ ADPCM busy status.
 adpcmDmaOn:		.byte 0			;@ ADPCM -> CD DMA on?
 cdAudioFade:	.byte 0			;@ CD Audio fade ($180F)
