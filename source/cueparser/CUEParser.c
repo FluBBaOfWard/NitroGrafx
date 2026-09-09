@@ -325,8 +325,9 @@ CueSheet *readCue(const char *cuefile) {
 	startParser(cueString);
 	const CUETrackInfo *trackInf;
 	int i = 0;
+	cs->file[0] = 0;
 	while ((trackInf = nextTrack(i)) != NULL) {
-		if (i == 0) {
+		if (cs->file[0] == 0 && trackInf->trackMode != TRK_MODE_AUDIO) {
 			strlcpy(cs->file, trackInf->filename, 256);
 		}
 		TrackSpec *ts = &cs->tracks[i];

@@ -1510,6 +1510,8 @@ giLoop:
 	strbne r0,[r1,r2]
 	bne giLoop
 
+	stmfd sp!,{lr}
+	adr lr,giBack
 	adrl r2,scsiCmd
 	ldrb r0,[r2,#1]
 	cmp r0,#0
@@ -1520,7 +1522,6 @@ giLoop:
 	beq trackInfo
 	adrl r1,giukTxt
 giBack:
-	stmfd sp!,{lr}
 	bl debugOutput_asm
 	ldmfd sp!,{lr}
 	b SCSI_SendData
@@ -1528,28 +1529,27 @@ giBack:
 
 ;@--------------------------------
 firstLastTrack:
-	stmfd sp!,{r3-r4,lr}
-	ldr r4,tgcdBase
+	stmfd sp!,{r3,lr}
+	ldr r1,tgcdBase
 	mov r0,#0x01				;@ First Track
 	strb r0,scsiResponse
-	ldrb r0,[r4,#cdTOCTrackCount]	;@ Last Track
+	ldrb r0,[r1,#cdTOCTrackCount]	;@ Last Track
 	bl Hex2Bcd
 	strb r0,scsiResponse+1
 	adr r1,GIFL_txt
-	ldmfd sp!,{r3-r4,lr}
-	b giBack
+	ldmfd sp!,{r3,pc}
 GIFL_txt:
 	.string "GetInfo FL"
 	.align 2
 ;@--------------------------------
 totalTime:
-	stmfd sp!,{r3,r4,lr}
+	stmfd sp!,{r3,lr}
 
-	ldr r4,tgcdBase
-	ldrb r0,[r4,#cdTOCEndLBA0]	;@ Total len, LBA
-	ldrb r2,[r4,#cdTOCEndLBA1]
+	ldr r1,tgcdBase
+	ldrb r0,[r1,#cdTOCEndLBA0]	;@ Total len, LBA
+	ldrb r2,[r1,#cdTOCEndLBA1]
 	orr r0,r2,r0,lsl#8
-	ldrb r2,[r4,#cdTOCEndLBA2]
+	ldrb r2,[r1,#cdTOCEndLBA2]
 	orr r0,r2,r0,lsl#8
 
 	bl LBA2MSF
@@ -1560,11 +1560,12 @@ totalTime:
 	mov r0,r0,lsr#8
 	strb r0,scsiResponse		;@ Total minutes
 
-	ldmfd sp!,{r3,r4,lr}
 	adrl r1,gittTxt
-	b giBack
+	ldmfd sp!,{r3,pc}
 ;@--------------------------------
 trackInfo:
+	stmfd sp!,{r3,lr}
+
 	ldrb r0,[r2,#2]				;@ Track number
 	adrl r1,gitiTxt
 	and r2,r0,#0xf
@@ -1573,8 +1574,6 @@ trackInfo:
 	mov r2,r0,lsr#4
 	add r2,r2,#0x30
 	strb r2,[r1,#18]
-
-	stmfd sp!,{r3,lr}
 
 	bl Bcd2Hex					;@ r0 in & out
 
@@ -1594,9 +1593,8 @@ trackInfo:
 	mov r0,r0,lsr#8
 	strb r0,scsiResponse		;@ Track starting minutes
 
-	ldmfd sp!,{r3,lr}
 	adrl r1,gitiTxt
-	b giBack
+	ldmfd sp!,{r3,pc}
 
 ;@----------------------------------------------------------------------------
 CMD_Abort:					;@ Command 0xFF
