@@ -380,7 +380,7 @@ dmaLoop:
 	cmp r1,#0x88				;@ Data out?
 	bne adpcmEnd
 	tst r0,#0x40				;@ REQ set?
-	ldmfdeq sp!,{r3-r5,lr}		;@ return
+	ldmfdeq sp!,{r3-r5,pc}		;@ return
 	bl SCSI_SendData
 	strb r0,[r4,r3,lsr#16]
 	add r3,r3,#0x10000

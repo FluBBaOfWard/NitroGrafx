@@ -44,7 +44,7 @@ Jyuohki (J)/(Altered Beast): Ok
 Macross 2036 (J): Ok
 MineSweeper (J): Ok.
 Monster Lair: Ok.
-Rayxanber II (U): Palette issues on first Boss, corrupt "Game Over" screen.
+Rayxanber II (U): Palette issues on first Boss.
 Red Alert (J): Ok
 Road Spirits: Ok
 Space Fantasy Zone (J/U): Ok
@@ -60,6 +60,7 @@ Ys 3: Wanderers From Ys (U): ?
 Super CD-Rom games I've tested so far:
 --------------------------------------------------------------------------------
 Conan: Intro Ok
+Baby Jo - The Super Hero (J): Ok
 Cotton - Fantastic Night Dream (U): Ok
 Double Dragon 2: Ok
 Dracula X (J): Ok
@@ -74,6 +75,7 @@ Rayxanber III (J): Ok
 Riot Zone: Ok
 R-Type Complete CD (J): Ok
 Shadow of the Beast (U): Ok
+Steam Heart's (J): Tries to restart CDDA all the time.
 Winds Of Thunder (J): Ok
 
 
