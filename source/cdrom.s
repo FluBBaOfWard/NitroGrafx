@@ -218,7 +218,7 @@ updateCDROM:				;@ Called every frame
 	ldr r0,cdSeekTime
 	subs r0,r0,#1
 	strpl r0,cdSeekTime
-	bxhi lr
+	bhi noCDUpd
 
 	ldrb r1,scsiSignal
 	tst r1,#0x80
@@ -272,24 +272,16 @@ noCDAudio:
 	movne r0,#0xA00				;@ 2048*(75/60). CD frames/TV frames.
 	blne AdpcmDMA
 	ldmfd sp!,{r3,lr}
-
-	ldr r0,adPlayTime
-	cmp r0,#0
-	ble CD_Check_IRQ
-	ldrb r1,adpcmRate
-	add r1,r1,#0x01
-	ldrb r2,cdIrqReq
-	subs r0,r0,r1,lsl#7			;@ 5 should be pretty ok.
-	str r0,adPlayTime
-	orrcc r2,r2,#0x08			;@ ADPCM finnished playing.
-	biccc r2,r2,#0x04
-	ldr r1,adHalfTime
-	cmp r0,r1
-	movcc r1,#0
-	strcc r1,adHalfTime
-	orrcc r2,r2,#0x04			;@ ADPCM play half-finnished.
-	biccc r2,r2,#0x08
-	strb r2,cdIrqReq
+noCDUpd:
+//	ldr r0,adLen
+//	ldrb r2,cdIrqReq
+//	tst r0,#0x8000<<15
+//	bic r2,r2,#0x0C
+//	orreq r2,r2,#0x04			;@ ADPCM play half-finnished.
+//	cmp r0,#0
+//	biceq r2,r2,#0x04
+//	orreq r2,r2,#0x08			;@ ADPCM finnished playing.
+//	strb r2,cdIrqReq
 
 ;@----------------------------------------------------------------------------
 CD_Check_IRQ:				;@ Don´t use r0 as it may be used as return data.
@@ -308,15 +300,16 @@ CD_Check_IRQ:				;@ Don´t use r0 as it may be used as return data.
 ;@----------------------------------------------------------------------------
 renderADPCM:				;@ in r0 = len, r1 = dest.
 ;@----------------------------------------------------------------------------
-	ldr r2,adLen
-	movs r2,r2,lsr#15
-	moveq r0,#0
+	ldrb r2,adAdrCtrl
+	tst r2,#0x20				;@ Are we playing?
 	bxeq lr
+	tst r2,#0x80				;@ Reset?
+	bxne lr
 
 	stmfd sp!,{r4-r11,lr}
 	mov r4,r0
 	mov r5,r1
-	mov r6,r2,lsl#15
+	ldr r6,adLen
 	ldrb r7,adpcmRate
 	ldrb r10,adpcmRateCount
 	and r7,r7,#0x0F
@@ -332,7 +325,7 @@ renderADPCM:				;@ in r0 = len, r1 = dest.
 	cmp r10,#0
 	bne noFetch
 adpcmLoop:
-	subs r6,r6,#0x8000
+	subs r6,r6,#0x4000
 	bcc adEnd0
 	ldrb r0,[r8,r9,lsr#16]
 	tst r9,#0x8000				;@ Even or odd?
@@ -354,8 +347,19 @@ noFetch:
 
 	b adpcmLoop
 adEnd0:
+	ldrb r0,adAdrCtrl
+	bic r0,r0,#0x20				;@ Stop playing.
+	strb r0,adAdrCtrl
 	mov r6,#0
 adEnd:
+	ldrb r1,cdIrqReq
+	tst r6,#0x18000<<15
+	bicne r1,r1,#0x04
+	orreq r1,r1,#0x04			;@ ADPCM play half-finnished.
+	cmp r6,#0
+	orreq r1,r1,#0x08			;@ ADPCM finnished playing.
+	strb r1,cdIrqReq
+
 	str r6,adLen
 	str r9,adRdPtr
 	str r11,adFreqToCD
@@ -372,6 +376,9 @@ AdpcmDMA:					;@ r0=length to transfer now.
 	strb r0,adpcmStatus
 	mov r0,#0x04				;@ ADPCM DMA busy writing.
 	strb r0,adpcmDmaOn
+	ldr r0,adLen
+	add r0,r0,r5,lsl#15
+	str r0,adLen
 	ldr r3,adWrPtr				;@ ADPCM write pointer
 	ldr r4,=CD_PCM_RAM			;@ ADPCM-RAM base
 dmaLoop:
@@ -453,6 +460,7 @@ moreCD_R:					;@ 0x18CX
 	and r0,addy,#0x07
 	ldrb r0,[r1,r0]
 	bx lr
+	.pool
 ;@----------------------------------------------------------------------------
 ;@ 0x18C0 = Enable SCD RAM.
 ;@ 0x18C3/0x18C7 = Number of 64kB blocks
@@ -484,9 +492,9 @@ cdWriteTbl:
 	.long CD08_W				;@ ADPCM address (LSB) / CD data
 	.long CD09_W				;@ ADPCM address (MSB)
 	.long CD0A_W				;@ ADPCM RAM data port
-	.long CD0B_W				;@ ADPCM DMA control
+	.long CD0B_W				;@ ADPCM DMA
 	.long CD0C_W				;@ ADPCM status
-	.long CD0D_W				;@ ADPCM address control
+	.long CD0D_W				;@ ADPCM control
 	.long CD0E_W				;@ ADPCM playback rate
 	.long CD0F_W				;@ ADPCM and CD audio fade timer
 ;@----------------------------------------------------------------------------
@@ -532,11 +540,9 @@ CD03_R:						;@ IRQ request
 	mov r0,#0
 	strb r0,bramAccess			;@ BRAM is locked if 0x1803 is read
 	ldrb r0,cdIrqReq
-//	bic r1,r0,#0x60
 	eor r1,r0,#0x02				;@ L/R bit should be toggled.
 	strb r1,cdIrqReq
 	bx lr
-//	b CD_Check_IRQ
 ;@----------------------------------------------------------------------------
 CD04_R:						;@ SCSI sub I/O
 ;@----------------------------------------------------------------------------
@@ -579,8 +585,7 @@ CD08_R:						;@ CD data
 //	bne noRead08
 noRead08:
 //	adr r0,RD_txt + 0x08*8
-//	vbadebugg
-	mov r0,#0
+	ldrb r0,scsiData
 	bx lr
 ;@----------------------------------------------------------------------------
 CD09_R:
@@ -592,23 +597,37 @@ CD09_R:
 CD0A_R:						;@ ADPCM data read
 ;@----------------------------------------------------------------------------
 ;@	adr r0,RD_txt + 0x0A*8
-;@	vbadebugg
-
 	ldrb r0,adpcmStatus
 	orr r0,r0,#0x80				;@ Busy with last read.
 	strb r0,adpcmStatus
 
+	ldrb r1,adAdrCtrl
+	tst r1,#0x10				;@ Latch length?
+	ldreq r2,adLen
+	ldrne r2,adPtr
+	movne r2,r2,lsr#1
+	ldrb r1,cdIrqReq
+	bne rdLenLck
+	subs r2,r2,#0x1<<15			;@ Sub 1 from length.
+	strcs r2,adLen
+	orrcc r1,r1,#0x08			;@ ADPCM finnished playing.
+rdLenLck:
+	tst r2,#0x18000<<15
+	bicne r1,r1,#0x04
+	orreq r1,r1,#0x04			;@ ADPCM <32k left.
+	strb r1,cdIrqReq
+
 	ldr r0,adRdPtr
-	add r1,r0,#0x10000
-	str r1,adRdPtr
 	ldr r1,=CD_PCM_RAM
+	add r2,r0,#0x10000
+	str r2,adRdPtr
 	ldrb r1,[r1,r0,lsr#16]
 	ldrb r0,adLatch
 	strb r1,adLatch
 
 	bx lr
 ;@----------------------------------------------------------------------------
-CD0B_R:						;@ ADPCM DMA control
+CD0B_R:						;@ ADPCM DMA
 ;@----------------------------------------------------------------------------
 ;@	mov r11,r11					;@ No$GBA Debugg
 	ldrb r0,adDma
@@ -623,13 +642,15 @@ CD0C_R:						;@ ADPCM Status
 	bic r1,r0,#0x80
 	biceq r1,r1,#0x04
 	strb r1,adpcmStatus
-	ldr r1,adPlayTime
-	cmp r1,#0
-	orrle r0,#0x01
-	orrgt r0,#0x08				;@ 8 or 0
+	ldrb r1,cdIrqReq
+	tst r1,#0x08				;@ ADPCM finnished playing?
+	orrne r0,#0x01
+	ldrb r1,adAdrCtrl
+	tst r1,#0x20				;@ Are we playing?
+	orrne r0,#0x08
 	bx lr
 ;@----------------------------------------------------------------------------
-CD0D_R:
+CD0D_R:						;@ ADPCM control
 ;@----------------------------------------------------------------------------
 ;@	mov r11,r11					;@ No$GBA Debugg
 	ldrb r0,adAdrCtrl
@@ -644,7 +665,6 @@ CD0F_R:
 ;@----------------------------------------------------------------------------
 ;@	mov r11,r11					;@ No$GBA Debugg
 	ldrb r0,cdAudioFade
-	and r0,r0,#0x8F
 	bx lr
 
 
@@ -668,7 +688,7 @@ CD01_W:						;@ SCSI BUS DATA
 ;@----------------------------------------------------------------------------
 	ldrb r1,scsiSignal
 	tst r1,#0x08
-	strbeq r0,scsiData
+	strb r0,scsiData
 	bx lr
 /*
 WR_txt:
@@ -853,6 +873,23 @@ CD0A_W:						;@ ADPCM-RAM write
 	orr r0,r0,#0x04				;@ Busy with last write.
 	strb r0,adpcmStatus
 
+	ldrb r1,adAdrCtrl
+	tst r1,#0x10				;@ Latch length?
+	ldreq r2,adLen
+	ldrne r2,adPtr
+	movne r2,r2,lsr#1
+	addeq r0,r2,#0x1<<15		;@ Add 1 to length.
+	streq r0,adLen
+	ldrb r1,cdIrqReq
+	bne wrLenLck
+	cmp r2,#0
+	orreq r1,r1,#0x08			;@ ADPCM finnished playing.
+wrLenLck:
+	tst r2,#0x18000<<15
+	bicne r1,r1,#0x04
+	orreq r1,r1,#0x04			;@ ADPCM <32k left.
+	strb r1,cdIrqReq
+
 	bx lr
 ;@----------------------------------------------------------------------------
 CD0B_W:						;@ CD-ROM to ADPCM-RAM DMA
@@ -882,39 +919,26 @@ CD0D_W:						;@ ADPCM adr control
 	ldrb r1,adAdrCtrl
 	strb r0,adAdrCtrl
 	eor r1,r0,r1
-	and r0,r0,r1				;@ r0=bits set this time
-	bic r1,r1,r0				;@ r1=bits reset this time
-	ldr r2,adPtr
+	and r12,r0,r1				;@ r12=bits set this time
+	bic r1,r1,r12				;@ r1=bits reset this time
+	tst r12,#0x80
+	bne adReset
 
+	ldr r2,adPtr
 	tst r1,#0x03
 	strne r2,adWrPtr
 	tst r1,#0x0C
 	strne r2,adRdPtr
-	tst r1,#0x10
+	tst r0,#0x10
+	movne r2,r2,lsr#1
 	strne r2,adLen
-	tst r0,#0x80
-	movne r2,#0
-	strne r2,adLen
-	strne r2,adPtr
-	strne r2,adWrPtr
-	strne r2,adRdPtr
-	tst r1,#0x60
-	ldrb r1,cdIrqReq
-	bicne r1,r1,#0x0C			;@ Clear ADPCM IRQ flags
-	strb r1,cdIrqReq
+	ldrbne r2,cdIrqReq
+	bicne r2,r2,#0x08			;@ Clear ADPCM finnished flag
+	strbne r2,cdIrqReq
+	tst r1,#0x20
 	bne CD_Check_IRQ
-	tst r0,#0x60				;@ Was r1
+	tst r12,#0x20				;@ Start playing?
 	bxeq lr
-	ldrb r1,cdIrqReq
-	bic r1,r1,#0x0C				;@ Clear ADPCM IRQ flags
-	strb r1,cdIrqReq
-	ldr r0,adLen
-	movs r0,r0,lsr#16			;@ Just a made up number to count.
-//	orreq r0,r0,#0x10000		;@ This should be changed depending on the shift
-	add r0,r0,#1
-	str r0,adPlayTime
-	mov r0,r0,lsr#1
-	str r0,adHalfTime
 	stmfd sp!,{lr}
 	bl adpcmReset
 	strb r0,adpcmRateCount
@@ -922,13 +946,23 @@ CD0D_W:						;@ ADPCM adr control
 	adr r1,PS_txt
 	b debugOutput_asm
 
+adReset:
+	mov r0,#0
+	str r0,adLen
+	str r0,adPtr
+	str r0,adWrPtr
+	str r0,adRdPtr
+	ldrb r0,cdIrqReq
+	bic r0,r0,#0x0C				;@ Clear ADPCM IRQ flags
+	strb r0,cdIrqReq
+	bx lr
+
 PS_txt:
 	.string "ADPCM Play"
 	.align 2
 ;@----------------------------------------------------------------------------
 CD0E_W:						;@ ADPCM playback rate
 ;@----------------------------------------------------------------------------
-	and r0,r0,#0x0F
 	strb r0,adpcmRate
 	adr r1,PB_txt
 	b debugOutput_asm
@@ -969,11 +1003,9 @@ cddaStart:	.long 0				;@ Start position for cd audio (for repeat...).
 cdSeekTime:	.long 0				;@ Seek time in frames (when setting sector).
 
 adPtr:		.long 0				;@ ADPCM ptr	($1808-1809)
-adLen:		.long 0				;@ ADPCM length
+adLen:		.long 0				;@ ADPCM length, upper 17/18 bits
 adWrPtr:	.long 0				;@ ADPCM write ptr
 adRdPtr:	.long 0				;@ ADPCM read ptr
-adPlayTime:	.long 0				;@ ADPCM play timer (for emulation)
-adHalfTime:	.long 0				;@ ADPCM play timer (for emulation)
 cddaVolume:	.long 0x10000		;@ Used by fade command.
 cddaFade:	.long 0				;@ Fade value
 cdSample:	.long 0				;@ CD Audio sample

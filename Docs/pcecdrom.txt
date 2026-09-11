@@ -137,8 +137,8 @@
  Bit 6 CD to ADPCM DMA finnished? or 64kB? AD_LEN?
  Bit 5 CD read finnished? set in CD_PLAY/CD_SEARCH.
  Bit 4 ready to read SUBCH? on/off sense bit for the CD-ROM spindle motor?
- Bit 3 ADPCM playback finnished.
- Bit 2 ADPCM playback has played half of the samples (or 32kByte?).
+ Bit 3 ADPCM length has run out.
+ Bit 2 ADPCM length is < 32k.
  Bit 1 -
  Bit 0 -
 
@@ -225,7 +225,7 @@ P_INTMON	equ	$1803	;(R/O) interrupt monitor
  ----------------------------------------------------------------------------
 
  Writing to this port loads the lower 8 bits of a 16-bit address that
- can be copied to the ADPCM read or write pointers.
+ can be copied to the ADPCM read, write or length pointers.
 
  Several System Card functions which read a sector's worth of data at a
  time retrieve the data from an internal sector buffer through $1808.
@@ -236,7 +236,7 @@ P_INTMON	equ	$1803	;(R/O) interrupt monitor
  ----------------------------------------------------------------------------
 
  Writing to this port loads the upper 8 bits of a 16-bit address that
- can be copied to the ADPCM read or write pointers.
+ can be copied to the ADPCM read, write or length pointers.
 
 
  ----------------------------------------------------------------------------
@@ -290,7 +290,7 @@ P_TRCTL		equ	$180b	;(R/W) ADPCM data trans control
  I've observed that bit 7 is cleared in about 24 cycles in high-speed mode,
  immediately following a read from $180A.
 
- If bit 3 is set, the ADPCM controller is busy. (according to AD_STAT)
+ If bit 3 is set, the ADPCM controller is busy playing. (according to AD_STAT)
 
  If bit 2 is set, the ADPCM controller is busy processing the last write
  to $180A. The BIOS polls this bit after each write to $180A in AD_WRITE.

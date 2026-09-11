@@ -107,6 +107,7 @@ rawRom:
 //	.incbin "roms/Takeda Shingen (J).pce"
 //	.incbin "roms/TV Sports Basketball (U).pce"
 //	.incbin "roms/Valkyrie no Densetsu (J).pce"
+//	.incbin "roms/verificator.pce"
 //	.incbin "roms/Wonder Momo (J).pce"
 //	.incbin "roms/Youkai Douchuuki (J).pce"
 rawRomEnd:
