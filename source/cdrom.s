@@ -273,15 +273,6 @@ noCDAudio:
 	blne AdpcmDMA
 	ldmfd sp!,{r3,lr}
 noCDUpd:
-//	ldr r0,adLen
-//	ldrb r2,cdIrqReq
-//	tst r0,#0x8000<<15
-//	bic r2,r2,#0x0C
-//	orreq r2,r2,#0x04			;@ ADPCM play half-finnished.
-//	cmp r0,#0
-//	biceq r2,r2,#0x04
-//	orreq r2,r2,#0x08			;@ ADPCM finnished playing.
-//	strb r2,cdIrqReq
 
 ;@----------------------------------------------------------------------------
 CD_Check_IRQ:				;@ Don´t use r0 as it may be used as return data.
@@ -311,9 +302,9 @@ renderADPCM:				;@ in r0 = len, r1 = dest.
 	mov r5,r1
 	ldr r6,adLen
 	ldrb r7,adpcmRate
-	ldrb r10,adpcmRateCount
+	ldrb r0,adpcmRateCount
 	and r7,r7,#0x0F
-	rsb r7,r7,#0x10
+	orr r7,r7,r0,lsl#28
 	ldr r0,=adpcmAccumulator
 	ldr r0,[r0]
 	mov r0,r0,asr#1
@@ -321,17 +312,16 @@ renderADPCM:				;@ in r0 = len, r1 = dest.
 
 	ldr r8,=CD_PCM_RAM
 	ldr r9,adRdPtr
-	ldr r11,adFreqToCD
-	cmp r10,#0
+	ldr r10,adFreqToCD
+	ldr r11,=32120<<16
+	tst r7,#0xF0000000
 	bne noFetch
 adpcmLoop:
-	subs r6,r6,#0x4000
-	bcc adEnd0
 	ldrb r0,[r8,r9,lsr#16]
 	tst r9,#0x8000				;@ Even or odd?
 	moveq r0,r0,lsr#4
 	add r9,r9,#0x8000
-	mov r10,r7
+	orr r7,r7,r7,lsl#28
 	bl adpcmConvert4Bit
 noFetch:
 	subs r4,r4,#1
@@ -339,18 +329,19 @@ noFetch:
 	ldr r2,[r5]
 	add r2,r2,r0
 	str r2,[r5],#4
-	subs r11,r11,#32000<<16
-	addcc r11,r11,r11,lsl#16
+	subs r10,r10,r11
+	addcc r10,r10,r10,lsl#16
 	bcs noFetch
-	subs r10,r10,#1
-	bne noFetch
+	adds r7,r7,#0x10000000
+	bcc noFetch
 
-	b adpcmLoop
+	subs r6,r6,#0x4000
+	bne adpcmLoop
 adEnd0:
 	ldrb r0,adAdrCtrl
-	bic r0,r0,#0x20				;@ Stop playing.
+	tst r0,#0x40				;@ Stop playing?
+	bicne r0,r0,#0x20			;@ Stop playing.
 	strb r0,adAdrCtrl
-	mov r6,#0
 adEnd:
 	ldrb r1,cdIrqReq
 	tst r6,#0x18000<<15
@@ -362,8 +353,9 @@ adEnd:
 
 	str r6,adLen
 	str r9,adRdPtr
-	str r11,adFreqToCD
-	strb r10,adpcmRateCount
+	str r10,adFreqToCD
+	mov r7,r7,lsr#28
+	strb r7,adpcmRateCount
 	ldmfd sp!,{r4-r11,pc}
 ;@----------------------------------------------------------------------------
 AdpcmDMA:					;@ r0=length to transfer now.
@@ -385,26 +377,25 @@ dmaLoop:
 	ldrb r0,scsiSignal
 	and r1,r0,#0xBF
 	cmp r1,#0x88				;@ Data out?
-	bne adpcmEnd
+	bne dmaEnd
 	tst r0,#0x40				;@ REQ set?
-	ldmfdeq sp!,{r3-r5,pc}		;@ return
+	beq dmaSkip
 	bl SCSI_SendData
 	strb r0,[r4,r3,lsr#16]
 	add r3,r3,#0x10000
 	subs r5,r5,#1
 	bhi dmaLoop
+dmaSkip:
 	str r3,adWrPtr
-	ldmfd sp!,{r3-r5,lr}
-	bx lr
-adpcmEnd:
+	ldmfd sp!,{r3-r5,pc}
+dmaEnd:
 	str r3,adWrPtr
 	mov r0,#0x00				;@ ADPCM DMA _not_ busy writing.
 	strb r0,adpcmDmaOn
 	ldrb r0,adDma
 	bic r0,r0,#1
 	strb r0,adDma
-	ldmfd sp!,{r3-r5,lr}
-	bx lr
+	ldmfd sp!,{r3-r5,pc}
 	.pool
 ;@----------------------------------------------------------------------------
 CDROM_R:					;@ 0x1800-0x180f
@@ -582,10 +573,10 @@ CD08_R:						;@ CD data
 	ldrb r0,scsiSignal
 	cmp r0,#0xC8				;@ Data out?
 	beq SCSI_SendData
-//	bne noRead08
-noRead08:
+	tst r0,#0x08
+	ldrbeq r0,scsiData
+	movne r0,#0
 //	adr r0,RD_txt + 0x08*8
-	ldrb r0,scsiData
 	bx lr
 ;@----------------------------------------------------------------------------
 CD09_R:
@@ -894,14 +885,12 @@ wrLenLck:
 ;@----------------------------------------------------------------------------
 CD0B_W:						;@ CD-ROM to ADPCM-RAM DMA
 ;@----------------------------------------------------------------------------
+	ldr r1,dataLen
+	cmp r1,#0
+	biceq r0,r0,#1
 	strb r0,adDma
 	ands r0,r0,#0x03
 	bxeq lr
-
-	stmfd sp!,{lr}
-	mov r0,#0xA00				;@ 2048*(75/60). CD frames/TV frames.
-	bl AdpcmDMA
-	ldmfd sp!,{lr}
 
 	adr r1,CDMA_txt
 	b debugOutput_asm
