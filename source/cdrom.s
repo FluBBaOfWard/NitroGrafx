@@ -222,7 +222,7 @@ updateCDROM:				;@ Called every frame
 
 	ldrb r1,scsiSignal
 	tst r1,#0x80
-	orrne r1,r1,#0x40				;@ Ready for more data.
+	orrne r1,r1,#0x40			;@ Ready for more data.
 	strb r1,scsiSignal
 
 	stmfd sp!,{r3,lr}
@@ -230,12 +230,6 @@ updateCDROM:				;@ Called every frame
 	cmp r0,#0
 	beq noCDAudio
 	strb r0,cdAudioPlaying
-
-	ldr r0,cddaVolume
-	ldr r1,cddaFade
-	subs r0,r0,r1
-	movmi r0,#0
-	str r0,cddaVolume
 
 	blx CD_FillBuffer
 	mov r0,#0
@@ -273,6 +267,22 @@ noCDAudio:
 	blne AdpcmDMA
 	ldmfd sp!,{r3,lr}
 noCDUpd:
+	ldrb r2,fadeCtrl
+	tst r2,#0x8					;@ Enabled?
+	beq noFade
+	ldr r0,fadeVolume
+	ldr r1,cddaFade
+	subs r0,r0,r1
+	movmi r0,#0
+	str r0,fadeVolume
+	mov r1,#0x10000
+	tst r2,#0x2
+	streq r0,cddaVolume
+	strne r1,cddaVolume
+	streq r1,adpcmVolume
+	strne r0,adpcmVolume
+noFade:
+
 
 ;@----------------------------------------------------------------------------
 CD_Check_IRQ:				;@ Don´t use r0 as it may be used as return data.
@@ -330,8 +340,8 @@ noFetch:
 	add r2,r2,r0
 	str r2,[r5],#4
 	subs r10,r10,r11
-	addcc r10,r10,r10,lsl#16
 	bcs noFetch
+	add r10,r10,r10,lsl#16
 	adds r7,r7,#0x10000000
 	bcc noFetch
 
@@ -433,7 +443,7 @@ cdReadTbl:
 ;@----------------------------------------------------------------------------
 moreCD_R:					;@ 0x18CX
 ;@----------------------------------------------------------------------------
-	mov r11,r11					;@ No$GBA Debugg
+;@	mov r11,r11					;@ No$GBA Debugg
 	and r0,addy,#0x03F8
 	cmp r0,#0xC0
 	bne emptyRead
@@ -492,7 +502,7 @@ cdWriteTbl:
 moreCD_W:					;@ 0x18C0
 ;@ 0x18C0 = enable SCD RAM.
 ;@----------------------------------------------------------------------------
-	mov r11,r11					;@ No$GBA Debugg
+;@	mov r11,r11					;@ No$GBA Debugg
 	bic r1,addy,#0xF800
 	cmp r1,#0xC0
 	bne emptyWrite
@@ -500,7 +510,7 @@ moreCD_W:					;@ 0x18C0
 	ldrb r1,[r1]
 	tst r1,#SCD_DEVICE
 	beq emptyWrite
-	mov r11,r11					;@ No$GBA Debugg
+;@	mov r11,r11					;@ No$GBA Debugg
 	cmp r0,#0xAA				;@ Enable Super CD-Rom? Bios writes 0xAA and then 0x55.
 	cmp r0,#0x55				;@ Enable Super CD-Rom?
 	bxne lr
@@ -655,7 +665,7 @@ CD0E_R:
 CD0F_R:
 ;@----------------------------------------------------------------------------
 ;@	mov r11,r11					;@ No$GBA Debugg
-	ldrb r0,cdAudioFade
+	ldrb r0,fadeCtrl
 	bx lr
 
 
@@ -903,28 +913,34 @@ CD0C_W:						;@ ADPCM status (Read Only)
 ;@	mov r11,r11					;@ No$GBA Debugg
 	bx lr
 ;@----------------------------------------------------------------------------
-CD0D_W:						;@ ADPCM adr control
+CD0D_W:						;@ ADPCM control
 ;@----------------------------------------------------------------------------
 	ldrb r1,adAdrCtrl
 	strb r0,adAdrCtrl
-	eor r1,r0,r1
-	and r12,r0,r1				;@ r12=bits set this time
-	bic r1,r1,r12				;@ r1=bits reset this time
+	eor r1,r1,r0
+	and r12,r1,r0				;@ r12=bits set this time
 	tst r12,#0x80
 	bne adReset
 
 	ldr r2,adPtr
-	tst r1,#0x03
-	strne r2,adWrPtr
-	tst r1,#0x0C
-	strne r2,adRdPtr
+	tst r0,r0,lsr#1
+	tst r12,#0x2
+	movne r1,r2
+	subcc r1,r1,#0x10000
+	strne r1,adWrPtr
+
+	tst r0,r0,lsr#3
+	tst r12,#0x8
+	movne r1,r2
+	subcc r1,r1,#0x10000
+	strne r1,adRdPtr
+
 	tst r0,#0x10
 	movne r2,r2,lsr#1
 	strne r2,adLen
 	ldrbne r2,cdIrqReq
 	bicne r2,r2,#0x08			;@ Clear ADPCM finnished flag
 	strbne r2,cdIrqReq
-	tst r1,#0x20
 	bne CD_Check_IRQ
 	tst r12,#0x20				;@ Start playing?
 	bxeq lr
@@ -937,10 +953,10 @@ CD0D_W:						;@ ADPCM adr control
 
 adReset:
 	mov r0,#0
-	str r0,adLen
 	str r0,adPtr
 	str r0,adWrPtr
 	str r0,adRdPtr
+	str r0,adLen
 	ldrb r0,cdIrqReq
 	bic r0,r0,#0x0C				;@ Clear ADPCM IRQ flags
 	strb r0,cdIrqReq
@@ -960,18 +976,19 @@ PB_txt:
 	.string "ADPCM Rate"
 	.align 2
 ;@----------------------------------------------------------------------------
-CD0F_W:						;@ CD Audio fade
+CD0F_W:						;@ Audio fade out
 ;@----------------------------------------------------------------------------
-	strb r0,cdAudioFade
-	mov r1,#0
-	and r0,r0,#0xE
-	cmp r0,#0xC
-	ldreq r1,=0x10000/(60*2)	;@ ~2 seconds fade
-	cmp r0,#0x8
+	strb r0,fadeCtrl
+	tst r0,#0x4
+	ldrne r1,=0x10000/(60*2)	;@ ~2 seconds fade
 	moveq r1,#0x10000/(60*8)	;@ ~8 seconds fade
+	tst r0,#0x8					;@ Enabled?
+	moveq r1,#0
 	str r1,cddaFade
-	mov r0,#0x10000
-	str r0,cddaVolume
+	moveq r1,#0x10000
+	streq r1,fadeVolume
+	streq r1,cddaVolume
+	streq r1,adpcmVolume
 	adr r1,AF_txt
 	b debugOutput_asm
 //	bx lr
@@ -992,11 +1009,13 @@ cddaStart:	.long 0				;@ Start position for cd audio (for repeat...).
 cdSeekTime:	.long 0				;@ Seek time in frames (when setting sector).
 
 adPtr:		.long 0				;@ ADPCM ptr	($1808-1809)
-adLen:		.long 0				;@ ADPCM length, upper 17/18 bits
-adWrPtr:	.long 0				;@ ADPCM write ptr
-adRdPtr:	.long 0				;@ ADPCM read ptr
-cddaVolume:	.long 0x10000		;@ Used by fade command.
+adLen:		.long 0				;@ ADPCM length, in upper 17/18 bits
+adWrPtr:	.long 0				;@ ADPCM write ptr in upper 16bits
+adRdPtr:	.long 0				;@ ADPCM read ptr in upper 16bits
 cddaFade:	.long 0				;@ Fade value
+fadeVolume:	.long 0x10000		;@ Used by fade command.
+cddaVolume:	.long 0x10000		;@ Used by fade command.
+adpcmVolume:.long 0x10000		;@ Used by fade command.
 cdSample:	.long 0				;@ CD Audio sample
 ampPtr:		.long 0				;@ CD Audio sample pointer
 adFreqToCD:	.long 44100			;@ Counter for converting 32kHz to 44.1kHz
@@ -1014,8 +1033,7 @@ adpcmRate:		.byte 0			;@ ADPCM playback rate ($180E)
 adpcmRateCount:	.byte 0			;@ ADPCM playback rate counter
 adpcmStatus:	.byte 0			;@ ADPCM busy status.
 adpcmDmaOn:		.byte 0			;@ ADPCM -> CD DMA on?
-cdAudioFade:	.byte 0			;@ CD Audio fade ($180F)
-cdDAStatus:		.byte 0			;@ gomwing
+fadeCtrl:		.byte 0			;@ ADPCM/CD Audio fade ($180F)
 cdPlayMode:		.byte 0			;@ Which audio play mode?
 cdAudioPlaying:	.byte 0			;@ Is cd audio playing?
 cdAudioRepeat:	.byte 0			;@ Should music repeat after completion?
@@ -1335,7 +1353,7 @@ notTrack:
 	strb r1,cdIrqReq
 
 	mov r1,#0x10000
-	str r1,cddaVolume
+	str r1,fadeVolume
 
 	adr r1,pcTxt
 	bl debugOutput_asm

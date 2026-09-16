@@ -1,11 +1,12 @@
 
 NitroGrafx To Do:
 -----------------
-	Exile needs 2kB BRAM only?
+	Exile needs 2kB BRAM only? Add separate save files for each (CD) game.
+	Add support for multiple files for CD.
+	Add ADPCM fade, bit1 is CD/ADPCM.
+	Make sure CD audio is silent when no audio tracks are present.
 
 	Turbo switches? Gun Boat. http://www.gamefaqs.com/tg16/588987-gunboat/faqs/27685
-	Investigate track-end/repeat, stop on track crossing.
-		Run the music player on the console.
 	Savestates for CD games as well. Write/load every part by itself.
 	Fix TAM/TMA #$00
 	Check the Games Express games. Data in track 1 is the problem?

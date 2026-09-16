@@ -392,10 +392,10 @@ P_TRCTL		equ	$180b	;(R/W) ADPCM data trans control
  Bit 6 -
  Bit 5 -
  Bit 4 -
- Bit 3 Fadeout
- Bit 2 TC SEL
- Bit 1 AD/LIN
- Bit 0 MUTE
+ Bit 3 Fadeout - Enable fade
+ Bit 2 TC SEL  - Fast / slow fade
+ Bit 1 AD/LIN  - Affect ADPCM or CDDA
+ Bit 0 MUTE    - Directly mute?
 
 
  ----------------------------------------------------------------------------
