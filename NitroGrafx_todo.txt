@@ -1,10 +1,11 @@
 
 NitroGrafx To Do:
 -----------------
-	Exile needs 2kB BRAM only? Add separate save files for each (CD) game.
+	Add early exit for CPU by setting 2 top bits. (check CD irq test)
 	Add support for multiple files for CD.
 	Add ADPCM fade, bit1 is CD/ADPCM.
 	Make sure CD audio is silent when no audio tracks are present.
+	Exile needs 2kB BRAM only? Add separate save files for each (CD) game.
 
 	Turbo switches? Gun Boat. http://www.gamefaqs.com/tg16/588987-gunboat/faqs/27685
 	Savestates for CD games as well. Write/load every part by itself.

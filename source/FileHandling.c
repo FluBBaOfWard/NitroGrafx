@@ -17,7 +17,6 @@
 #include "Gfx.h"
 #include "io.h"
 
-#define STATESIZE (0x2000+0x2000+0x10600+0x40+80+0x160+4)
 static const char *const folderName = "nitrografx";
 static const char *const settingName = "settings.cfg";
 static const char *const bramName = "nitrografx.brm";
@@ -27,7 +26,7 @@ bool hucardLoaded = false;
 
 int cdReadPtr;
 int cdIsBinCue;
-char cdBuffer[0x4000];
+char cdBuffer[0x2000];
 
 static FILE *cdFile = NULL;
 static int cdWritePtr;

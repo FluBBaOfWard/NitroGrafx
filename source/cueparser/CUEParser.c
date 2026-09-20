@@ -240,7 +240,8 @@ CueFileType parseFileMode(const char *src) {
 		return FILE_TYPE_MOTOROLA;
 	else if (strncasecmp(src, "MP3", 3) == 0)
 		return FILE_TYPE_MP3;
-	else if (strncasecmp(src, "WAV", 3) == 0)
+	else if (strncasecmp(src, "WAV", 3) == 0
+			 || strncasecmp(src, "WAVE", 4) == 0)
 		return FILE_TYPE_WAVE;
 	else if (strncasecmp(src, "AIFF", 4) == 0)
 		return FILE_TYPE_AIFF;

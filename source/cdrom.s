@@ -224,6 +224,12 @@ updateCDROM:				;@ Called every frame
 	tst r1,#0x80
 	orrne r1,r1,#0x40			;@ Ready for more data.
 	strb r1,scsiSignal
+	ldr r0,dataLen
+	ldrb r1,cdIrqReq
+	cmp r0,#0
+	orrne r1,r1,#0x40			;@ CD Data Ready
+	orreq r1,r1,#0x20
+	strb r1,cdIrqReq
 
 	stmfd sp!,{r3,lr}
 	ldrb r0,cdPlayMode
@@ -267,6 +273,8 @@ noCDAudio:
 	blne AdpcmDMA
 	ldmfd sp!,{r3,lr}
 noCDUpd:
+	mov r0,#0
+	strb r0,adpcmStatus
 	ldrb r2,fadeCtrl
 	tst r2,#0x8					;@ Enabled?
 	beq noFade
@@ -370,17 +378,15 @@ adEnd:
 ;@----------------------------------------------------------------------------
 AdpcmDMA:					;@ r0=length to transfer now.
 ;@----------------------------------------------------------------------------
-	stmfd sp!,{r3-r5,lr}
+	stmfd sp!,{r3-r6,lr}
 
 	mov r5,r0
+	mov r6,r0
 	ldrb r0,adpcmStatus
 	orr r0,r0,#0x04				;@ Busy with last write.
 	strb r0,adpcmStatus
 	mov r0,#0x04				;@ ADPCM DMA busy writing.
 	strb r0,adpcmDmaOn
-	ldr r0,adLen
-	add r0,r0,r5,lsl#15
-	str r0,adLen
 	ldr r3,adWrPtr				;@ ADPCM write pointer
 	ldr r4,=CD_PCM_RAM			;@ ADPCM-RAM base
 dmaLoop:
@@ -395,17 +401,28 @@ dmaLoop:
 	add r3,r3,#0x10000
 	subs r5,r5,#1
 	bhi dmaLoop
-dmaSkip:
-	str r3,adWrPtr
-	ldmfd sp!,{r3-r5,pc}
+	b dmaSkip
 dmaEnd:
-	str r3,adWrPtr
 	mov r0,#0x00				;@ ADPCM DMA _not_ busy writing.
 	strb r0,adpcmDmaOn
 	ldrb r0,adDma
 	bic r0,r0,#1
 	strb r0,adDma
-	ldmfd sp!,{r3-r5,pc}
+dmaSkip:
+	sub r6,r6,r5
+	ldr r0,adLen
+	ldrb r1,cdIrqReq
+	cmp r0,#0
+	orreq r1,r1,#0x08			;@ ADPCM finnished playing.
+	adds r0,r0,r6,lsl#15
+	orrcs r1,r1,#0x08			;@ ADPCM finnished playing.
+	str r0,adLen
+	tst r0,#0x18000<<15
+	bicne r1,r1,#0x04
+	orreq r1,r1,#0x04			;@ ADPCM <32k left.
+	strb r1,cdIrqReq
+	str r3,adWrPtr
+	ldmfd sp!,{r3-r6,pc}
 	.pool
 ;@----------------------------------------------------------------------------
 CDROM_R:					;@ 0x1800-0x180f
@@ -527,7 +544,10 @@ CD00_R:						;@ SCSI BUS SIGNALS
 ;@----------------------------------------------------------------------------
 CD01_R:						;@ SCSI BUS DATA
 ;@----------------------------------------------------------------------------
-	ldrb r0,scsiData
+	ldrb r0,scsiSignal
+	tst r0,#0x08
+	ldrbeq r0,scsiDataLatch
+	ldrbne r0,scsiData
 	bx lr
 ;@----------------------------------------------------------------------------
 CD02_R:						;@ IRQ mask & SCSI ACK
@@ -541,8 +561,7 @@ CD03_R:						;@ IRQ request
 	mov r0,#0
 	strb r0,bramAccess			;@ BRAM is locked if 0x1803 is read
 	ldrb r0,cdIrqReq
-	eor r1,r0,#0x02				;@ L/R bit should be toggled.
-	strb r1,cdIrqReq
+	eor r0,r0,#0x02				;@ L/R bit is inverted.
 	bx lr
 ;@----------------------------------------------------------------------------
 CD04_R:						;@ SCSI sub I/O
@@ -555,8 +574,8 @@ CD05_R:						;@ CD sound low(?) byte
 ;@	mov r11,r11					;@ No$GBA Debugg
 	ldrb r0,cdIrqReq
 	tst r0,#0x02				;@ L/R bit
-	ldrbeq r0,cdSample
-	ldrbne r0,cdSample+2
+	ldrbne r0,cdSample
+	ldrbeq r0,cdSample+2
 	bx lr
 ;@----------------------------------------------------------------------------
 CD06_R:						;@ CD sound high(?) byte
@@ -564,11 +583,11 @@ CD06_R:						;@ CD sound high(?) byte
 ;@	mov r11,r11					;@ No$GBA Debugg
 	ldrb r0,cdIrqReq
 	tst r0,#0x02				;@ L/R bit
-	ldrbeq r0,cdSample+1
-	ldrbne r0,cdSample+3
+	ldrbne r0,cdSample+1
+	ldrbeq r0,cdSample+3
 	bx lr
 ;@----------------------------------------------------------------------------
-CD07_R:						;@ Read Sub Q-Channel, clear
+CD07_R:						;@ Read Sub Channel, clear 
 ;@----------------------------------------------------------------------------
 ;@	mov r11,r11					;@ No$GBA Debugg
 	ldrb r0,cdIrqReq
@@ -584,8 +603,8 @@ CD08_R:						;@ CD data
 	cmp r0,#0xC8				;@ Data out?
 	beq SCSI_SendData
 	tst r0,#0x08
-	ldrbeq r0,scsiData
-	movne r0,#0
+	ldrbeq r0,scsiDataLatch
+	ldrbne r0,scsiData
 //	adr r0,RD_txt + 0x08*8
 	bx lr
 ;@----------------------------------------------------------------------------
@@ -664,7 +683,6 @@ CD0E_R:
 ;@----------------------------------------------------------------------------
 CD0F_R:
 ;@----------------------------------------------------------------------------
-;@	mov r11,r11					;@ No$GBA Debugg
 	ldrb r0,fadeCtrl
 	bx lr
 
@@ -687,9 +705,7 @@ CD00_W:						;@ SCSI BUS SIGNALS
 ;@----------------------------------------------------------------------------
 CD01_W:						;@ SCSI BUS DATA
 ;@----------------------------------------------------------------------------
-	ldrb r1,scsiSignal
-	tst r1,#0x08
-	strb r0,scsiData
+	strb r0,scsiDataLatch
 	bx lr
 /*
 WR_txt:
@@ -756,7 +772,7 @@ CD02_W:						;@ IRQ2 Mask & SCSI ACK
 getCommand:
 	adrl r1,scsiCmd
 	ldrb r2,scsiPtr
-	ldrb r0,scsiData
+	ldrb r0,scsiDataLatch
 	strb r0,[r1,r2]
 	add r2,r2,#1
 	ldrb r1,[r1]				;@ Get command
@@ -807,7 +823,7 @@ sendMessage:
 	strb r0,scsiSignal
 	bx lr
 ;@----------------------------------------------------------------------------
-CD03_W:						;@ Read Only
+CD03_W:						;@ IRQ request, R/O
 ;@----------------------------------------------------------------------------
 ;@	mov r11,r11					;@ No$GBA Debugg
 	bx lr
@@ -836,9 +852,12 @@ CD05_W:						;@ Start CD sound fetching
 	add r2,r2,#1
 	str r2,ampPtr
 	ldr r2,=cdBuffer
-	mov r1,r1,lsl#18			;@ 16kB
-	ldrne r0,[r2,r1,lsr#18]
+	mov r1,r1,lsl#19			;@ 8kB
+	ldrne r0,[r2,r1,lsr#19]
 	str r0,cdSample
+	ldrb r0,cdIrqReq
+	eor r0,r0,#0x02				;@ L/R bit should be toggled.
+	strb r0,cdIrqReq
 	bx lr
 ;@----------------------------------------------------------------------------
 CD06_W:						;@ PCM Audio high, R/O.
@@ -1021,7 +1040,8 @@ ampPtr:		.long 0				;@ CD Audio sample pointer
 adFreqToCD:	.long 44100			;@ Counter for converting 32kHz to 44.1kHz
 
 scsiSignal:		.byte 0			;@ bit7-3		($1800)
-scsiData:		.byte 0			;@				($1801)
+scsiData:		.byte 0			;@ From CD		($1801/1808)
+scsiDataLatch:	.byte 0			;@ From cpu
 cdIrqMask:		.byte 0			;@ bit7=cd-ack?	($1802)
 cdIrqReq:		.byte 0			;@				($1803)
 scsiReset:		.byte 0			;@				($1804)
@@ -1112,8 +1132,10 @@ calcSeekTime:
 ;@----------------------------------------------------------------------------
 	stmfd sp!,{r0,r4-r5,lr}
 	ldr r1,sectorPtr
-	mov r1,r1,lsr#2				;@ Remove the extra bits
-	mov r0,#5
+	subs r0,r0,r1,lsr#2			;@ Remove the extra bits
+	rsbmi r0,r0,#0
+	mov r0,r0,lsr#10
+	add r0,r0,#5
 	str r0,cdSeekTime
 	ldmfd sp!,{r0,r4-r5,pc}
 ;@----------------------------------------------------------------------------
@@ -1171,7 +1193,7 @@ noMoreScsiData:
 	ldrb r0,scsiData
 	mov r1,#0					;@ Scsi data should be clear if we have sent all the data, or error code if error occured.
 	strb r1,scsiData
-	mov r1,#0xD8
+	mov r1,#0x98
 	strb r1,scsiSignal
 //	adrl r1,scsiCmd
 //	ldrb r1,[r1]
@@ -1179,7 +1201,6 @@ noMoreScsiData:
 ;@	cmpne r1,#0xD8
 ;@	cmpne r1,#0xD9
 	ldrb r2,cdIrqReq
-	orr r2,r2,#0x20				;@ CD Read finnished
 	bic r2,r2,#0x40				;@ CD Ready finnished
 	strb r2,cdIrqReq
 	b CD_Check_IRQ
@@ -1282,7 +1303,8 @@ CMD_Read6:					;@ Command 0x08
 	bl LBA2DataOffset			;@ r0 = real LBA, out data file offset
 
 	ldrb r0,cdIrqReq
-	orr r0,r0,#0x40				;@ CD ready to go?
+	orr r0,r0,#0x10				;@ SUBCH ready?
+	bic r0,r0,#0x60				;@ CD Data not ready
 	strb r0,cdIrqReq
 
 	mov r0,#0x88				;@ SCSI data

@@ -136,7 +136,7 @@
  Bit 7 SCSI ACK: Acknowledge.
  Bit 6 CD to ADPCM DMA finnished? or 64kB? AD_LEN?
  Bit 5 CD read finnished? set in CD_PLAY/CD_SEARCH.
- Bit 4 ready to read SUBCH? on/off sense bit for the CD-ROM spindle motor?
+ Bit 4 Ready to read SUBCH?
  Bit 3 ADPCM length has run out.
  Bit 2 ADPCM length is < 32k.
  Bit 1 -
@@ -153,12 +153,12 @@
  $1803 - BRAM lock / IRQ2 request (R/O).
  ----------------------------------------------------------------------------
 
- Reading from this address locks BRAM (and clears any IRQ2?).
+ Reading from this address locks BRAM.
 
  Bit 7 -
- Bit 6 CD to ADPCM DMA finnished?. Or is it to do with the CD being ready to supply data?
+ Bit 6 CD sector buffer full? Cleared when all data read out.
  Bit 5 CD read finnished? polled in AD_TRANS.
- Bit 4 ready to read SUBCH? on/off sense bit for the CD-ROM spindle motor?
+ Bit 4 SUBCH data ready to read?
  Bit 3 ADPCM playback finnished.
  Bit 2 ADPCM playback has played half of the samples (or 32kByte?).
  Bit 1 left/right bit when reading 16bit audio data from $1805/$1806.

@@ -195,8 +195,8 @@ sectLoop:
 	bne mixLoop02
 mixLoop01:
 	ldr r2,[r1]
-	mov r4,r6,lsl#18			;@ 16kB
-	ldr r3,[r5,r4,lsr#18]
+	mov r4,r6,lsl#19			;@ 8kB
+	ldr r3,[r5,r4,lsr#19]
 	add r6,r6,#4
 
 	and r4,r2,r3
@@ -218,8 +218,8 @@ mixLoop01:
 ;@----------------------------------------------------------------------------
 mixLoop02:						;@ Handle CD audio volume adjust.
 	ldr r2,[r1]
-	mov r4,r6,lsl#18			;@ 16kB
-	ldr r3,[r5,r4,lsr#18]
+	mov r4,r6,lsl#19			;@ 8kB
+	ldr r3,[r5,r4,lsr#19]
 	add r6,r6,#4
 
 	mov r4,r3,asr#16
