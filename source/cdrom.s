@@ -42,6 +42,7 @@
 #define CMD_GET_INFO				0xDE	;@ Get info
 #define CMD_ABORT					0xFF	;@ Abort
 
+	// SCSI STATUS
 #define SCSISTATUS_OK				0x00
 #define SCSISTATUS_CHECKCONDITION	0x02
 #define SCSISTATUS_CONDITIONMET		0x04
@@ -86,6 +87,10 @@
 #define NECCODE_UNKNOWN25			0x25
 #define NECCODE_UNKNOWN2A			0x2A
 #define NECCODE_UNKNOWN2C			0x2C
+
+	// Int flags
+#define INT_DAT_IN			0x40
+#define INT_MSG_IN			0x20
 
 	.syntax unified
 	.arm
@@ -233,23 +238,17 @@ updateCDROM:				;@ Called every frame
 	strpl r0,cdSeekTime
 	bhi noCDUpd
 
+	stmfd sp!,{r3,lr}
 //	ldrb r0,scsiCmd
 //	cmp r0,#CMD_READ6			;@ Read command
 //	bne notReadCmd
-	ldrb r1,scsiSignal
-	tst r1,#0x80
-	orrne r1,r1,#0x40			;@ Ready for more data.
-	strb r1,scsiSignal
+	ldrb r0,scsiSignal
+	tst r0,#0x80
+	orrne r0,r0,#0x40			;@ Ready for more data.
+	bl setSCSISignal
 
-	ldr r0,dataLen
-	ldrb r1,cdIrqReq
-	cmp r0,#0
-	orrne r1,r1,#0x40			;@ CD Data Ready
-	orreq r1,r1,#0x20
-	strb r1,cdIrqReq
 notReadCmd:
 
-	stmfd sp!,{r3,lr}
 	ldrb r0,cdPlayMode
 	cmp r0,#0
 	beq noCDAudio
@@ -273,7 +272,7 @@ notReadCmd:
 	ldrb r1,cdAudioPlaying
 	cmp r1,#0x02
 	ldrbeq r0,cdIrqReq
-	orreq r0,r0,#0x20			;@ CD Audio finnished playing
+	orreq r0,r0,#INT_MSG_IN		;@ CD Audio finnished playing
 	strbeq r0,cdIrqReq
 	ldrb r0,cdAudioRepeat
 	strb r0,cdAudioPlaying
@@ -308,7 +307,27 @@ noCDUpd:
 	streq r1,adpcmVolume
 	strne r0,adpcmVolume
 noFade:
+	b CD_Check_IRQ
+;@----------------------------------------------------------------------------
+setSCSISignal:				;@ r0=new signal.
+;@----------------------------------------------------------------------------
+	ldrb r1,scsiSignal
+	cmp r0,r1
+	bxeq lr
 
+	strb r0,scsiSignal
+	ldrb r1,cdIrqReq
+	bic r2,r1,#INT_DAT_IN | INT_MSG_IN
+	cmp r0,#0xC8
+	orreq r2,r2,#INT_DAT_IN
+	cmp r0,#0xD8
+	cmpne r0,#0xF8
+	orreq r2,r2,#INT_MSG_IN
+	eors r1,r1,r2
+	strbne r2,cdIrqReq
+	ands r1,r1,r2
+	bxeq lr
+// Fall through
 ;@----------------------------------------------------------------------------
 CD_Check_IRQ:				;@ Don´t use r0 as it may be used as return data.
 ;@----------------------------------------------------------------------------
@@ -566,7 +585,7 @@ CD00_R:						;@ SCSI BUS SIGNALS
 CD01_R:						;@ SCSI BUS DATA
 ;@----------------------------------------------------------------------------
 	ldrb r0,scsiSignal
-	tst r0,#0x08
+	tst r0,#0x08				;@ In/Out
 	ldrbeq r0,scsiDataLatch
 	ldrbne r0,scsiData
 	bx lr
@@ -623,7 +642,7 @@ CD08_R:						;@ CD data
 	ldrb r0,scsiSignal
 	cmp r0,#0xC8				;@ Data out?
 	beq SCSI_SendData
-	tst r0,#0x08
+	tst r0,#0x08				;@ In/Out
 	ldrbeq r0,scsiDataLatch
 	ldrbne r0,scsiData
 //	adr r0,RD_txt + 0x08*8
@@ -718,10 +737,10 @@ CD00_W:						;@ SCSI BUS SIGNALS
 	ldrb r1,scsiSignal
 	cmp r1,#0
 	cmpeq r0,#0x81				;@ BSY+SEL
-	moveq r1,#0xD0				;@ Command Out
-	strbeq r1,scsiSignal
 	moveq r1,#0
 	strbeq r1,scsiPtr
+	moveq r0,#0xD0				;@ Command Out
+	beq setSCSISignal
 	bx lr
 ;@----------------------------------------------------------------------------
 CD01_W:						;@ SCSI BUS DATA
@@ -830,19 +849,14 @@ getCommand:
 	b cmdUnknown
 
 sendStatus:
-	mov r0,#0x00
+	mov r0,#SCSISTATUS_OK
 	strb r0,scsiData
 	mov r0,#0xF8
-	strb r0,scsiSignal
-	bx lr
+	b setSCSISignal
 sendMessage:
-	ldrb r0,cdIrqReq
-	bic r0,r0,#0x20				;@ Clear CD Read finnished.
-	strb r0,cdIrqReq
 	mov r0,#0x00
 	strb r0,scsiData
-	strb r0,scsiSignal
-	bx lr
+	b setSCSISignal
 ;@----------------------------------------------------------------------------
 CD03_W:						;@ IRQ request, R/O
 ;@----------------------------------------------------------------------------
@@ -854,13 +868,12 @@ CD04_W:						;@ SCSI reset?
 	strb r0,scsiReset
 	tst r0,#2
 	bxeq lr
-	mov r1,#0
-	strb r1,scsiSignal
-	strb r1,scsiData
-	strb r1,cdAudioPlaying
-	strb r1,cdPlayMode
-	strb r1,cdIrqReq
-	bx lr
+	mov r0,#0
+	strb r0,scsiData
+	strb r0,cdAudioPlaying
+	strb r0,cdPlayMode
+	strb r0,cdIrqReq
+	b setSCSISignal
 ;@----------------------------------------------------------------------------
 CD05_W:						;@ Start CD sound fetching
 ;@----------------------------------------------------------------------------
@@ -1209,21 +1222,14 @@ preLoadData:
 	bx lr
 
 noMoreScsiData:
+	mov r0,#0x98
+	stmfd sp!,{lr}
+	bl setSCSISignal
+	ldmfd sp!,{lr}
 	ldrb r0,scsiData
 	mov r1,#0					;@ Scsi data should be clear if we have sent all the data, or error code if error occured.
 	strb r1,scsiData
-	mov r1,#0x98
-	strb r1,scsiSignal
-//	adrl r1,scsiCmd
-//	ldrb r1,[r1]
-//	cmp r1,#0x08
-;@	cmpne r1,#0xD8
-;@	cmpne r1,#0xD9
-	ldrb r2,cdIrqReq
-	bic r2,r2,#0x40				;@ CD Ready finnished
-	strb r2,cdIrqReq
-	b CD_Check_IRQ
-//	bx lr
+	bx lr
 ;@----------------------------------------------------------------------------
 SCSI_SendResponse:
 ;@----------------------------------------------------------------------------
@@ -1239,14 +1245,17 @@ SCSI_SendResponse:
 	bxpl lr
 	mov r2,#0					;@ Scsidata should be clear if we have sent all the data
 	strb r2,scsiData
-	mov r1,#0xD8
-	strb r1,scsiSignal
-	bx lr
+	stmfd sp!,{r0,lr}
+	mov r0,#0xD8
+	bl setSCSISignal
+	ldmfd sp!,{r0,pc}
 ;@----------------------------------------------------------------------------
 cmdTestUnitReady:			;@ Command 0x00
 ;@----------------------------------------------------------------------------
 	mov r0,#0xD8				;@ No data only status
-	strb r0,scsiSignal
+	stmfd sp!,{lr}
+	bl setSCSISignal
+	ldmfd sp!,{pc}
 
 	ldrb r0,cdInserted
 	cmp r0,#0
@@ -1263,9 +1272,6 @@ turTxt:
 ;@----------------------------------------------------------------------------
 cmdRequestSense:			;@ Command 0x03
 ;@----------------------------------------------------------------------------
-	mov r0,#0xC8				;@ SCSI data
-	strb r0,scsiSignal
-
 	mov r0,#0
 	mov r2,#10
 	str r2,dataLen
@@ -1287,9 +1293,11 @@ rsLoop:
 	strb r0,[r1,#2]								;@ Sense Key.
 	moveq r0,#NECCODE_NODISC					;@ No disc in drive
 //	moveq r0,#NECCODE_COVEROPEN					;@ Disc door open
-//	moveq r0,#0x04
+//	moveq r0,#NECCODE_UNKNOWN04
 	strb r0,[r1,#9]								;@ Sense Code?
 	bl SCSI_SendData
+	mov r0,#0xC8				;@ SCSI data
+	bl setSCSISignal
 	ldmfd sp!,{lr}
 
 	adr r1,rsTxt
@@ -1323,11 +1331,10 @@ cmdRead6:					;@ Command 0x08
 
 	ldrb r0,cdIrqReq
 	orr r0,r0,#0x10				;@ SUBCH ready?
-	bic r0,r0,#0x60				;@ CD Data not ready
 	strb r0,cdIrqReq
 
 	mov r0,#0x88				;@ SCSI data
-	strb r0,scsiSignal
+	bl setSCSISignal
 
 	ldmfd sp!,{lr}
 
@@ -1384,14 +1391,11 @@ notTrack:
 	cmp r0,#1					;@ Repeat after completion?
 	movne r0,#0
 	strb r0,cdAudioRepeat
-	mov r1,#0x98				;@ No data only status
-	strb r1,scsiSignal
 	mov r1,#0
 	strb r1,scsiData
 
-	ldrb r1,cdIrqReq
-	orr r1,r1,#0x20				;@ SCSICD_IRQ_DATA_TRANSFER_DONE
-	strb r1,cdIrqReq
+	mov r0,#0x98				;@ No data only status
+	bl setSCSISignal
 
 	mov r1,#0x10000
 	str r1,fadeVolume
@@ -1483,10 +1487,10 @@ notTrack2:
 	cmp r0,#1					;@ Repeat after completion?
 	movne r0,#0
 	strb r0,cdAudioRepeat
-	mov r1,#0xD8				;@ No data only status
-	strb r1,scsiSignal
 	mov r1,#0
 	strb r1,scsiData
+	mov r0,#0xD8				;@ No data only status
+	bl setSCSISignal
 
 	adr r1,pc2Txt
 	bl debugOutput_asm
@@ -1501,7 +1505,9 @@ pc2Txt:
 cmdPausCD:					;@ Command 0xDA
 ;@----------------------------------------------------------------------------
 	mov r0,#0xD8				;@ No data only status
-	strb r0,scsiSignal
+	stmfd sp!,{lr}
+	bl setSCSISignal
+	ldmfd sp!,{lr}
 	mov r0,#0
 	strb r0,scsiData
 	strb r0,cdAudioPlaying
@@ -1516,9 +1522,6 @@ paTxt:
 cmdSubQ:					;@ Command 0xDD
 ;@----------------------------------------------------------------------------
 ;@	mov r11,r11					;@ No$GBA Debugg
-	mov r0,#0xC8				;@ SCSI data
-	strb r0,scsiSignal
-
 	stmfd sp!,{r3-r5,lr}
 	adrl r5,scsiResponse
 	ldrb r0,cdAudioPlaying
@@ -1563,6 +1566,9 @@ cmdSubQ:					;@ Command 0xDD
 	strb r0,[r5,#7]				;@ Absolute Minutes
 
 	str r5,dataOutPtr
+
+	mov r0,#0xC8				;@ SCSI data
+	bl setSCSISignal
 	mov r0,#10
 	str r0,dataLen
 	bl SCSI_SendData
@@ -1577,9 +1583,6 @@ sqTxt:
 ;@----------------------------------------------------------------------------
 cmdGetInfo:				;@ Command 0xDE
 ;@----------------------------------------------------------------------------
-	mov r0,#0xC8				;@ SCSI data
-	strb r0,scsiSignal
-
 	mov r0,#0
 	mov r2,#4
 	str r2,dataLen
@@ -1591,6 +1594,8 @@ giLoop:
 	bne giLoop
 
 	stmfd sp!,{lr}
+	mov r0,#0xC8				;@ SCSI data
+	bl setSCSISignal
 	adr lr,giBack
 	adrl r2,scsiCmd
 	ldrb r0,[r2,#1]
@@ -1679,8 +1684,10 @@ trackInfo:
 ;@----------------------------------------------------------------------------
 cmdAbort:					;@ Command 0xFF
 ;@----------------------------------------------------------------------------
-	mov r0,#0xC8				;@ SCSI data
-	strb r0,scsiSignal
+	mov r0,#0x00				;@ No data
+	stmfd sp!,{lr}
+	bl setSCSISignal
+	ldmfd sp!,{lr}
 	b cmdUnknown
 ;@----------------------------------------------------------------------------
 LBA2MSF:					;@ r0 input & output, uses r1-r3.

@@ -134,8 +134,8 @@
  ----------------------------------------------------------------------------
 
  Bit 7 SCSI ACK: Acknowledge.
- Bit 6 CD to ADPCM DMA finnished? or 64kB? AD_LEN?
- Bit 5 CD read finnished? set in CD_PLAY/CD_SEARCH.
+ Bit 6 SCSI Bus in Data-In mode.
+ Bit 5 SCSI Bus in Status-In mode.
  Bit 4 Ready to read SUBCH?
  Bit 3 ADPCM length has run out.
  Bit 2 ADPCM length is < 32k.
@@ -156,8 +156,8 @@
  Reading from this address locks BRAM.
 
  Bit 7 -
- Bit 6 CD sector buffer full? Cleared when all data read out.
- Bit 5 CD read finnished? polled in AD_TRANS.
+ Bit 6 SCSI Bus in Data-In mode.
+ Bit 5 SCSI Bus in Status-In mode.
  Bit 4 SUBCH data ready to read?
  Bit 3 ADPCM playback finnished.
  Bit 2 ADPCM playback has played half of the samples (or 32kByte?).
