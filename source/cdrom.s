@@ -8,7 +8,7 @@
 #ifdef __arm__
 
 #include "cdrom.i"
-#include "ARMH6280/H6280.i"
+#include "ARMH6280/H6280mac.h"
 #include "Equates.h"
 
 	.global bramAccess
@@ -31,6 +31,16 @@
 	.global CDROM_W
 	.global updateCDROM
 	.global renderADPCM
+
+#define CMD_TEST_UNIT_READY			0x00	;@ Test unit ready command
+#define CMD_REQUEST_SENSE			0x03	;@ Request sense command
+#define CMD_READ6					0x08	;@ Read command
+#define CMD_START_PLAY_CD			0xD8	;@ Start Play CD
+#define CMD_END_PLAY_CD				0xD9	;@ End Play CD
+#define CMD_PAUSE_CD				0xDA	;@ Pause CD
+#define CMD_SUB_Q					0xDD	;@ Read sub channel Q
+#define CMD_GET_INFO				0xDE	;@ Get info
+#define CMD_ABORT					0xFF	;@ Abort
 
 #define SCSISTATUS_OK				0x00
 #define SCSISTATUS_CHECKCONDITION	0x02
@@ -215,21 +225,29 @@ tocLoop:
 ;@----------------------------------------------------------------------------
 updateCDROM:				;@ Called every frame
 ;@----------------------------------------------------------------------------
+	mov r0,#0
+	strb r0,adpcmStatus
+
 	ldr r0,cdSeekTime
 	subs r0,r0,#1
 	strpl r0,cdSeekTime
 	bhi noCDUpd
 
+//	ldrb r0,scsiCmd
+//	cmp r0,#CMD_READ6			;@ Read command
+//	bne notReadCmd
 	ldrb r1,scsiSignal
 	tst r1,#0x80
 	orrne r1,r1,#0x40			;@ Ready for more data.
 	strb r1,scsiSignal
+
 	ldr r0,dataLen
 	ldrb r1,cdIrqReq
 	cmp r0,#0
 	orrne r1,r1,#0x40			;@ CD Data Ready
 	orreq r1,r1,#0x20
 	strb r1,cdIrqReq
+notReadCmd:
 
 	stmfd sp!,{r3,lr}
 	ldrb r0,cdPlayMode
@@ -269,12 +287,12 @@ noCDAudio:
 
 	ldrb r0,adDma
 	tst r0,#0x03
+	ldrne r0,dataLen
+	cmpne r0,#0
 	movne r0,#0xA00				;@ 2048*(75/60). CD frames/TV frames.
 	blne AdpcmDMA
 	ldmfd sp!,{r3,lr}
 noCDUpd:
-	mov r0,#0
-	strb r0,adpcmStatus
 	ldrb r2,fadeCtrl
 	tst r2,#0x8					;@ Enabled?
 	beq noFade
@@ -291,7 +309,6 @@ noCDUpd:
 	strne r0,adpcmVolume
 noFade:
 
-
 ;@----------------------------------------------------------------------------
 CD_Check_IRQ:				;@ Don´t use r0 as it may be used as return data.
 ;@----------------------------------------------------------------------------
@@ -301,9 +318,13 @@ CD_Check_IRQ:				;@ Don´t use r0 as it may be used as return data.
 	tst r2,#0x7C
 
 	ldrb r1,[h6280ptr,#h6280IrqPending]
-	bic r1,r1,#BRKIRQ_F				;@ Clear CD IRQ
-	orrne r1,r1,#BRKIRQ_F			;@ Set CD IRQ if appropriate
-	strb r1,[h6280ptr,#h6280IrqPending]
+	bic r2,r1,#BRKIRQ_F				;@ Clear CD IRQ
+	orrne r2,r1,#BRKIRQ_F			;@ Set CD IRQ if appropriate
+	eors r1,r1,r2
+	strbne r2,[h6280ptr,#h6280IrqPending]
+	ands r1,r1,r2
+//	h6280BailOut
+	orrne cycles,cycles,#0xC0000000
 
 	bx lr
 ;@----------------------------------------------------------------------------
@@ -788,25 +809,25 @@ getCommand:
 	bl printSCSICommand
 	ldmfd sp!,{r0-r1,lr}
 
-	cmp r1,#0x00				;@ Test Unit Ready
-	beq CMD_TestUnitReady
-	cmp r1,#0x03				;@ Request Sense
-	beq CMD_RequestSense
-	cmp r1,#0x08				;@ Read 6
-	beq CMD_Read6
-	cmp r1,#0xD8				;@ Play CD, set start time, play & search
-	beq CMD_PlayCD
-	cmp r1,#0xD9				;@ Play CD, set end time
-	beq CMD_PlayCD2
-	cmp r1,#0xDA				;@ Paus CD
-	beq CMD_PausCD
-	cmp r1,#0xDD				;@ Read SubChannel?
-	beq CMD_SubQ
-	cmp r1,#0xDE				;@ Get Info
-	beq CMD_GetInfo
-	cmp r1,#0xFF				;@ Abort
-	beq CMD_Abort
-	b CMD_Unknown
+	cmp r1,#CMD_TEST_UNIT_READY
+	beq cmdTestUnitReady
+	cmp r1,#CMD_REQUEST_SENSE
+	beq cmdRequestSense
+	cmp r1,#CMD_READ6
+	beq cmdRead6
+	cmp r1,#CMD_START_PLAY_CD	;@ Set start time, play & search
+	beq cmdStartPlayCD
+	cmp r1,#CMD_END_PLAY_CD		;@ Set end time
+	beq cmdEndPlayCD
+	cmp r1,#CMD_PAUSE_CD		;@ Paus CD
+	beq cmdPausCD
+	cmp r1,#CMD_SUB_Q			;@ Read SubChannel Q
+	beq cmdSubQ
+	cmp r1,#CMD_GET_INFO		;@ Get Info
+	beq cmdGetInfo
+	cmp r1,#CMD_ABORT			;@ Abort
+	beq cmdAbort
+	b cmdUnknown
 
 sendStatus:
 	mov r0,#0x00
@@ -1151,7 +1172,7 @@ LBA2AudioOffset:			;@ in r0=real LBA
 	ldmfd sp!,{r3,lr}
 	bx lr
 ;@----------------------------------------------------------------------------
-LBA2DataOffset:				;@ in r0=real LBA
+LBA2DataOffset:				;@ in r0=real LBA, called from READ6
 ;@----------------------------------------------------------------------------
 	stmfd sp!,{r3,lr}
 	bl calcSeekTime
@@ -1162,24 +1183,22 @@ LBA2DataOffset:				;@ in r0=real LBA
 	bl LBA2RealOffset
 	blx CD_SeekPos
 	ldmfd sp!,{r3,lr}
+	b preLoadData
 ;@----------------------------------------------------------------------------
 SCSI_SendData:
 	ldrb r0,scsiCmd
-	cmp r0,#0x08				;@ Read6
+	cmp r0,#CMD_READ6
 	bne SCSI_SendResponse
 
 	ldr r0,dataLen
 	subs r0,r0,#1
 	strpl r0,dataLen
-	bmi noMoreScsiData
-
-	ldr r0,currentPos
+	beq noMoreScsiData
+preLoadData:
+	ldr r0,currentPos			;@ Current byte pos on disc.
 	add r0,r0,#1
 	str r0,currentPos
 
-//	ldr r1,dataOutPtr
-//	ldrb r2,[r1],#1
-//	str r1,dataOutPtr
 	stmfd sp!,{r3,lr}
 	blx CD_ReadByte
 	ldmfd sp!,{r3,lr}
@@ -1224,7 +1243,7 @@ SCSI_SendResponse:
 	strb r1,scsiSignal
 	bx lr
 ;@----------------------------------------------------------------------------
-CMD_TestUnitReady:			;@ Command 0x00
+cmdTestUnitReady:			;@ Command 0x00
 ;@----------------------------------------------------------------------------
 	mov r0,#0xD8				;@ No data only status
 	strb r0,scsiSignal
@@ -1242,7 +1261,7 @@ turTxt:
 	.string "TestUnitReady"
 	.align 2
 ;@----------------------------------------------------------------------------
-CMD_RequestSense:			;@ Command 0x03
+cmdRequestSense:			;@ Command 0x03
 ;@----------------------------------------------------------------------------
 	mov r0,#0xC8				;@ SCSI data
 	strb r0,scsiSignal
@@ -1280,7 +1299,7 @@ rsTxt:
 	.string "RequestSense"
 	.align 2
 ;@----------------------------------------------------------------------------
-CMD_Read6:					;@ Command 0x08
+cmdRead6:					;@ Command 0x08
 ;@----------------------------------------------------------------------------
 	stmfd sp!,{lr}
 
@@ -1319,7 +1338,7 @@ r6Txt:
 	.string "Read6"
 	.align 2
 ;@----------------------------------------------------------------------------
-CMD_PlayCD:					;@ Command 0xD8
+cmdStartPlayCD:				;@ Command 0xD8
 ;@----------------------------------------------------------------------------
 	stmfd sp!,{r3-r5,lr}
 
@@ -1419,7 +1438,7 @@ foundDataTrack:
 	ldmfd sp!,{r4-r5,lr}
 	bx lr
 ;@----------------------------------------------------------------------------
-CMD_PlayCD2:				;@ Command 0xD9
+cmdEndPlayCD:				;@ Command 0xD9
 ;@----------------------------------------------------------------------------
 	stmfd sp!,{r3-r5,lr}
 
@@ -1479,7 +1498,7 @@ pc2Txt:
 	.string "PlayCD_D9"
 	.align 2
 ;@----------------------------------------------------------------------------
-CMD_PausCD:					;@ Command 0xDA
+cmdPausCD:					;@ Command 0xDA
 ;@----------------------------------------------------------------------------
 	mov r0,#0xD8				;@ No data only status
 	strb r0,scsiSignal
@@ -1494,7 +1513,7 @@ paTxt:
 	.string "PauseCD"
 	.align 2
 ;@----------------------------------------------------------------------------
-CMD_SubQ:					;@ Command 0xDD
+cmdSubQ:					;@ Command 0xDD
 ;@----------------------------------------------------------------------------
 ;@	mov r11,r11					;@ No$GBA Debugg
 	mov r0,#0xC8				;@ SCSI data
@@ -1556,7 +1575,7 @@ sqTxt:
 	.string "SubQ"
 	.align 2
 ;@----------------------------------------------------------------------------
-CMD_GetInfo:				;@ Command 0xDE
+cmdGetInfo:				;@ Command 0xDE
 ;@----------------------------------------------------------------------------
 	mov r0,#0xC8				;@ SCSI data
 	strb r0,scsiSignal
@@ -1658,11 +1677,11 @@ trackInfo:
 	ldmfd sp!,{r3,pc}
 
 ;@----------------------------------------------------------------------------
-CMD_Abort:					;@ Command 0xFF
+cmdAbort:					;@ Command 0xFF
 ;@----------------------------------------------------------------------------
 	mov r0,#0xC8				;@ SCSI data
 	strb r0,scsiSignal
-	b CMD_Unknown
+	b cmdUnknown
 ;@----------------------------------------------------------------------------
 LBA2MSF:					;@ r0 input & output, uses r1-r3.
 ;@----------------------------------------------------------------------------
@@ -1767,7 +1786,7 @@ Bcd2Hex:					;@ r0 input & output, uses r1.
 	add r0,r0,r1,lsl#1			;@ Multiply by 2 and add low
 	bx lr
 ;@----------------------------------------------------------------------------
-CMD_Unknown:
+cmdUnknown:
 ;@----------------------------------------------------------------------------
 ;@	mov r11,r11					;@ No$GBA Debugg
 	adr r1,ukTxt
