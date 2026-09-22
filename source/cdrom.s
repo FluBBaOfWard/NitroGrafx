@@ -246,7 +246,6 @@ updateCDROM:				;@ Called every frame
 	tst r0,#0x80
 	orrne r0,r0,#0x40			;@ Ready for more data.
 	bl setSCSISignal
-
 notReadCmd:
 
 	ldrb r0,cdPlayMode
@@ -371,7 +370,7 @@ renderADPCM:				;@ in r0 = len, r1 = dest.
 	ldr r8,=CD_PCM_RAM
 	ldr r9,adRdPtr
 	ldr r10,adFreqToCD
-	ldr r11,=32120<<16
+	ldr r11,=32100<<16
 	tst r7,#0xF0000000
 	bne noFetch
 adpcmLoop:
@@ -435,7 +434,7 @@ dmaLoop:
 	cmp r1,#0x88				;@ Data out?
 	bne dmaEnd
 	tst r0,#0x40				;@ REQ set?
-	beq dmaSkip
+	beq dmaSectorEnd
 	bl SCSI_SendData
 	strb r0,[r4,r3,lsr#16]
 	add r3,r3,#0x10000
@@ -445,6 +444,7 @@ dmaLoop:
 dmaEnd:
 	mov r0,#0x00				;@ ADPCM DMA _not_ busy writing.
 	strb r0,adpcmDmaOn
+dmaSectorEnd:
 	ldrb r0,adDma
 	bic r0,r0,#1
 	strb r0,adDma
@@ -455,8 +455,9 @@ dmaSkip:
 	cmp r0,#0
 	orreq r1,r1,#0x08			;@ ADPCM finnished playing.
 	adds r0,r0,r6,lsl#15
-	orrcs r1,r1,#0x08			;@ ADPCM finnished playing.
+	orrhi r1,r1,#0x08			;@ C set & Z not set, ADPCM finnished playing.
 	str r0,adLen
+	sub r0,r0,#1<<15
 	tst r0,#0x18000<<15
 	bicne r1,r1,#0x04
 	orreq r1,r1,#0x04			;@ ADPCM <32k left.
@@ -731,11 +732,9 @@ CD0F_R:
 ;@----------------------------------------------------------------------------
 CD00_W:						;@ SCSI BUS SIGNALS
 ;@----------------------------------------------------------------------------
-	cmp r0,#0x60
-	moveq r1,#0
-	strbeq r1,scsiSignal
-	ldrb r1,scsiSignal
-	cmp r1,#0
+	ldrb r1,scsiDataLatch
+	and r1,#0x80
+	cmp r1,#0x80
 	cmpeq r0,#0x81				;@ BSY+SEL
 	moveq r1,#0
 	strbeq r1,scsiPtr
@@ -1168,8 +1167,8 @@ calcSeekTime:
 	ldr r1,sectorPtr
 	subs r0,r0,r1,lsr#2			;@ Remove the extra bits
 	rsbmi r0,r0,#0
-	mov r0,r0,lsr#10
-	add r0,r0,#5
+	mov r0,r0,lsr#13			;@ 21-13=8, for a max of 255 frames for 4GB seek.
+	add r0,r0,#7
 	str r0,cdSeekTime
 	ldmfd sp!,{r0,r4-r5,pc}
 ;@----------------------------------------------------------------------------

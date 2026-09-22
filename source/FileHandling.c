@@ -295,8 +295,8 @@ void selectCDROM() {
 	char fileExt[8];
 
 	pauseEmulation = 1;
+	ui10();
 	const char *cdName = browseForFileType(".iso.cue");
-	cls(0);
 	if (cdName) {
 		getFileExtension(fileExt, cdName);
 		if (strstr(fileExt, ".cue")) {
@@ -336,6 +336,9 @@ void selectCDROM() {
 			infoOutput(cdGamePath);
 			cdInserted = 0;
 		}
+	}
+	if (!powerIsOn) {
+		backOutOfMenu();
 	}
 }
 

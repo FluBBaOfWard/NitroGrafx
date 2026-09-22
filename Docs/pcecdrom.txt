@@ -265,15 +265,13 @@ P_INTMON	equ	$1803	;(R/O) interrupt monitor
  $180B - ADPCM DMA control (R/W)
  ----------------------------------------------------------------------------
 
- Bits 1 and/or 0 of $180B are set when an CD to ADPCM DMA transfer is in
- progress. The AD_TRANS and AD_WRITE functions check these bits and abort
- if they are set. Maybe this means reading ADPCM RAM at the same time would
- still work, it does have a seperate read and write pointer, after all.
+ Bits 1 and/or 0 of $180B are used to start a CD to ADPCM DMA transfer. The
+ AD_TRANS and AD_WRITE functions check these bits and abort if they are set.
+ Reading ADPCM RAM at the same time still works, it does have a seperate read
+ and write pointer, after all.
 
- Bit 1 seems to request the transfer itself. The AD_TRANS function sets
- the ADPCM write address, sends a READ command, and then sets bit 1 while
- polling flags in bit 2 of $180C and bit 5 of $1803. Afterwards, it clears
- bit 1 and exits.
+ Bit 1 requests the transfer and is not cleared, bit 0 can only be set if a
+ READ command has been set before, bit 0 is cleared when one sector has been read.
 
 P_TRCTL		equ	$180b	;(R/W) ADPCM data trans control
 			;+------+------+------+------+------+------+------+------+

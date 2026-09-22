@@ -1,7 +1,7 @@
 
 NitroGrafx To Do:
 -----------------
-	Add early exit for CPU by setting 2 top bits. (check CD irq test)
+	Fix end of CD TOC.
 	Add support for multiple files for CD.
 	Add ADPCM fade, bit1 is CD/ADPCM.
 	Make sure CD audio is silent when no audio tracks are present.
