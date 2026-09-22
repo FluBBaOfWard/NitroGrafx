@@ -326,10 +326,13 @@ CueSheet *readCue(const char *cuefile) {
 	startParser(cueString);
 	const CUETrackInfo *trackInf;
 	int i = 0;
+	int prevFileSize = 0;
 	cs->file[0] = 0;
-	while ((trackInf = nextTrack(i)) != NULL) {
+	while ((trackInf = nextTrack(prevFileSize)) != NULL) {
+		const char *fName = trackInf->filename;
+		// Check file size!
 		if (cs->file[0] == 0 && trackInf->trackMode != TRK_MODE_AUDIO) {
-			strlcpy(cs->file, trackInf->filename, 256);
+			strlcpy(cs->file, fName, 256);
 		}
 		TrackSpec *ts = &cs->tracks[i];
 		ts->mode = trackInf->trackMode;

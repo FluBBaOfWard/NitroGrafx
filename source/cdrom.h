@@ -30,16 +30,16 @@ typedef struct {
 	CD_TRACK tracks[];
 } CD_ROM_TOC;
 
-extern u32 currentPos;			// cdrom.s
-extern u32 currentTrack;		// cdrom.s
-extern u8 cdInserted;			// cdrom.s
-extern int cdFileSize;			// cdrom.s
-extern void *tgcdBase;			// cdrom.s
-extern char TGCD_D_Header[];	// cdrom.s
-extern char TGCD_M_Header[];	// cdrom.s
-extern CD_ROM_TOC cdRomToc;		// cdrom.s
+extern u32 currentPos;
+extern u8 currentTrack;
+extern u8 cdInserted;
+extern int cdFileSize;
+extern void *tgcdBase;
+extern char TGCD_D_Header[];
+extern char TGCD_M_Header[];
+extern CD_ROM_TOC cdRomToc;
 
-void cdInit(void);				// cdrom.s
+void cdInit(void);
 
 #ifdef __cplusplus
 } // extern "C"

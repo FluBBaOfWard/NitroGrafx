@@ -136,7 +136,7 @@ cdReset:
 	ldr r1,cdFileSize
 	sub r0,r1,r0				;@ Calculate size of track in bytes
 	cmp r2,#4					;@ Sector size for track
-	ldrne r1,=0x1BDD2B			;@ 0x100000000/2352
+	ldrne r1,=0x1BDD2C			;@ 0x100000000/2352
 	umullne r2,r0,r1,r0
 	moveq r0,r0,lsr#11
 
@@ -281,7 +281,8 @@ noCDAudio:
 	ldr r0,currentPos
 	mov r0,r0,lsr#11
 	bl LBA2Track
-	str r0,currentTrack
+	bl Hex2Bcd
+	strb r0,currentTrack
 
 	ldrb r0,adDma
 	tst r0,#0x03
@@ -1053,7 +1054,6 @@ cdromState:
 dmaOutPtr:	.long 0				;@ DMA data byte ptr
 dataOutPtr:	.long 0				;@ SCSI data byte ptr
 currentPos:	.long 0				;@ Current position on disc
-currentTrack: .long 0			;@ Current track
 dataLen:	.long 0				;@ SCSI data length in bytes
 sectorPtr:	.long 0				;@ Audio sector pointer, shift 2 right to get real value.
 sectorEnd:	.long 0				;@ Audio end sector pointer, shift 2 right to get real value.
@@ -1091,6 +1091,7 @@ cdPlayMode:		.byte 0			;@ Which audio play mode?
 cdAudioPlaying:	.byte 0			;@ Is cd audio playing?
 cdAudioRepeat:	.byte 0			;@ Should music repeat after completion?
 scsiPtr:		.byte 0			;@ Which byte of the command
+currentTrack:	.byte 0			;@ Current track in BCD
 
 scsiCmd:		.space 10
 scsiResponse:	.space 10
@@ -1112,29 +1113,32 @@ scsiCommandHex:	.space 32
 ;@----------------------------------------------------------------------------
 printSCSICommand:
 ;@----------------------------------------------------------------------------
-	stmfd sp!,{r3-r5,lr}
+	mov r0,#10
 	adr r1,scsiCmd
+;@----------------------------------------------------------------------------
+printHexValues:			;@ r0=count,max 10, r1=source.
+;@----------------------------------------------------------------------------
+	stmfd sp!,{r3,lr}
 	adr r2,scsiCommandHex
 
-	mov r3,#10
 hexLoop:
-	ldrb r0,[r1],#1
-	mov r4,r0,lsr#4
-	cmp r4,#0x0A
-	addmi r4,r4,#0x30
-	addpl r4,r4,#0x37
-	strb r4,[r2],#1
-	and r4,r0,#0x0F
-	cmp r4,#0x0A
-	addmi r4,r4,#0x30
-	addpl r4,r4,#0x37
-	strb r4,[r2],#1
-	mov r4,#0x20
-	strb r4,[r2],#1
-	subs r3,r3,#1
+	ldrb r3,[r1],#1
+	mov lr,r3,lsr#4
+	cmp lr,#0x0A
+	addmi lr,lr,#0x30
+	addpl lr,lr,#0x37
+	strb lr,[r2],#1
+	and r3,r3,#0x0F
+	cmp r3,#0x0A
+	addmi r3,r3,#0x30
+	addpl r3,r3,#0x37
+	strb r3,[r2],#1
+	mov r3,#0x20
+	strb r3,[r2],#1
+	subs r0,r0,#1
 	bhi hexLoop
 
-	ldmfd sp!,{r3-r5,lr}
+	ldmfd sp!,{r3,lr}
 	bx lr
 ;@----------------------------------------------------------------------------
 LBA2RealOffset:			;@ in r0=real LBA, out r0=data file offset
@@ -1352,7 +1356,7 @@ cmdStartPlayCD:				;@ Command 0xD8
 	ldrb r2,[r4,#9]				;@ LBA, Track or MSF
 	ands r2,r2,#0xC0
 	beq  cdGetLBA
-	cmp r2,#0x40				;@ MSF
+	cmp r2,#0x40				;@ MSF?
 	bne notMSF
 	ldrb r0,[r4,#2]				;@ Min
 	ldrb r1,[r4,#3]				;@ Sec
@@ -1362,7 +1366,7 @@ cmdStartPlayCD:				;@ Command 0xD8
 	bl MSF2LBA
 	b  writeSec
 notMSF:
-	cmp r2,#0x80				;@ Tracks
+	cmp r2,#0x80				;@ Tracks?
 	bne notTrack
 	ldrb r0,[r4,#2]				;@ Track
 	bl Bcd2Hex
