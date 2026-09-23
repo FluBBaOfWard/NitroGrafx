@@ -239,14 +239,29 @@ updateCDROM:				;@ Called every frame
 	bhi noCDUpd
 
 	stmfd sp!,{r3,lr}
-//	ldrb r0,scsiCmd
-//	cmp r0,#CMD_READ6			;@ Read command
-//	bne notReadCmd
 	ldrb r0,scsiSignal
-	tst r0,#0x80
-	orrne r0,r0,#0x40			;@ Ready for more data.
-	bl setSCSISignal
+	cmp r0,#0x98				;@ Waiting to goto Status
+	orreq r0,r0,#0x40
+	beq notPlayCmd
+	cmp r0,#0x80
+	bne noCmdWait
+	ldrb r1,currentCmd
+	cmp r1,#CMD_READ6			;@ Read command
+	bne notReadCmd
+	mov r0,#0xC8				;@ Ready for data.
+	b notPlayCmd
 notReadCmd:
+	cmp r1,#CMD_START_PLAY_CD	;@ Play command
+	cmpne r1,#CMD_END_PLAY_CD	;@ Play command
+	bne notPlayCmd
+	ldrb r0,cdPlayMode
+	cmp r0,#1
+	cmpne r0,#2
+	beq noCmdWait
+	mov r0,#0xD8				;@ Ready for status.
+notPlayCmd:
+	bl setSCSISignal
+noCmdWait:
 
 	ldrb r0,cdPlayMode
 	cmp r0,#0
@@ -270,9 +285,8 @@ notReadCmd:
 ;@	mov r11,r11					;@ No$GBA Debugg
 	ldrb r1,cdAudioPlaying
 	cmp r1,#0x02
-	ldrbeq r0,cdIrqReq
-	orreq r0,r0,#INT_MSG_IN		;@ CD Audio finnished playing
-	strbeq r0,cdIrqReq
+	moveq r0,#0xD8				;@ Ready for status.
+	bleq setSCSISignal
 	ldrb r0,cdAudioRepeat
 	strb r0,cdAudioPlaying
 	cmp r0,#0
@@ -340,6 +354,7 @@ CD_Check_IRQ:				;@ Don´t use r0 as it may be used as return data.
 	bic r2,r1,#BRKIRQ_F				;@ Clear CD IRQ
 	orrne r2,r1,#BRKIRQ_F			;@ Set CD IRQ if appropriate
 	eors r1,r1,r2
+	bxeq lr
 	strbne r2,[h6280ptr,#h6280IrqPending]
 	ands r1,r1,r2
 //	h6280BailOut
@@ -733,14 +748,23 @@ CD0F_R:
 ;@----------------------------------------------------------------------------
 CD00_W:						;@ SCSI BUS SIGNALS
 ;@----------------------------------------------------------------------------
-	ldrb r1,scsiDataLatch
-	and r1,#0x80
-	cmp r1,#0x80
-	cmpeq r0,#0x81				;@ BSY+SEL
-	moveq r1,#0
-	strbeq r1,scsiPtr
+//	ldrb r1,scsiDataLatch
+//	and r1,#0x80
+//	cmp r1,#0x80
+//	cmpeq r0,#0x81				;@ BSY+SEL
+	mov r0,#0
+	strb r0,scsiPtr
+	ldrb r1,scsiSignal
+	cmp r1,#0					;@ Idle?
+	cmpne r1,#0x80				;@ Busy?
+	cmpne r1,#0xD8				;@ Status?
+	cmpne r1,#0xF8				;@ Message?
 	moveq r0,#0xD0				;@ Command Out
 	beq setSCSISignal
+	mov r0,#0
+	strb r0,scsiPtr
+	strb r0,scsiCmd
+	strb r0,currentCmd
 	bx lr
 ;@----------------------------------------------------------------------------
 CD01_W:						;@ SCSI BUS DATA
@@ -816,17 +840,22 @@ getCommand:
 	strb r0,[r1,r2]
 	add r2,r2,#1
 	ldrb r1,[r1]				;@ Get command
-	cmp r1,#0x20
-	mov r0,#10					;@ Most commands are 10 bytes long
-	movmi r0,#6					;@ Except the 3 first which are 6.
+	mov r0,#1					;@ Unknown command is 1 bytes long?
+	cmp r1,#0x10
+	movmi r0,#6					;@ The 3 first which are 6 long.
+	cmp r1,#0xD0
+	movpl r0,#10				;@ The rest are 10 bytes long
+	cmp r1,#0xFF
+	moveq r0,#1					;@ Abort is 1?
 	cmp r2,r0
-	moveq r2,#0
+	movpl r2,#0
 	strb r2,scsiPtr
-	bxne lr						;@ Exit
+	bxmi lr						;@ Exit
 
 	stmfd sp!,{r0-r1,lr}
 	bl printSCSICommand
 	ldmfd sp!,{r0-r1,lr}
+	strb r1,currentCmd
 
 	cmp r1,#CMD_TEST_UNIT_READY
 	beq cmdTestUnitReady
@@ -856,6 +885,7 @@ sendStatus:
 sendMessage:
 	mov r0,#0x00
 	strb r0,scsiData
+	strb r0,currentCmd
 	b setSCSISignal
 ;@----------------------------------------------------------------------------
 CD03_W:						;@ IRQ request, R/O
@@ -1091,6 +1121,7 @@ cdPlayMode:		.byte 0			;@ Which audio play mode?
 cdAudioPlaying:	.byte 0			;@ Is cd audio playing?
 cdAudioRepeat:	.byte 0			;@ Should music repeat after completion?
 scsiPtr:		.byte 0			;@ Which byte of the command
+currentCmd:		.byte 0			;@ Current running command
 currentTrack:	.byte 0			;@ Current track in BCD
 
 scsiCmd:		.space 10
@@ -1165,6 +1196,13 @@ LBA2RealOffset:			;@ in r0=real LBA, out r0=data file offset
 	ldmfd sp!,{r4-r5,lr}
 	bx lr
 ;@----------------------------------------------------------------------------
+Track2Offset:				;@ r0 input & output, uses r1. Gives the offset from the cd-image start.
+;@----------------------------------------------------------------------------
+	ldr r1,tgcdBase
+	add r1,r1,r0,lsl#3			;@ (Track number x 8)
+	ldr r0,[r1,#0x0C]			;@ Offset for this track
+	bx lr
+;@----------------------------------------------------------------------------
 calcSeekTime:
 ;@----------------------------------------------------------------------------
 	stmfd sp!,{r0,r4-r5,lr}
@@ -1216,6 +1254,10 @@ preLoadData:
 	str r0,currentPos
 
 	stmfd sp!,{r3,lr}
+//	ldr r0,dataLen
+//	movs r0,r0,lsl#32-11		;@ Is the sector bytes zero?
+//	moveq r0,#0x80
+//	bleq setSCSISignal			;@ This needs a more frequent update of CD!!!
 	blx CD_ReadByte
 	ldmfd sp!,{r3,lr}
 	mov r2,r0
@@ -1258,7 +1300,7 @@ cmdTestUnitReady:			;@ Command 0x00
 	mov r0,#0xD8				;@ No data only status
 	stmfd sp!,{lr}
 	bl setSCSISignal
-	ldmfd sp!,{pc}
+	ldmfd sp!,{lr}
 
 	ldrb r0,cdInserted
 	cmp r0,#0
@@ -1336,7 +1378,7 @@ cmdRead6:					;@ Command 0x08
 	orr r0,r0,#0x10				;@ SUBCH ready?
 	strb r0,cdIrqReq
 
-	mov r0,#0x88				;@ SCSI data
+	mov r0,#0x80				;@ Only busy yet.
 	bl setSCSISignal
 
 	ldmfd sp!,{lr}
@@ -1397,17 +1439,16 @@ notTrack:
 	mov r1,#0
 	strb r1,scsiData
 
-	mov r0,#0x98				;@ No data only status
+	mov r0,#0x80				;@ Only busy yet
+//	mov r0,#0xD8				;@ No data only status
 	bl setSCSISignal
 
 	mov r1,#0x10000
 	str r1,fadeVolume
 
-	adr r1,pcTxt
-	bl debugOutput_asm
 	ldmfd sp!,{r3-r5,lr}
-	adr r1,scsiCommandHex
-	b debugOutput_asm
+	adr r1,pcTxt
+	b outputCmdPlusHex
 //	bx lr
 pcTxt:
 	.string "PlayCD_D8"
@@ -1492,14 +1533,13 @@ notTrack2:
 	strb r0,cdAudioRepeat
 	mov r1,#0
 	strb r1,scsiData
-	mov r0,#0xD8				;@ No data only status
+	mov r0,#0x80				;@ Only busy yet
+//	mov r0,#0xD8				;@ No data only status
 	bl setSCSISignal
 
-	adr r1,pc2Txt
-	bl debugOutput_asm
 	ldmfd sp!,{r3-r5,lr}
-	adrl r1,scsiCommandHex
-	b debugOutput_asm
+	adr r1,pc2Txt
+	b outputCmdPlusHex
 //	bx lr
 pc2Txt:
 	.string "PlayCD_D9"
@@ -1687,11 +1727,12 @@ trackInfo:
 ;@----------------------------------------------------------------------------
 cmdAbort:					;@ Command 0xFF
 ;@----------------------------------------------------------------------------
-	mov r0,#0x00				;@ No data
+	mov r0,#0xD8				;@ No data only status
 	stmfd sp!,{lr}
 	bl setSCSISignal
 	ldmfd sp!,{lr}
-	b cmdUnknown
+	adrl r1,abortTxt
+	b outputCmdPlusHex
 ;@----------------------------------------------------------------------------
 LBA2MSF:					;@ r0 input & output, uses r1-r3.
 ;@----------------------------------------------------------------------------
@@ -1774,13 +1815,6 @@ Track2LBA:					;@ r0 input & output, uses r1-r2.
 
 	bx lr
 ;@----------------------------------------------------------------------------
-Track2Offset:				;@ r0 input & output, uses r1. Gives the offset from the cd-image start.
-;@----------------------------------------------------------------------------
-	ldr r1,tgcdBase
-	add r1,r1,r0,lsl#3			;@ (Track number x 8)
-	ldr r0,[r1,#0x0C]			;@ Offset for this track
-	bx lr
-;@----------------------------------------------------------------------------
 Hex2Bcd:					;@ r0 input & output, uses r1-r3.
 ;@----------------------------------------------------------------------------
 	mov r1,#10
@@ -1800,6 +1834,7 @@ cmdUnknown:
 ;@----------------------------------------------------------------------------
 ;@	mov r11,r11					;@ No$GBA Debugg
 	adr r1,ukTxt
+outputCmdPlusHex:
 	stmfd sp!,{lr}
 	bl debugOutput_asm
 	ldmfd sp!,{lr}
@@ -1815,6 +1850,8 @@ gitiTxt:
 	.string "GetInfo TrackInfo   "
 giukTxt:
 	.string "GetInfo "
+abortTxt:
+	.string "Abort"
 ukTxt:
 	.string "Unknown"
 	.align 2
