@@ -51,7 +51,7 @@ CUETrackInfo mTrackInfo;
 static bool startLine();
 static void nextLine();
 static const char *skipSpace(const char *p);
-static const char *readQuoted(const char *src, char *dest, int destSize);
+static const char *readFileName(const char *src, char *dest, int destSize);
 static uint32_t parseTime(const char *src);
 static CueFileType parseFileMode(const char *src);
 static TrackMode parseTrackMode(const char *src);
@@ -78,7 +78,7 @@ const CUETrackInfo *nextTrack(uint32_t prevFileSize) {
 				mTrackInfo.fileStart = mTrackInfo.dataStart + lastTrackBlocks;
 			}
 
-			const char *p = readQuoted(mParsePos + 5, mTrackInfo.filename, sizeof(mTrackInfo.filename));
+			const char *p = readFileName(mParsePos + 4, mTrackInfo.filename, sizeof(mTrackInfo.filename));
 			removeDotSlash(mTrackInfo.filename, sizeof(mTrackInfo.filename));
 			mTrackInfo.fileMode = parseFileMode(skipSpace(p));
 			mTrackInfo.fileOffset = 0;
@@ -191,11 +191,12 @@ const char *skipSpace(const char *p) {
 	return p;
 }
 
-// Read text starting with " and ending with next "
+// Read text starting with " or ' ' and ending with next " or ' '
 // Returns pointer to character after ending quote.
-const char *readQuoted(const char *src, char *dest, int destSize) {
+const char *readFileName(const char *src, char *dest, int destSize) {
 	// Search for starting quote
-	while (*src != '"') {
+	char endToken = ' ';
+	while (*src == ' ') {
 		if (*src == '\0' || *src == '\n') {
 			// Unexpected end of line / file
 			dest[0] = '\0';
@@ -203,11 +204,13 @@ const char *readQuoted(const char *src, char *dest, int destSize) {
 		}
 		src++;
 	}
-	src++;
-
+	if (*src == '"') {
+		endToken = *src;
+		src++;
+	}
 	// Copy text until ending quote
 	int len = 0;
-	while (*src != '"' && *src != '\0' && *src != '\n') {
+	while (*src != endToken && *src != '\0' && *src != '\n') {
 		if (len < destSize - 1) {
 			dest[len++] = *src;
 		}
@@ -216,7 +219,7 @@ const char *readQuoted(const char *src, char *dest, int destSize) {
 
 	dest[len] = '\0';
 
-	if (*src == '"') src++;
+	if (*src == endToken) src++;
 	return src;
 }
 
@@ -277,7 +280,7 @@ TrackMode parseTrackMode(const char *src) {
 
 // Get sector length in file from track mode
 uint32_t getSectorLength(CueFileType filemode, TrackMode trackmode) {
-	if (filemode == FILE_TYPE_BINARY || filemode == FILE_TYPE_MOTOROLA) {
+	if (filemode == FILE_TYPE_BINARY || filemode == FILE_TYPE_WAVE) {
 		switch (trackmode) {
 			case TRK_MODE_AUDIO:        return 2352;
 			case TRK_MODE_CDG:          return 2448;
@@ -327,16 +330,30 @@ CueSheet *readCue(const char *cuefile) {
 	const CUETrackInfo *trackInf;
 	int i = 0;
 	int prevFileSize = 0;
+	int wavDataOfs = 0;
 	cs->file[0] = 0;
 	while ((trackInf = nextTrack(prevFileSize)) != NULL) {
 		const char *fName = trackInf->filename;
-		// Check file size!
+		if (cs->file[0] != 0 && strcmp(cs->file, fName)) {
+			prevFileSize = 0;
+			f = fopen(fName, "r");
+			if (f != NULL) {
+				fseek(f, 0, SEEK_END);
+				prevFileSize = ftell(f);
+				wavDataOfs = 0;
+				if (trackInf->fileMode == FILE_TYPE_WAVE) {
+					wavDataOfs = 0x2C; // Calculate header size correctly!
+					prevFileSize -= wavDataOfs;
+				}
+				fclose(f);
+			}
+		}
 		if (cs->file[0] == 0 && trackInf->trackMode != TRK_MODE_AUDIO) {
 			strlcpy(cs->file, fName, 256);
 		}
 		TrackSpec *ts = &cs->tracks[i];
 		ts->mode = trackInf->trackMode;
-		ts->start = trackInf->fileOffset;
+		ts->start = trackInf->fileOffset + wavDataOfs;
 		ts->LBA = trackInf->dataStart;
 		i++;
 	}

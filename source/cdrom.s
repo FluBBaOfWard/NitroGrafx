@@ -138,7 +138,7 @@ cdReset:
 	cmp r2,#4					;@ Sector size for track
 	ldrne r1,=0x1BDD2C			;@ 0x100000000/2352
 	umullne r2,r0,r1,r0
-	moveq r0,r0,lsr#11
+	moveq r0,r0,lsr#11			;@ /2048
 
 	ldrb r1,[r12,#cdTrackLBA0]	;@ Track LBA
 	ldrb r2,[r12,#cdTrackLBA1]
