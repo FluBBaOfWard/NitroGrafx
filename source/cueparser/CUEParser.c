@@ -323,6 +323,7 @@ CueSheet *readCue(const char *cuefile) {
 	}
 
 	char *cueString = malloc(0x2000);
+	memset(cueString, 0, 0x2000);
 	fread(cueString, 1, 0x2000, f);
 	fclose(f);
 

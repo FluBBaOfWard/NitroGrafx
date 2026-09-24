@@ -14,7 +14,7 @@
 #include "cpu.h"
 #include "ARMH6280/Version.h"
 
-#define EMUVERSION "V0.9.1 2026-09-23"
+#define EMUVERSION "V0.9.1 2026-09-24"
 
 // Asm functions
 extern void paletteTxAll(void);		// VCE.s
@@ -228,7 +228,6 @@ void setupKeyboard(void) {
 }
 
 void powerOnOff() {
-	loadCart();
 	if ((powerIsOn = !powerIsOn)) {
 		if (!hucardLoaded && !biosLoaded) {
 			loadUSBIOS();
@@ -237,6 +236,7 @@ void powerOnOff() {
 	else {
 		antWarsInit();
 	}
+	loadCart();
 }
 
 void ejectGame() {

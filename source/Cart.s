@@ -111,12 +111,12 @@ rawRom:
 //	.incbin "roms/Wonder Momo (J).pce"
 //	.incbin "roms/Youkai Douchuuki (J).pce"
 rawRomEnd:
-#endif // EMBEDDED_ROM
 isoFile:
 //	.incbin "bloCs.iso"
 //	.incbin "rayxanber3.iso"
 //	.incbin "valis2.iso"
 //	.incbin "valis 4.iso"
+#endif // EMBEDDED_ROM
 
 	.align 2
 ;@----------------------------------------------------------------------------
@@ -151,10 +151,10 @@ loadCart: 		;@ called from C:
 	str r2,g_ROM_Size
 	bl bytecopy_
 	ldmfd sp!,{r0-r4,lr}
-#endif // EMBEDDED_ROM
 	ldr r3,=isoFile
 	ldr r1,=isoBase
 	str r3,[r1]
+#endif // EMBEDDED_ROM
 
 	ldrb r0,gConfigSet
 	strb r0,gConfig
@@ -528,7 +528,7 @@ sgxRAM:
 	.size sgxRAM, 0x8000
 ROM_Space:
 biosSpace:
-	.space 0x40000				;@ US/JP 256kB BIOS max
+	.space 0x40000				;@ US/JP BIOS 256kB max
 CD_PCM_RAM:
 	.space 0x10000
 SCD_RAM:
