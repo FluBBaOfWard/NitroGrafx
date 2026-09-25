@@ -240,7 +240,8 @@ updateCDROM:				;@ Called every frame
 
 	stmfd sp!,{r3,lr}
 	ldrb r0,scsiSignal
-	cmp r0,#0x98				;@ Waiting to goto Status
+	cmp r0,#0x88				;@ Waiting to goto Data
+	cmpne r0,#0x98				;@ Waiting to goto Status
 	orreq r0,r0,#0x40
 	beq notPlayCmd
 	cmp r0,#0x80
@@ -1081,7 +1082,6 @@ AF_txt:
 
 ;@----------------------------------------------------------------------------
 cdromState:
-dmaOutPtr:	.long 0				;@ DMA data byte ptr
 dataOutPtr:	.long 0				;@ SCSI data byte ptr
 currentPos:	.long 0				;@ Current position on disc
 dataLen:	.long 0				;@ SCSI data length in bytes
@@ -1256,7 +1256,7 @@ preLoadData:
 	stmfd sp!,{r3,lr}
 //	ldr r0,dataLen
 //	movs r0,r0,lsl#32-11		;@ Is the sector bytes zero?
-//	moveq r0,#0x80
+//	moveq r0,#0x88
 //	bleq setSCSISignal			;@ This needs a more frequent update of CD!!!
 	blx CD_ReadByte
 	ldmfd sp!,{r3,lr}
@@ -1439,8 +1439,8 @@ notTrack:
 	mov r1,#0
 	strb r1,scsiData
 
-	mov r0,#0x80				;@ Only busy yet
-//	mov r0,#0xD8				;@ No data only status
+//	mov r0,#0x80				;@ Only busy yet
+	mov r0,#0x98				;@ No data only status
 	bl setSCSISignal
 
 	mov r1,#0x10000
