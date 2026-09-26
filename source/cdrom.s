@@ -285,9 +285,13 @@ noCmdWait:
 
 ;@	mov r11,r11					;@ No$GBA Debugg
 	ldrb r1,cdAudioPlaying
-	cmp r1,#0x02
-	moveq r0,#0xD8				;@ Ready for status.
-	bleq setSCSISignal
+	cmp r1,#0x01
+	cmpne r1,#0x02
+	bne noCDAudio
+	ldrb r0,scsiSignal
+	tst r0,#0x80
+	movne r0,#0xD8				;@ Ready for status.
+	blne setSCSISignal
 	ldrb r0,cdAudioRepeat
 	strb r0,cdAudioPlaying
 	cmp r0,#0
@@ -1210,8 +1214,11 @@ calcSeekTime:
 	subs r0,r0,r1,lsr#2			;@ Remove the extra bits
 	rsbmi r0,r0,#0
 	mov r0,r0,lsr#13			;@ 21-13=8, for a max of 255 frames for 4GB seek.
+	add r0,r0,r0,lsr#4			;@ Also add half a disc rotation time 100-300ms
 	add r0,r0,#7
 	str r0,cdSeekTime
+	mov r0,#0
+	strb r0,cdAudioPlaying
 	ldmfd sp!,{r0,r4-r5,pc}
 ;@----------------------------------------------------------------------------
 LBA2AudioOffset:			;@ in r0=real LBA
@@ -1462,28 +1469,30 @@ CD_DoRepeat:
 ;@----------------------------------------------------------------------------
 CD_FindSetEnd:
 ;@----------------------------------------------------------------------------
-	stmfd sp!,{r4-r5,lr}
+	stmfd sp!,{r4-r6,lr}
 	ldr r0,cddaStart
 	bl LBA2Track				;@ Get current track
+	add r4,r0,#1
 	ldr r5,tgcdBase
-	ldrb r4,[r5,#cdTOCTrackCount]	;@ Last track
+//	ldrb r4,[r5,#cdTOCTrackCount]	;@ Last track
 	add r5,r5,#8
 findLoop:
 	add r0,r0,#1
-	ldrb r2,[r5,r0,lsl#3]
-	cmp r2,#0					;@ Audio?
+	ldrb r6,[r5,r0,lsl#3]
+	cmp r6,#0					;@ Audio?
 	bne foundDataTrack
 	cmp r0,r4
-	ble findLoop
+	bmi findLoop
 
 foundDataTrack:
 	bl Track2LBA
-	ldr r1,=450
-	sub r0,r0,r1				;@ 3 second pregap for a data track following an audio one.
+	cmp r6,#0					;@ Audio?
+	movne r1,#75*3				;@ 3 second pregap for a data track following an audio one.
+	subne r0,r0,r1
 	mov r0,r0,lsl#2				;@ 2 extra bits for the cd frame vs gba frame.
 	str r0,sectorEnd
 
-	ldmfd sp!,{r4-r5,lr}
+	ldmfd sp!,{r4-r6,lr}
 	bx lr
 ;@----------------------------------------------------------------------------
 cmdEndPlayCD:				;@ Command 0xD9

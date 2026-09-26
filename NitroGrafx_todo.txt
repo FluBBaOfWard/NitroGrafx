@@ -1,8 +1,7 @@
 
 NitroGrafx To Do:
 -----------------
-	Fix CD playing with only BUSY set until finnished.
-	Fix CD stopping at specified end?
+	CD play only using D8 stops at track end?
 	Add support for multiple files for CD.
 	Add ADPCM fade, bit1 is CD/ADPCM.
 	Make sure CD audio is silent when no audio tracks are present.
