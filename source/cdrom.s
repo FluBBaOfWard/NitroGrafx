@@ -450,15 +450,15 @@ AdpcmDMA:					;@ r0=length to transfer now.
 	ldr r3,adWrPtr				;@ ADPCM write pointer
 	ldr r4,=CD_PCM_RAM			;@ ADPCM-RAM base
 dmaLoop:
+	bl SCSI_SendData
+	strb r0,[r4,r3,lsr#16]
+	add r3,r3,#0x10000
 	ldrb r0,scsiSignal
 	and r1,r0,#0xBF
 	cmp r1,#0x88				;@ Data out?
 	bne dmaEnd
 	tst r0,#0x40				;@ REQ set?
 	beq dmaSectorEnd
-	bl SCSI_SendData
-	strb r0,[r4,r3,lsr#16]
-	add r3,r3,#0x10000
 	subs r5,r5,#1
 	bhi dmaLoop
 	b dmaSkip
@@ -469,6 +469,7 @@ dmaSectorEnd:
 	ldrb r0,adDma
 	bic r0,r0,#1
 	strb r0,adDma
+	sub r5,r5,#1
 dmaSkip:
 	sub r6,r6,r5
 	ldr r0,adLen
