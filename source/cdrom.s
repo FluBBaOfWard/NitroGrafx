@@ -287,12 +287,14 @@ noCmdWait:
 	ldrb r1,cdAudioPlaying
 	cmp r1,#0x01
 	cmpne r1,#0x02
-	bne noCDAudio
+	bne noCDSignal
 	ldrb r0,scsiSignal
 	tst r0,#0x80
 	movne r0,#0xD8				;@ Ready for status.
 	blne setSCSISignal
+noCDSignal:
 	ldrb r0,cdAudioRepeat
+	strb r0,cdPlayMode
 	strb r0,cdAudioPlaying
 	cmp r0,#0
 	blne CD_DoRepeat
@@ -906,13 +908,16 @@ CD04_W:						;@ SCSI reset?
 	bxeq lr
 	mov r0,#0
 	strb r0,scsiData
-	strb r0,cdAudioPlaying
 	strb r0,cdPlayMode
+	strb r0,cdAudioPlaying
 	strb r0,cdIrqReq
 	b setSCSISignal
 ;@----------------------------------------------------------------------------
 CD05_W:						;@ Start CD sound fetching
 ;@----------------------------------------------------------------------------
+	ldrb r0,cdIrqReq
+	eor r0,r0,#0x02				;@ L/R bit should be toggled.
+	strb r0,cdIrqReq
 	ldrb r0,cdAudioPlaying
 	cmp r0,#0
 	ldr r1,=cdReadPtr
@@ -925,9 +930,6 @@ CD05_W:						;@ Start CD sound fetching
 	mov r1,r1,lsl#19			;@ 8kB
 	ldrne r0,[r2,r1,lsr#19]
 	str r0,cdSample
-	ldrb r0,cdIrqReq
-	eor r0,r0,#0x02				;@ L/R bit should be toggled.
-	strb r0,cdIrqReq
 	bx lr
 ;@----------------------------------------------------------------------------
 CD06_W:						;@ PCM Audio high, R/O.
@@ -1208,14 +1210,14 @@ Track2Offset:				;@ r0 input & output, uses r1. Gives the offset from the cd-ima
 	ldr r0,[r1,#0x0C]			;@ Offset for this track
 	bx lr
 ;@----------------------------------------------------------------------------
-calcSeekTime:
+calcSeekTime:				;@ r0 = new sector.
 ;@----------------------------------------------------------------------------
 	stmfd sp!,{r0,r4-r5,lr}
 	ldr r1,sectorPtr
-	subs r0,r0,r1,lsr#2			;@ Remove the extra bits
-	rsbmi r0,r0,#0
-	mov r0,r0,lsr#13			;@ 21-13=8, for a max of 255 frames for 4GB seek.
-	add r0,r0,r0,lsr#4			;@ Also add half a disc rotation time 100-300ms
+	subs r2,r0,r1,lsr#2			;@ Remove the extra bits
+	rsbmi r2,r2,#0
+	mov r2,r2,lsr#13			;@ 21-13=8, for a max of 255 frames for 4GB seek.
+	add r0,r2,r0,lsr#13+4		;@ Also add half a disc rotation time 100-300ms
 	add r0,r0,#7
 	str r0,cdSeekTime
 	mov r0,#0
