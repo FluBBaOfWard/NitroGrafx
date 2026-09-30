@@ -1,7 +1,6 @@
 
 NitroGrafx To Do:
 -----------------
-	CD play only using D8 stops at track end?
 	Add support for multiple files for CD.
 	Add ADPCM fade, bit1 is CD/ADPCM.
 	Make sure CD audio is silent when no audio tracks are present.
@@ -55,6 +54,8 @@ Games:
 	Rock-On, garbage on continue screen.
 	Toy Shop Boys, hangs early in game.
 	Turrican, hangs at continue.
+	Volfied, a strange "pointer" error, when you finish a level, the bonus countdown is infinite
+and the background sine-wave sound stays locked on a single note
 
 Games Fixed:
 	Champions Forever Boxing. Not working on CDROM?
@@ -77,6 +78,9 @@ CPU:
 	Move rom_map to H6280 so that jmp becomes even faster.
 	Make list of all memory reads (mem, ram , io, sram).
 	Decimal mode still broken?
+
+Tests:
+	clktest counts 4x cycles, have 4 banks from the same page before loop.
 
 Encrypted US Roms:
 	In most games, " NEC " is in the first 0x60 bytes of the rom.

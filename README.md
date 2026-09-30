@@ -106,6 +106,7 @@ Some dumb info about the emulator...
 * Cadash, vertical flickering alot.
 * Chikudenya Toubee, hangs at start.
 * Dragon Egg!, black screen at boot.
+* Dragon Saber, glitches after second boss.
 * Fighting Run, too many bitplanes.
 * Gaia no Monsho, black screen at boot.
 * Hisou Kihei Serd, black screen at boot.
@@ -113,6 +114,7 @@ Some dumb info about the emulator...
 * Rock-On, garbage on continue screen.
 * Toy Shop Boys, hangs early in game.
 * Turrican, hangs at continue.
+* Volfied, "pointer" error, when you finish a level.
 
 ## Credits
 

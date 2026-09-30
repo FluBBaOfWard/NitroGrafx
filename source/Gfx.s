@@ -1180,7 +1180,7 @@ doDTMap:
 	orr r2,r0,r9,lsr#7
 	str r2,[r6,r8]				;@ Write to dirtymap.
 	mov r3,r8,lsl#8
-	ldr r10,=0xF3FF
+	ldr r10,=0xF3FFF3FF
 	b dTTest
 
 dTStart:
@@ -1190,15 +1190,16 @@ dTLoop:
 
 	movs r2,r0,lsl#16+6
 	adcseq r0,r0,#0x0000		;@ Remap 0x400 to 0x001, always clear carry
-	orrcs r1,r1,r10				;@ Map tiles 0x401-0x7FF to BG3
+	orrcs r1,r1,r10,lsr#16		;@ Map tiles 0x401-0x7FF to BG3
 	mov r0,r0,ror#16
 
 	movs r2,r0,lsl#16+6
 	adcseq r0,r0,#0x0000		;@ Remap 0x400 to 0x001, always clear carry
 	orrcs r1,r1,r10,lsl#16		;@ Map tiles 0x401-0x7FF to BG3
 
-	and r1,r1,r0,ror#16
-	eor r0,r1,r0,ror#16
+	and r0,r10,r0,ror#16
+	and r1,r1,r0
+	bic r0,r0,r1
 
 	strd r0,r1,[r5,r3]
 	add r3,r3,#8
