@@ -92,7 +92,24 @@
  Page 0xFC-0xFE returns #0xFF.
  
 
- CD-ROM registers
+ CD-ROM registers:
+ $1800 - SCSI BUS SIGNAL (R/W)
+ $1801 - SCSI BUS DATA (R/W)
+ $1802 - IRQ2 enable (R/W)
+ $1803 - IRQ2 request / BRAM lock (R/O)
+ $1804 - Sub I/O (R/W)
+ $1805 - PCM data (LSB) (R) / Convert PCM data (W)
+ $1806 - PCM data (MSB) (R/O)
+ $1807 - CD SUBChannel (R) / BRAM unlock (W)
+ $1808 - ADPCM address (LSB) (W) / Auto handshake data input (R)
+ $1809 - ADPCM address (MSB) (W/O)
+ $180A - ADPCM RAM data port (R/W)
+ $180B - ADPCM DMA control (R/W)
+ $180C - ADPCM status (R/O)
+ $180D - ADPCM address control (R/W)
+ $180E - ADPCM playback rate (R/W)
+ $180F - ADPCM and CD audio fade timer (R/W)
+
  Registers are not mirrored anywhere else.
 
  ----------------------------------------------------------------------------
@@ -150,7 +167,7 @@
 
 
  ----------------------------------------------------------------------------
- $1803 - BRAM lock / IRQ2 request (R/O).
+ $1803 - IRQ2 request / BRAM lock (R/O)
  ----------------------------------------------------------------------------
 
  Reading from this address locks BRAM.
@@ -202,7 +219,7 @@ P_INTMON	equ	$1803	;(R/O) interrupt monitor
 
 
  ----------------------------------------------------------------------------
- $1807 - BRAM unlock (W) / CD SUBChannel (R)
+ $1807 - CD SUBChannel (R) / BRAM unlock (W)
  ----------------------------------------------------------------------------
 
  Setting bit 7 will unlock BRAM.
@@ -702,16 +719,16 @@ SenseKey:
  0x1AE3 - Shift reg byte 3 (MSB) (R/W)
 
 
- 0x1AE4 - Shift left value (R/W)
-  Bit 0-3 two complent.
+ 0x1AE4 - Shift value (R/W)
+  Bit 0-3 two complement.
   Bit 4-7 allways return 0.
 
  When register is written all 4 bytes of the shiftreg are shifted.
  Values 1 to 7 shift the contents to the left, values 8 to 15
  shift the contents to the right (16-value).
 
- 0x1AE5 - Rotate left value (R/W)
-  Bit 0-3 two complent.
+ 0x1AE5 - Rotate value (R/W)
+  Bit 0-3 two complement.
   Bit 4-7 allways return 0.
 
  When register is written all 4 bytes of the shiftreg are rotated.
@@ -748,6 +765,67 @@ of the AC banks.
 0x41 = Arcade Card port 1 register 0
 0x42 = Arcade Card port 2 register 0
 0x43 = Arcade Card port 3 register 0
+
+ ----------------------------------------------------------------------------
+ 9.) LD Registers
+ ----------------------------------------------------------------------------
+
+ LD registers:
+ $1920 - Status register 1? Bit 6 can be set/cleared, Bit 7 can be set/cleared.
+		Bit 7 needs to be clear to read/write other 192x regs?
+		Bit 6 needs to be set to read/write 194x regs?
+ $1921 - Top nybble can't be 0x80, otherwise reset.
+ $1922 - Seems to have a connection to 23
+ $1923
+ $1925
+ $1926
+ $1927 - Compared to $194B
+ $1928 - Compared to $194C
+ $1929 - Compared to $194D
+ $192A - Compared to $194E
+ $192B
+ $192C
+ $192D
+ $192E
+ $192F
+
+ $1939 - Only bit 0 interesting?
+ $193A
+ $193B
+ $193C
+ $193D
+ $193E
+ $193F
+
+ $1940 - Status register 2?
+		Bit 6 needs to be clear before bit 7 is cleared in $1920.
+		Bit 7 needs to be set before bit 6 is set in $1920.
+ $1941
+ $1942
+ $1943
+ $1944
+ $1945
+ $1946
+ $1947
+ $1948
+ $1949
+ $194B
+ $194C
+ $194D
+ $194E
+
+ $1950
+ $1951
+ $1952
+ $1953
+ $1954
+ $1955
+ $1956
+ $1957
+ $1958
+ $1959
+
+
  ----------------------------------------------------------------------------
  15.) CD Play test
  ----------------------------------------------------------------------------

@@ -10,6 +10,7 @@
 #define HW_CD_ACPRO		7
 #define HW_TURBOGRAFX	7
 #define HW_SGX_ACPRO	8
+#define HW_LDROM		9
 //-----------------------------------------------------------region
 #define REGION_US		0
 #define REGION_JAPAN	1

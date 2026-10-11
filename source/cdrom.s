@@ -528,7 +528,7 @@ moreCD_R:					;@ 0x18CX
 ;@	mov r11,r11					;@ No$GBA Debugg
 	and r0,addy,#0x03F8
 	cmp r0,#0xC0
-	bne emptyRead
+	bne LD_R
 
 	ldr r0,=gHwFlags
 	ldrb r0,[r0]
@@ -555,6 +555,39 @@ SCD_J:							;@ Super CDROM card (J)
 SCD_U:							;@ Super CDROM card (U)
 		.byte 0xFF,0xFF,0xFF,0xFF,0x00,0x55,0xAA,0x03
 
+LDRegs:
+	.space 0x40
+;@----------------------------------------------------------------------------
+LD_R:					;@ 0x19XX, Laser Disc
+;@----------------------------------------------------------------------------
+	tst addy,#0x0100
+	beq emptyRead
+	and r1,addy,#0xFF
+	subs r1,r1,#0x20
+	bmi emptyRead
+	cmp r1,#0x40
+	bpl emptyRead
+	bxeq lr
+	adr r2,LDRegs
+	ldrb r0,[r2,r1]!
+	cmp r1,#0x20
+	orreq r1,r0,#0x80
+	strbeq r1,[r2]
+	bx lr
+;@----------------------------------------------------------------------------
+LD_W:					;@ 0x19XX, Laser Disc
+;@----------------------------------------------------------------------------
+	tst addy,#0x0100
+	beq emptyWrite
+	and r1,addy,#0xFF
+	subs r1,r1,#0x20
+	bmi emptyWrite
+	cmp r1,#0x40
+	bpl emptyWrite
+	bxeq lr
+	adr r2,LDRegs
+	strb r0,[r2,r1]
+	bx lr
 ;@----------------------------------------------------------------------------
 CDROM_W:					;@ 0x1800-0x180f
 ;@----------------------------------------------------------------------------
@@ -587,7 +620,7 @@ moreCD_W:					;@ 0x18C0
 ;@	mov r11,r11					;@ No$GBA Debugg
 	bic r1,addy,#0xF800
 	cmp r1,#0xC0
-	bne emptyWrite
+	bne LD_W
 	ldr r1,=gHwFlags
 	ldrb r1,[r1]
 	tst r1,#SCD_DEVICE
