@@ -772,58 +772,71 @@ of the AC banks.
 
  LD registers:
  $1920 - Status register 1? Bit 6 can be set/cleared, Bit 7 can be set/cleared.
-		Bit 7 needs to be clear to read/write other 192x regs?
-		Bit 6 needs to be set to read/write 194x regs?
- $1921 - Top nybble can't be 0x80, otherwise reset.
- $1922 - Seems to have a connection to 23
+		Bit 7 Apply register writes, needs to be clear to read/write other 192x regs?
+		Bit 6 Freeze output registers, needs to be set to read/write 194x regs?
+		Bit 0
+ $1921 - Video mixing.
+ $1922 - Seems to
+		 0x01 writen for Open tray.
+		 0x02 writen for Close tray.
+		 0x81 writen for CD Open.
  $1923
- $1925
- $1926
- $1927 - Compared to $194B
- $1928 - Compared to $194C
- $1929 - Compared to $194D
- $192A - Compared to $194E
- $192B
- $192C
- $192D
- $192E
- $192F
+ $1924
+ $1925 - Track info selection
+ $1926 - Seek mode, repeat
+ $1927 - Track No
+ $1928 - Seek Hours/FrameNoU
+ $1929 - Seek Minutes/FrameNoM
+ $192A - Seek Seconds/FrameNoL
+ $192B - Seek Frame.
+ $192C - Image hold, digital memory.
+ $192D - Audio ctrl
+ $192E - Audio fader
+ $192F - Fader value
 
  $1939 - Only bit 0 interesting?
- $193A
- $193B
- $193C
- $193D
- $193E
- $193F
+ $193A - Bit 7-2 Controls the intensity of sprite pixels
+ $193B - Bit 7-2 Controls the intensity of background pixels
+ $193C - Bit 7-2 Controls the intensity of backdrop pixels
+ $193D - Bit 7-2 Controls the intensity of blanking pixels
+ $193E - Analog attenuate/fade
+ $193F - Attenuate value
 
  $1940 - Status register 2?
 		Bit 6 needs to be clear before bit 7 is cleared in $1920.
 		Bit 7 needs to be set before bit 6 is set in $1920.
- $1941
- $1942
- $1943
- $1944
- $1945
- $1946
- $1947
- $1948
- $1949
- $194B
- $194C
- $194D
- $194E
+ $1941 - Bit 7 always set?
+ $1942 - Bit 5 set for CD, bit 4 for no disc.
+ $1943 - Bits set during spinup
+ $1944 - Bit 7 = 0 for CD, bit 5 = 1 for CD.
+ $1945 - Currently pressed button on remote/unit, 0x7F for no or multiple buttons.
+ $1946 - Current drive state
+ $1947 - Current playback/step mode
+ $1948 - Bit 6 & 0 set for CD
+ $1949 - Bit 4, 2-0 error bits
+ $194A - Reflects reg 1926
+ $194B - Reflects reg 1927
+ $194C - Reflects reg 1928
+ $194D - Reflects reg 1929
+ $194E - Reflects reg 192A
+ $194F - Reflects reg 192B
 
- $1950
- $1951
- $1952
- $1953
- $1954
- $1955
- $1956
- $1957
- $1958
- $1959
+ $1950 - Reflects reg 1925
+ $1951 - Sub channel q?
+ $1952 - Current CD Minutes
+ $1953 - Current CD Seconds
+ $1954 - Current CD Frames
+ $1955 - Current CD Track
+ $1956 - Current CD track index?
+ $1957 - Current Track Minutes
+ $1958 - Current Track Seconds
+ $1959 - Current Track Frames
+ $195A - Current Stop Chapter
+ $195B - Current Stop Frame
+ $195C - Current Stop Seconds
+ $195D - Current Stop Minutes
+ $195E - Current Stop Hours
+ $195F - Stop Point latched
 
 
  ----------------------------------------------------------------------------

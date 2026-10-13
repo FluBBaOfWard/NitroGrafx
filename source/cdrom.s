@@ -115,6 +115,10 @@ cdReset:
 	mov r1,#0
 	mov r2,#(cdromStateEnd-cdromState)/4
 	bl memset_					;@ Clear CD-ROM regs
+	ldr r0,=LDRegs
+	mov r1,#0
+	mov r2,#0x40/4
+	bl memset_					;@ Clear LD-ROM regs
 //	bl copyTCD
 	ldmfd sp!,{lr}
 
@@ -567,13 +571,42 @@ LD_R:					;@ 0x19XX, Laser Disc
 	bmi emptyRead
 	cmp r1,#0x40
 	bpl emptyRead
-	bxeq lr
 	adr r2,LDRegs
-	ldrb r0,[r2,r1]!
 	cmp r1,#0x20
-	orreq r1,r0,#0x80
-	strbeq r1,[r2]
+	beq LD40_R
+	cmp r1,#0x22
+	beq LD42_R
+	cmp r1,#0x25
+	beq LD45_R
+	cmp r1,#0x28
+	beq LD48_R
+	cmp r1,#0x29
+	beq LD49_R
+	cmp r1,#0x02
+	bmi LD20_R
+	mov r11,r11
+LD20_R:
+LD21_R:
+	ldrb r0,[r2,r1]
 	bx lr
+LD40_R:
+	ldrb r0,[r2,r1]!
+	orr r1,r0,#0x80
+	strb r1,[r2]
+	bx lr
+LD42_R:
+	mov r0,#0x20			;@ Bit 5 set for CD
+	bx lr
+LD45_R:
+	mov r0,#0x7F			;@ Remote/Unit button pressed.
+	bx lr
+LD48_R:
+	mov r0,#0x41			;@ Bit 6 & 0 set for CD
+	bx lr
+LD49_R:
+	mov r0,#0x00			;@ Errors.
+	bx lr
+
 ;@----------------------------------------------------------------------------
 LD_W:					;@ 0x19XX, Laser Disc
 ;@----------------------------------------------------------------------------
@@ -584,8 +617,11 @@ LD_W:					;@ 0x19XX, Laser Disc
 	bmi emptyWrite
 	cmp r1,#0x40
 	bpl emptyWrite
-	bxeq lr
 	adr r2,LDRegs
+	tst r1,#0x1F
+	beq ldNoStopW
+	mov r11,r11
+ldNoStopW:
 	strb r0,[r2,r1]
 	bx lr
 ;@----------------------------------------------------------------------------

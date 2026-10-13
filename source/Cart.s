@@ -529,7 +529,7 @@ sgxRAM:
 	.size sgxRAM, 0x8000
 ROM_Space:
 biosSpace:
-	.space 0x40000				;@ US/JP BIOS 256kB max
+	.space 0x80000				;@ US/JP BIOS 256kB max, LD 512kB.
 CD_PCM_RAM:
 	.space 0x10000
 SCD_RAM:
