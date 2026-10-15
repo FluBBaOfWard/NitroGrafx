@@ -1,9 +1,9 @@
 
 NitroGrafx To Do:
 -----------------
+	Make sure CD audio is silent when no audio tracks are present.
 	Add support for multiple files for CD.
 	Add ADPCM fade, bit1 is CD/ADPCM.
-	Make sure CD audio is silent when no audio tracks are present.
 	Exile needs 2kB BRAM only? Add separate save files for each (CD) game.
 
 	Turbo switches? Gun Boat. http://www.gamefaqs.com/tg16/588987-gunboat/faqs/27685
@@ -43,15 +43,17 @@ Sound:
 	Add LFO emulation? (Hanii in the Sky, Juuouki, and Flash Hiders use LFO).
 
 Games:
+	Air Zonk, no control/no enemies at level start.
 	Benkei Gaiden, crashes in intro.
 	Cadash. Vertical flickering alot.
 	Chikudenya Toubee, hangs at start.
 	Dragon Egg!, black screen at boot.
+	Dragon Saber, glitches after second boss.
 	Fighting Run, too many bitplanes.
-	Gaia no Monsho, black screen at boot. Timer handling. H6280.s row 1826.
+	Gaia no Monsho, black screen at boot.
 	Hisou Kihei Serd, black screen at boot.
+	Pc Denjin - Punkic Cyborgs (J), locks up at level start.
 	Power Tennis, crashes in intro.
-	Rock-On, garbage on continue screen.
 	Toy Shop Boys, hangs early in game.
 	Turrican, hangs at continue.
 	Volfied, a strange "pointer" error, when you finish a level, the bonus countdown is infinite

@@ -412,7 +412,6 @@ void CD_SeekPos(int pos) {
 void CD_ResetBuffer(void) {
 	cdReadPtr = 0;
 	cdWritePtr = 0;
-//	CD_FillBuffer();
 }
 
 void CD_ConvertCueFile(const char *fName) {

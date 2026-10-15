@@ -102,6 +102,7 @@ Some dumb info about the emulator...
 
 ## Games
 
+* Air Zonk, no control/no enemies at level start.
 * Benkei Gaiden, crashes in intro.
 * Cadash, vertical flickering alot.
 * Chikudenya Toubee, hangs at start.
@@ -110,6 +111,7 @@ Some dumb info about the emulator...
 * Fighting Run, too many bitplanes.
 * Gaia no Monsho, black screen at boot.
 * Hisou Kihei Serd, black screen at boot.
+* Pc Denjin - Punkic Cyborgs (J), locks up at level start.
 * Power Tennis, crashes in intro.
 * Rock-On, garbage on continue screen.
 * Toy Shop Boys, hangs early in game.

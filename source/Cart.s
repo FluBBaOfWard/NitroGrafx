@@ -529,15 +529,15 @@ sgxRAM:
 	.size sgxRAM, 0x8000
 ROM_Space:
 biosSpace:
-	.space 0x80000				;@ US/JP BIOS 256kB max, LD 512kB.
+	.space 0x40000				;@ US/JP BIOS 256kB max, LD 512kB.
+ACC_RAM:
+	.space 0x200000
 CD_PCM_RAM:
 	.space 0x10000
 SCD_RAM:
 	.space 0x30000
 PCE_CD_RAM:
 	.space 0x10000
-ACC_RAM:
-	.space 0x200000
 ;@----------------------------------------------------------------------------
 	.end
 #endif // __arm__

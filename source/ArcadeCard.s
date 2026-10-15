@@ -227,12 +227,12 @@ AC30_R:
 ;@----------------------------------------------------------------------------
 ACx0_R:
 ;@----------------------------------------------------------------------------
-	and r2,addy,#0x30
 	ldr acptr,=acPort0
+	and r2,addy,#0x30
 	add acptr,acptr,r2
 	ldrb r1,[acptr,#acControl]	;@ Control
-	and r1,r1,#0x1F
 	adr r2,acCtrlTblR
+	and r1,r1,#0x1F
 	ldr pc,[r2,r1,lsl#2]
 ac00_xr:
 	ldr r2,[acptr,#acBase]		;@ addy=base
@@ -486,8 +486,8 @@ ACx0_W:
 	adr acptr,acPort0
 	add acptr,acptr,r2
 	ldrb r1,[acptr,#acControl]	;@ Control
-	and r1,r1,#0x1F
 	adr r2,acCtrlTblW
+	and r1,r1,#0x1F
 	ldr pc,[r2,r1,lsl#2]
 ac00_xw:
 	and r0,r0,#0xFF
