@@ -186,6 +186,7 @@ borderScanlineHook:
 	ldrbne r1,vdcDoVramDMA
 	cmpne r1,#0
 	blne vramDMA
+	// Fallthrough
 ;@----------------------------------------------------------------------------
 defaultScanlineHook:
 ;@----------------------------------------------------------------------------
@@ -238,25 +239,38 @@ startVbl:
 	movne r0,#0x100
 	str r0,vdcSatLen
 
-	ldrb r0,vdcCtrl1
-	tst r0,#0x08				;@ vbl IRQ?
-	bxeq lr
-	mov r0,#0x20				;@ VBlank bit
-	strb r0,vdcPrimedVBl
 	bx lr
 
 ;@----------------------------------------------------------------------------
-vblHook:					;@ 193/240
+vblHook:					;@ 192/240
 ;@----------------------------------------------------------------------------
-	mov r0,#0
 	ldrb r2,vdcPrimedVBl
-	strb r0,vdcPrimedVBl		;@ Clear byte.
+	eors r2,r2,#0x20			;@ VBlank bit
+	strb r2,vdcPrimedVBl		;@ Clear byte.
+	beq vblHook2nd
+	ldr r1,=(455-90)
+	sub cycles,cycles,r1,lsl#10	;@ Assume high speed.
+
+	;@ Do this scanline again
+	sub r1,r5,#1
+	str r1,scanline
+	ldr r1,vdcLineState
+	sub r1,r1,#12
+	ldmia r1!,{r2}
+	str r1,vdcLineState
+	str r2,vdcNextLineChange
+	ldr pc,vdcScanlineHook		;@ We don't want to run ourself straight away.
+
+vblHook2nd:
+	sub cycles,cycles,#90<<10	;@ Assume high speed.
+	ldrb r0,vdcCtrl1
+	tst r0,#0x08				;@ vbl IRQ?
+	beq noRasterIrq
 	ldrb r0,vdcStat
-	orrs r0,r0,r2				;@ VBlank bit
+	orr r0,r0,#0x20				;@ VBlank bit
 	strb r0,vdcStat				;@ VBL irq.
-	bxeq lr
 	setIrqPin VDCIRQ_F
-	bx lr
+	b noRasterIrq
 ;@----------------------------------------------------------------------------
 newFrame:					;@ Called before line 0
 ;@----------------------------------------------------------------------------
@@ -311,9 +325,11 @@ _VDC0R:						;@ VDC Register
 	cmp r1,#0
 	bxeq lr
 
+	ldrb r1,vdcCtrl1
+	tst r1,#0x08				;@ vbl IRQ enabled?
+	bxeq lr
 	cmp cycles,#7*4*CYCLE
 	orrmi r0,r0,#0x20			;@ VBlank bit
-	strbmi h6280a,vdcPrimedVBl
 	bx lr
 ;@----------------------------------------------------------------------------
 ;@_VDC2R					;@ VDC Data L
