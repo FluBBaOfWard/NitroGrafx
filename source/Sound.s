@@ -14,7 +14,6 @@
 	.extern powerIsOn
 
 	.global PSG_0
-	.global missingSamplesCnt
 
 	.global soundInit
 	.global soundReset
@@ -53,6 +52,7 @@ soundReset:
 	str r0,pcmReadPtr
 	str r0,silenceWave
 	str r0,sectorCountDown
+	str r0,neededExtra
 	ldr psgptr,=PSG_0
 	bl PCEPSGReset				;@ Sound
 	mov r0,#SOUND_BUFFER_SIZE

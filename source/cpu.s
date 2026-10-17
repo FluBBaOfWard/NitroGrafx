@@ -77,10 +77,10 @@ skipYPan:
 	add r0,h6280ptr,#h6280Regs
 	ldmia r0,{h6280nz-h6280pc,h6280zpage}	;@ Restore H6280 state
 
-	ldr r0,[h6280ptr,#h6280NextTimeout]
-	bx r0
-//	ldr r0,scanlineCycles
-//	b h6280RunXCycles
+//	ldr r0,[h6280ptr,#h6280NextTimeout]
+//	bx r0
+	ldr r0,scanlineCycles
+	b h6280RunXCycles
 
 ;@----------------------------------------
 SGXFrameLoop:

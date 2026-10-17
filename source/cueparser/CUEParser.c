@@ -314,7 +314,6 @@ CueSheet *readCue(const char *cuefile) {
 	CueSheet *cs = NULL;
 
 	if (NULL == (f = fopen(cuefile, "r"))) {
-		//err_sys("Could not open file \"%s\" for reading", cuefile);
 		return NULL;
 	}
 	if ((cs = (CueSheet *)malloc(sizeof(CueSheet))) == NULL) {
@@ -322,9 +321,12 @@ CueSheet *readCue(const char *cuefile) {
 		return NULL;
 	}
 
-	char *cueString = malloc(0x2000);
-	memset(cueString, 0, 0x2000);
-	fread(cueString, 1, 0x2000, f);
+	fseek(f, 0, SEEK_END);
+	int cueSize = ftell(f) + 1;
+	fseek(f, 0, SEEK_SET);
+	char *cueString = malloc(cueSize);
+	memset(cueString, 0, cueSize);
+	fread(cueString, 1, cueSize, f);
 	fclose(f);
 
 	startParser(cueString);

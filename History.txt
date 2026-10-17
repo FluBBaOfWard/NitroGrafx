@@ -2,16 +2,17 @@ NitroGrafx revision history
 -=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 
-V0.9.1 - 2026-10-15 (FluBBa)
+V0.9.1 - 2026-10-17 (FluBBa)
 	Added PSG sample playing.
 	Added CD-ROM ADPCM.
 	Added CD audio fade.
 	Added minimal support for LD-ROM bios.
+	Fixed VBlank vs Raster IRQ timing.
 	Fixed CD DMA.
 	Fixed interrupt handling for CD.
 	Fixed seek times for CD-ROM.
 	Fixed CD command abort.
-	Fixed handling of all CD audio modes.
+	Fixed handling of all CD Audio playing modes.
 	Fixed a bug with VDC tile 0x400.
 	Ported from devkitARM to BlocksDS, smaller binary.
 

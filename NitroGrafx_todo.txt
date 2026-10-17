@@ -43,34 +43,35 @@ Sound:
 	Add LFO emulation? (Hanii in the Sky, Juuouki, and Flash Hiders use LFO).
 
 Games:
-	Air Zonk, no control/no enemies at level start.
-	Benkei Gaiden, crashes in intro.
-	Cadash. Vertical flickering alot.
 	Chikudenya Toubee, hangs at start.
-	Dragon Egg!, black screen at boot.
 	Dragon Saber, glitches after second boss.
 	Fighting Run, too many bitplanes.
 	Gaia no Monsho, black screen at boot.
-	Hisou Kihei Serd, black screen at boot.
-	Pc Denjin - Punkic Cyborgs (J), locks up at level start.
-	Power Tennis, crashes in intro.
-	Toy Shop Boys, hangs early in game.
+	Rock-On, garbage on continue screen.
 	Turrican, hangs at continue.
 	Volfied, a strange "pointer" error, when you finish a level, the bonus countdown is infinite
 and the background sine-wave sound stays locked on a single note
 
 Games Fixed:
+	Air Zonk, no control/no enemies at level start. (VBlank & Raster IRQ)
+	Benkei Gaiden, crashes in intro. (VBlank & Raster IRQ)
+	Cadash. Vertical flickering alot. (VBlank & Raster IRQ)
 	Champions Forever Boxing. Not working on CDROM?
 	College Pro Baseball '88, music no graphics. SprDMA (SprDMA IRQ?).
 	College Pro Baseball '90, music no graphics. SprDMA (SprDMA IRQ?).
 	Coryoon Child of dragon, no scrolling sometime?
+	Dragon Egg!, black screen at boot.
 	Gunboat, tanks the performance completely. Timer counting was wrong.
+	Hisou Kihei Serd, black screen at boot. (VBlank & Raster IRQ)
 	Klax, tanks the performance completely. Timer counting was wrong.
 	Naxat Open, can't make a shot. SprDMA (SprDMA IRQ?).
 	Night Creatures, no sprites. No cycles for Sprite DMA handling.
+	Pc Denjin - Punkic Cyborgs (J), locks up at level start. (VBlank & Raster IRQ)
+	Power Tennis, crashes in intro. (VBlank & Raster IRQ)
 	Space Harrier, no sprites. No cycles for Sprite DMA handling.
 	Takeda Shingen, graphics is corrupt. VRAM DMA length is val+1.
 	Tatsujin, sprites freeze after death. SprDMA.
+	Toy Shop Boys, hangs early in game. (VBlank & Raster IRQ)
 	TV Sports Football, hangs in game. SprDMA.
 	TV Sports Ice Hockey, no sprites. SprDMA.
 	Valkyrie no Densetsu, hangs in intro. SprDMA.
