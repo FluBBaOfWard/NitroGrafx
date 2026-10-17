@@ -205,30 +205,30 @@ AC10_R:
 ;@----------------------------------------------------------------------------
 	ldr acptr,=acPort1
 	ldrb r1,[acptr,#acControl]	;@ Control
-	and r1,r1,#0x1F
 	adr r2,acCtrlTblR
+	and r1,r1,#0x1F
 	ldr pc,[r2,r1,lsl#2]
 ;@----------------------------------------------------------------------------
 AC20_R:
 ;@----------------------------------------------------------------------------
 	ldr acptr,=acPort2
 	ldrb r1,[acptr,#acControl]	;@ Control
-	and r1,r1,#0x1F
 	adr r2,acCtrlTblR
+	and r1,r1,#0x1F
 	ldr pc,[r2,r1,lsl#2]
 ;@----------------------------------------------------------------------------
 AC30_R:
 ;@----------------------------------------------------------------------------
 	ldr acptr,=acPort3
 	ldrb r1,[acptr,#acControl]	;@ Control
-	and r1,r1,#0x1F
 	adr r2,acCtrlTblR
+	and r1,r1,#0x1F
 	ldr pc,[r2,r1,lsl#2]
 ;@----------------------------------------------------------------------------
 ACx0_R:
 ;@----------------------------------------------------------------------------
-	ldr acptr,=acPort0
 	and r2,addy,#0x30
+	ldr acptr,=acPort0
 	add acptr,acptr,r2
 	ldrb r1,[acptr,#acControl]	;@ Control
 	adr r2,acCtrlTblR
@@ -460,24 +460,24 @@ AC10_W:
 ;@----------------------------------------------------------------------------
 	adr acptr,acPort1
 	ldrb r1,[acptr,#acControl]	;@ Control
-	and r1,r1,#0x1F
 	adr r2,acCtrlTblW
+	and r1,r1,#0x1F
 	ldr pc,[r2,r1,lsl#2]
 ;@----------------------------------------------------------------------------
 AC20_W:
 ;@----------------------------------------------------------------------------
 	adr acptr,acPort2
 	ldrb r1,[acptr,#acControl]	;@ Control
-	and r1,r1,#0x1F
 	adr r2,acCtrlTblW
+	and r1,r1,#0x1F
 	ldr pc,[r2,r1,lsl#2]
 ;@----------------------------------------------------------------------------
 AC30_W:
 ;@----------------------------------------------------------------------------
 	adr acptr,acPort3
 	ldrb r1,[acptr,#acControl]	;@ Control
-	and r1,r1,#0x1F
 	adr r2,acCtrlTblW
+	and r1,r1,#0x1F
 	ldr pc,[r2,r1,lsl#2]
 ;@----------------------------------------------------------------------------
 ACx0_W:
