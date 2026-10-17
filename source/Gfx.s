@@ -45,6 +45,7 @@
 	.global clearDirtyTiles
 	.global midFrame
 	.global gfxEndFrame
+	.global redrawTiles
 	.global vblIrqHandler
 	.global refreshSprites
 
@@ -686,21 +687,6 @@ gfxEndFrame:					;@ Called just before screen end (~line 192)	(r0-r2 safe to use
 	ldr r0,=windowTop			;@ Load wTop, store in wTop+4.......load wTop+8, store in wTop+12
 	ldmia r0,{r1-r3}			;@ Load with post increment
 	stmib r0,{r1-r3}			;@ Store with pre increment
-//	mov r0,#0x00FF
-//	ldr r1,=BG_PALETTE_SUB		;@ Background palette
-//	strh r0,[r1]				;@ Background palette
-
-skipVBlWait:
-//	mov r0,#0x7C00
-//	ldr r1,=BG_PALETTE_SUB		;@ Background palette
-//	strh r0,[r1]				;@ Background palette
-	bl redrawTiles
-
-//	mov r0,#BG_GFX				;@ NDS BG tileset
-//	orr r0,r0,#0x400000			;@ Spr ram
-//	ldr r1,=DELAYED_SPRITETILES	;@ DMA3 src, Sprite tiles:
-//	mov r2,#0x8000				;@ 32kB
-//	blx memcpy
 
 	ldmfd sp!,{r3-r9,r11,lr}
 	bx lr
@@ -736,7 +722,7 @@ refreshSprites:
 	ldr r2,dmaOamBuffer			;@ Destination
 	b sprRefresh
 ;@----------------------------------------------------------------------------
-sprDMADo:					;@ Called from midframe. YATX
+sprDMADo:					;@ Called from midframe. YXTA
 ;@----------------------------------------------------------------------------
 ;@ Word 0 : ------aaaaaaaaaa
 ;@ Word 1 : ------bbbbbbbbbb

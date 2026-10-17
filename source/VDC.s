@@ -198,7 +198,10 @@ defaultScanlineHook:
 	setIrqPin VDCIRQ_F
 noRasterIrq:
 
+	ldr r1,vdcEndFrameLine
+	cmp r1,r5
 	mov r0,#0
+	moveq r0,#1
 	ldmfd sp!,{r4,r5,pc}
 ;@----------------------------------------------------------------------------
 fakeFrame:
@@ -210,7 +213,7 @@ fakeFrame:
 	bx lr
 
 ;@----------------------------------------------------------------------------
-endFrame:					;@ Called just before screen end (~line 192)	(r0-r2 safe to use)
+endFrame:					;@ Called just before visible screen end	(r0-r2 safe to use)
 ;@----------------------------------------------------------------------------
 	stmfd sp!,{lr}
 
@@ -257,6 +260,8 @@ vblHook:					;@ End of visible screen
 	beq vblHook2nd
 	ldr r1,=(455-90)
 	sub cycles,cycles,r1,lsl#10	;@ Assume high speed.
+
+	bl redrawTiles
 
 	;@ Do this scanline again
 	sub r1,r5,#1
@@ -305,8 +310,7 @@ frameEndHook:
 	mov r0,#-1
 	str r0,scanline				;@ Reset scanline count
 
-	mov r0,#1
-	ldmfd sp!,{r4,r5,pc}
+	ldr pc,vdcScanlineHook		;@ We don't want to run ourself straight away.
 
 ;@----------------------------------------------------------------------------
 //	.section .itcm, "ax", %progbits
