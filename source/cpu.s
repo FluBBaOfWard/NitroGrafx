@@ -70,7 +70,6 @@ skipYPan:
 
 	bl refreshEMUjoypads		;@ Z=1 if communication ok
 
-	bl newFrame					;@ Display update
 	bl updateCDROM				;@ Update CD counters and stuff
 @	bl updateSound
 
@@ -141,10 +140,11 @@ stepFrame:					;@ Return after 1 frame
 ;@----------------------------------------------------------------------------
 	stmfd sp!,{r4-r11,lr}
 	ldr h6280ptr,=h6280OpTable
-	bl newFrame					;@ Display update
 	bl updateCDROM				;@ Update CD counters and stuff
 	add r0,h6280ptr,#h6280Regs
 	ldmia r0,{h6280nz-h6280pc,h6280zpage}	;@ Restore H6280 state
+	ldr r0,scanlineCycles
+	b h6280RunXCycles
 ;@----------------------------------------------------------------------------
 stepLoop:
 ;@----------------------------------------------------------------------------

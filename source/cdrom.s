@@ -421,7 +421,7 @@ noFetch:
 
 	subs r6,r6,#0x4000
 	bne adpcmLoop
-adEnd0:
+
 	ldrb r0,adAdrCtrl
 	tst r0,#0x40				;@ Stop playing?
 	bicne r0,r0,#0x20			;@ Stop playing.

@@ -44,7 +44,7 @@
 	.global transferVRAM
 	.global clearDirtyTiles
 	.global midFrame
-	.global endFrame
+	.global gfxEndFrame
 	.global vblIrqHandler
 	.global refreshSprites
 
@@ -657,31 +657,10 @@ midFrame:					;@ Called at line 96
 	b sprDMADo
 
 ;@----------------------------------------------------------------------------
-endFrame:					;@ Called just before screen end (~line 192)	(r0-r2 safe to use)
+gfxEndFrame:					;@ Called just before screen end (~line 192)	(r0-r2 safe to use)
 ;@----------------------------------------------------------------------------
-	stmfd sp!,{r1,r3-r9,r11,lr}
+	stmfd sp!,{r3-r9,r11,lr}
 
-	bl newX
-
-	ldr r1,=vdcBurst
-	ldrb r0,[r1]
-	cmp r0,#0
-	mov r0,#0
-	strb r0,[r1]
-
-	ldreq r0,=0x0000			;@ If burstmode, wait until next frame with enabling bgr.
-	moveq r1,#0					;@ 1?
-	moveq addy,#239
-	adr lr,vdcRet
-	beq vdcCtrl1Finish
-	bne newVDCCR
-vdcRet:
-;@--------------------------
-	ldr r0,=0x0000				;@ WININBUFF
-	ldr r1,=vdcEndFrameLine
-	ldr r1,[r1]
-	mov addy,#239
-	bl vdcCtrl1Finish
 ;@--------------------------
 	bl tileMapFinish
 ;@--------------------------
@@ -723,7 +702,7 @@ skipVBlWait:
 //	mov r2,#0x8000				;@ 32kB
 //	blx memcpy
 
-	ldmfd sp!,{r1,r3-r9,r11,lr}
+	ldmfd sp!,{r3-r9,r11,lr}
 	bx lr
 
 	.pool
