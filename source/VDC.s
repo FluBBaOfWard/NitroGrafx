@@ -221,20 +221,18 @@ endFrame:					;@ Called just before visible screen end	(r0-r2 safe to use)
 
 	ldrb r0,vdcBurst
 	cmp r0,#0
-	mov r0,#0
-	strb r0,vdcBurst
 
 	adr lr,vdcRet
 	bne newVDCCR
-	ldreq r0,=0x0000			;@ If burstmode, wait until next frame with enabling bgr.
-	moveq r1,#0					;@ 1?
-	moveq addy,#239
-	beq vdcCtrl1Finish
+//	mov r0,#0					;@ If burstmode, wait until next frame with enabling bgr.
+	mov r1,#0					;@ 1?
+	mov addy,#242
+	b vdcCtrl1Finish
 vdcRet:
 ;@--------------------------
-	ldr r0,=0x0000				;@ WININBUFF
-	ldr r1,vdcEndFrameLine
-	mov addy,#239
+	mov r0,#0					;@ WININBUFF
+	mov r1,r5
+	mov addy,#242
 	bl vdcCtrl1Finish
 	bl gfxEndFrame
 
@@ -265,11 +263,10 @@ vblHook:					;@ End of visible screen
 	;@ Do this scanline again
 	sub r1,r5,#1
 	str r1,scanline
+	str r5,vdcNextLineChange
 	ldr r1,vdcLineState
-	sub r1,r1,#12
-	ldmia r1!,{r2}
+	sub r1,r1,#8
 	str r1,vdcLineState
-	str r2,vdcNextLineChange
 	ldr pc,vdcScanlineHook		;@ We don't want to run ourself straight away.
 
 vblHook2nd:

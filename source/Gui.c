@@ -232,11 +232,11 @@ void powerOnOff() {
 		if (!hucardLoaded && !biosLoaded) {
 			loadUSBIOS();
 		}
+		loadCart();
 	}
 	else {
 		antWarsInit();
 	}
-	loadCart();
 }
 
 void ejectGame() {

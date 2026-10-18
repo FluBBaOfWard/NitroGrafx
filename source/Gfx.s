@@ -128,6 +128,9 @@ antSeed:
 antWarsInit:
 	.type antWarsInit STT_FUNC
 ;@----------------------------------------------------------------------------
+	stmfd sp!,{lr}
+	bl gfxReset
+
 	mov r0,#0x00
 	ldr r1,=gGfxMask
 	strb r0,[r1]
@@ -144,8 +147,9 @@ antWarsInit:
 
 	ldr r1,=0x03000300
 	mov r2,#0x800/4
-	b memset_					;@ BG2 clear
-
+	bl memset_					;@ BG2 clear
+	ldmfd sp!,{lr}
+	bx lr
 ;@----------------------------------------------------------------------------
 antWars:
 	.type   antWars STT_FUNC
