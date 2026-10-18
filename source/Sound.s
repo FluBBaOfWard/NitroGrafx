@@ -119,27 +119,15 @@ sndCopyLoop:
 //	blne debugIOUnmappedR
 
 	ldmfd sp!,{r0,r1,r4,r5,lr}
-	stmfd sp!,{r0,r1,lr}
-	bl renderADPCM
-	ldmfd sp!,{r0,r1,lr}
-	ldr r2,=cdSeekTime
-	ldr r2,[r2]
-	cmp r2,#0
-	bne seeking
-	ldr r2,=cdAudioPlaying
-	ldrb r2,[r2]
-	cmp r2,#0
-	bne mixCDData2
-seeking:
-	add r1,r1,r0,lsl#2
-	ldr r2,[r1,#-4]
-	str r2,silenceWave
-	bx lr
 #else
 	stmfd sp!,{r0,r1,lr}
 	ldr psgptr,=PSG_0
 	bl PCEPSGMixer
-
+	ldmfd sp!,{r0,r1,lr}
+#endif // SAMPLE_PLAYING
+	stmfd sp!,{r0,r1,lr}
+	bl renderADPCM
+	ldmfd sp!,{r0,r1,lr}
 	ldr r2,=cdSeekTime
 	ldr r2,[r2]
 	cmp r2,#0
@@ -152,9 +140,7 @@ seeking:
 	add r1,r1,r0,lsl#2
 	ldr r2,[r1,#-4]
 	str r2,silenceWave
-	ldmfd sp!,{r0,r1,lr}
 	bx lr
-#endif // SAMPLE_PLAYING
 
 ;@----------------------------------------------------------------------------
 silenceMix:
@@ -171,8 +157,6 @@ silenceLoop:
 ;@----------------------------------------------------------------------------
 mixCDData:
 ;@----------------------------------------------------------------------------
-	ldmfd sp!,{r0,r1,lr}
-mixCDData2:
 	stmfd sp!,{r0,r1,r4-r8}
 
 	ldr r3,=sectorPtr

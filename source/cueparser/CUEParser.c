@@ -336,19 +336,19 @@ CueSheet *readCue(const char *cuefile) {
 	int wavDataOfs = 0;
 	cs->file[0] = 0;
 	while ((trackInf = nextTrack(prevFileSize)) != NULL) {
+		wavDataOfs = 0;
 		const char *fName = trackInf->filename;
-		if (cs->file[0] != 0 && strcmp(cs->file, fName)) {
-			prevFileSize = 0;
+		if (strcmp(cs->file, fName)) {
+			prevFileSize = 0x200000;		// 2MB if no file found
 			f = fopen(fName, "r");
 			if (f != NULL) {
 				fseek(f, 0, SEEK_END);
 				prevFileSize = ftell(f);
-				wavDataOfs = 0;
+				fclose(f);
 				if (trackInf->fileMode == FILE_TYPE_WAVE) {
 					wavDataOfs = 0x2C; // Calculate header size correctly!
 					prevFileSize -= wavDataOfs;
 				}
-				fclose(f);
 			}
 		}
 		if (cs->file[0] == 0 && trackInf->trackMode != TRK_MODE_AUDIO) {

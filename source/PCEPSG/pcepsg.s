@@ -196,6 +196,9 @@ rLoop:
 	mov r0,#0x8000001F
 	str r0,[psgptr,#noise4CurrentAddr]
 	str r0,[psgptr,#noise5CurrentAddr]
+	mov r0,#PSGDIVIDE
+	strb r0,[psgptr,#ch4Freq]
+	strb r0,[psgptr,#ch5Freq]
 	bx lr
 ;@----------------------------------------------------------------------------
 pcePSGSaveState:		;@ In r0=destination, r1=psgptr. Out r0=state size.
@@ -460,4 +463,4 @@ _0809W:						;@ LFO trigger and control
 	bx lr
 ;@----------------------------------------------------------------------------
 
-#endif // #ifdef __arm__
+#endif // __arm__
