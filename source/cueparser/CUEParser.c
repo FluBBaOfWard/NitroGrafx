@@ -356,7 +356,12 @@ CueSheet *readCue(const char *cuefile) {
 		}
 		TrackSpec *ts = &cs->tracks[i];
 		ts->mode = trackInf->trackMode;
-		ts->start = trackInf->fileOffset + wavDataOfs;
+		if (strcmp(cs->file, fName)) {
+			ts->start = trackInf->fileOffset + wavDataOfs + 0x30000000; // Silence audio tracks
+		}
+		else {
+			ts->start = trackInf->fileOffset + wavDataOfs;
+		}
 		ts->LBA = trackInf->dataStart;
 		i++;
 	}

@@ -1,7 +1,6 @@
 
 NitroGrafx To Do:
 -----------------
-	Make sure CD audio is silent when no audio tracks are present.
 	Add support for multiple files for CD.
 	Add ADPCM fade, bit1 is CD/ADPCM.
 	Exile needs 2kB BRAM only? Add separate save files for each (CD) game.
@@ -9,8 +8,8 @@ NitroGrafx To Do:
 	Turbo switches? Gun Boat. http://www.gamefaqs.com/tg16/588987-gunboat/faqs/27685
 	Savestates for CD games as well. Write/load every part by itself.
 	Fix TAM/TMA #$00
-	Check the Games Express games. Data in track 1 is the problem?
-		Or should their BIOS lay "over" the normal?
+	Check the Games Express games.
+		Should their BIOS lay "over" the normal?
 		Is both the normal BIOS and GE loaded at the same time?
 	Fix V flicker position (all games with statusbar etc.). Done?
 
@@ -41,6 +40,11 @@ Sound:
 	Louder CD-sound?
 	Optimise. Lower quality?
 	Add LFO emulation? (Hanii in the Sky, Juuouki, and Flash Hiders use LFO).
+
+CPU:
+	Move rom_map to H6280 so that jmp becomes even faster.
+	Make list of all memory reads (mem, ram , io, sram).
+	Decimal mode still broken?
 
 Games:
 	Chikudenya Toubee, hangs at start.
@@ -77,11 +81,6 @@ Games Fixed:
 	TV Sports Ice Hockey, no sprites. SprDMA.
 	Valkyrie no Densetsu, hangs in intro. SprDMA.
 	Volfied, hangs just before game starts. SprDMA.
-
-CPU:
-	Move rom_map to H6280 so that jmp becomes even faster.
-	Make list of all memory reads (mem, ram , io, sram).
-	Decimal mode still broken?
 
 Tests:
 	clktest counts 4x cycles, have 4 banks from the same page before loop.

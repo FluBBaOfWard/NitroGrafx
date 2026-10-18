@@ -233,8 +233,7 @@ endFrame:					;@ Called just before visible screen end	(r0-r2 safe to use)
 vdcRet:
 ;@--------------------------
 	ldr r0,=0x0000				;@ WININBUFF
-	ldr r1,=vdcEndFrameLine
-	ldr r1,[r1]
+	ldr r1,vdcEndFrameLine
 	mov addy,#239
 	bl vdcCtrl1Finish
 	bl gfxEndFrame
