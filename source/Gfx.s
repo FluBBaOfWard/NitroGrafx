@@ -606,8 +606,7 @@ scrolLoop2:
 	bic r0,r0,r2,lsl#8
 	strh r0,[r9,#REG_DISPCNT]
 
-	ldr r2,=BGOffset1
-	ldr r2,[r2]
+	ldr r2,BGOffset1
 	ldr r0,=0xE002				;@ 1024x1024, wrap BG & prio.
 	add r0,r0,r2
 	strh r0,[r9,#REG_BG2CNT]
@@ -664,7 +663,7 @@ midFrame:					;@ Called at line 96
 ;@----------------------------------------------------------------------------
 gfxEndFrame:					;@ Called just before screen end (~line 192)	(r0-r2 safe to use)
 ;@----------------------------------------------------------------------------
-	stmfd sp!,{r3-r9,r11,lr}
+	stmfd sp!,{r3,lr}
 
 ;@--------------------------
 	bl tileMapFinish
@@ -692,7 +691,7 @@ gfxEndFrame:					;@ Called just before screen end (~line 192)	(r0-r2 safe to use
 	ldmia r0,{r1-r3}			;@ Load with post increment
 	stmib r0,{r1-r3}			;@ Store with pre increment
 
-	ldmfd sp!,{r3-r9,r11,lr}
+	ldmfd sp!,{r3,lr}
 	bx lr
 
 	.pool

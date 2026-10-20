@@ -19,7 +19,6 @@
 	.global vdcWriteAdr			;@ Only used for hacks
 	.global vdcScrollMask
 	.global vdcScroll
-	.global vdcBurst
 	.global vdcEndFrameLine
 	.global vdcLastScanline
 	.global vdcSpriteRam

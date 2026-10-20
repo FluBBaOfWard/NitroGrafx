@@ -1,12 +1,12 @@
 
 NitroGrafx To Do:
 -----------------
+	Savestates for CD games as well. Write/load every part by itself.
 	Add support for multiple files for CD.
 	Add ADPCM fade, bit1 is CD/ADPCM.
 	Exile needs 2kB BRAM only? Add separate save files for each (CD) game.
 
 	Turbo switches? Gun Boat. http://www.gamefaqs.com/tg16/588987-gunboat/faqs/27685
-	Savestates for CD games as well. Write/load every part by itself.
 	Fix TAM/TMA #$00
 	Check the Games Express games.
 		Should their BIOS lay "over" the normal?

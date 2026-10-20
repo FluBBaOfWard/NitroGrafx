@@ -232,8 +232,14 @@ tocLoop:
 	ldmfd sp!,{r3-r6,lr}
 	bx lr
 ;@----------------------------------------------------------------------------
-updateCDROM:				;@ Called every frame
+updateCDROM:				;@ Called every scanline
 ;@----------------------------------------------------------------------------
+	ldr r0,cdUpdCount
+	subs r0,r0,#1
+	ldrmi r0,=262
+	str r0,cdUpdCount
+	bxpl lr						;@ Only run once per frame
+
 	mov r0,#0
 	strb r0,adpcmStatus
 
@@ -1165,6 +1171,7 @@ sectorPtr:	.long 0				;@ Audio sector pointer, shift 2 right to get real value.
 sectorEnd:	.long 0				;@ Audio end sector pointer, shift 2 right to get real value.
 cddaStart:	.long 0				;@ Start position for cd audio (for repeat...).
 cdSeekTime:	.long 0				;@ Seek time in frames (when setting sector).
+cdUpdCount:	.long 0				;@ Counter for cdUpdate
 
 adPtr:		.long 0				;@ ADPCM ptr	($1808-1809)
 adLen:		.long 0				;@ ADPCM length, in upper 17/18 bits
