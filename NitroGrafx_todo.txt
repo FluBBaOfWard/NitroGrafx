@@ -1,6 +1,7 @@
 
 NitroGrafx To Do:
 -----------------
+	irq2Write should check for IRQ directly after.
 	Savestates for CD games as well. Write/load every part by itself.
 	Add support for multiple files for CD.
 	Add ADPCM fade, bit1 is CD/ADPCM.
@@ -32,6 +33,7 @@ Graphic:
 	Optimise tile(map), rendering.
 
 Sound:
+	Add pre counting step for better sound?
 	PSG waveforms are not signed, optimize! Is this different between revisions?
 	Check sound levels, figure out correct gain per level. Not -1.5dB per step.
 	PSG volume is only updated at 2kHz?
@@ -49,10 +51,7 @@ CPU:
 Games:
 	Chikudenya Toubee, hangs at start.
 	Fighting Run, too many bitplanes.
-	Gaia no Monsho, black screen at boot.
-	Rock-On, garbage on continue screen.
 	Toy Shop Boys, counting is indefinitive at stage end. (decimal mode?)
-	Turrican, hangs at continue.
 	Volfied, a strange "pointer" error, when you finish a level, the bonus countdown is infinite
 and the background sine-wave sound stays locked on a single note
 
@@ -66,6 +65,7 @@ Games Fixed:
 	Coryoon Child of dragon, no scrolling sometime?
 	Dragon Egg!, black screen at boot. (VBlank & Raster IRQ)
 	Dragon Saber, glitches after second boss. (VBlank & Raster IRQ)
+	Gaia no Monsho, black screen at boot. (Timer IRQ vs TIA leaving cycles at minus)
 	Gunboat, tanks the performance completely. Timer counting was wrong.
 	Hisou Kihei Serd, black screen at boot. (VBlank & Raster IRQ)
 	Klax, tanks the performance completely. Timer counting was wrong.
@@ -73,10 +73,12 @@ Games Fixed:
 	Night Creatures, no sprites. No cycles for Sprite DMA handling.
 	Pc Denjin - Punkic Cyborgs (J), locks up at level start. (VBlank & Raster IRQ)
 	Power Tennis, crashes in intro. (VBlank & Raster IRQ)
+	Rock-On, garbage on continue screen (? probably timing/IRQ).
 	Space Harrier, no sprites. No cycles for Sprite DMA handling.
 	Takeda Shingen, graphics is corrupt. VRAM DMA length is val+1.
 	Tatsujin, sprites freeze after death. SprDMA.
 	Toy Shop Boys, hangs early in game. (VBlank & Raster IRQ)
+	Turrican, hangs at continue. (Timer/Raster IRQ (cycles minus?)).
 	TV Sports Football, hangs in game. SprDMA.
 	TV Sports Ice Hockey, no sprites. SprDMA.
 	Valkyrie no Densetsu, hangs in intro. SprDMA.

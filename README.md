@@ -104,10 +104,7 @@ Some dumb info about the emulator...
 
 * Chikudenya Toubee, hangs at start.
 * Fighting Run, too many bitplanes.
-* Gaia no Monsho, black screen at boot.
-* Rock-On, garbage on continue screen.
 * Toy Shop Boys, counting is indefinitive at stage end.
-* Turrican, hangs at continue.
 * Volfied, "pointer" error, when you finish a level.
 
 ## Credits
