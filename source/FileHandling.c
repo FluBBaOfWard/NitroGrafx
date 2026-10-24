@@ -161,6 +161,10 @@ void saveBRAM() {
 
 void loadState() {
 	if (!loadDeviceState(folderName)) {
+		while (EMUinput & KEY_A) {
+			waitVBlank();
+			getInput();
+		}
 		closeMenu();
 	}
 }
