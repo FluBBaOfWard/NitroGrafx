@@ -1,11 +1,13 @@
 
 NitroGrafx To Do:
 -----------------
-	irq2Write should check for IRQ directly after.
 	Savestates for CD games as well. Write/load every part by itself.
+	Fix decimal mode! Both Toy Shop Boys & Volfied seem to be affected by this.
+	irq2Write should check for IRQ directly after.
 	Add support for multiple files for CD.
 	Add ADPCM fade, bit1 is CD/ADPCM.
 	Exile needs 2kB BRAM only? Add separate save files for each (CD) game.
+	Add support for Teenokoe Memory Bank. See Ares/MesenCE.
 
 	Turbo switches? Gun Boat. http://www.gamefaqs.com/tg16/588987-gunboat/faqs/27685
 	Fix TAM/TMA #$00
@@ -35,22 +37,21 @@ Graphic:
 Sound:
 	Add pre counting step for better sound?
 	PSG waveforms are not signed, optimize! Is this different between revisions?
+	Optimise. Lower quality?
 	Check sound levels, figure out correct gain per level. Not -1.5dB per step.
 	PSG volume is only updated at 2kHz?
-	Only load 2.5k per frame before music starts playing.
 	Load variable number of bytes?
 	Louder CD-sound?
-	Optimise. Lower quality?
-	Add LFO emulation? (Hanii in the Sky, Juuouki, and Flash Hiders use LFO).
+	Add LFO emulation? (Hanii in the Sky, Juuouki, Volfied? and Flash Hiders use LFO).
 
 CPU:
-	Move rom_map to H6280 so that jmp becomes even faster.
 	Make list of all memory reads (mem, ram , io, sram).
 	Decimal mode still broken?
 
 Games:
 	Chikudenya Toubee, hangs at start.
 	Fighting Run, too many bitplanes.
+	Order of The Griffon, selection sprite has wrong h-pos.
 	Toy Shop Boys, counting is indefinitive at stage end. (decimal mode?)
 	Volfied, a strange "pointer" error, when you finish a level, the bonus countdown is infinite
 and the background sine-wave sound stays locked on a single note

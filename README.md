@@ -105,7 +105,7 @@ Some dumb info about the emulator...
 * Chikudenya Toubee, hangs at start.
 * Fighting Run, too many bitplanes.
 * Toy Shop Boys, counting is indefinitive at stage end.
-* Volfied, "pointer" error, when you finish a level.
+* Volfied, counting is indefinitive at stage end.
 
 ## Credits
 

@@ -96,7 +96,7 @@ Spriggan (J): Ok, stops after 3rd level?
 Star Parodia: Ok
 Steam Heart's (J): Ok
 Super Air Zonk: Ok
-Super Darius: Ok. What is different from the Hucard version? A bigger logo?
+Super Darius: Ok.
 Valis II (U): Ok, need to skip intro.
 Valis III (U): Works.
 Valis IV (J): Same as Valis III.
