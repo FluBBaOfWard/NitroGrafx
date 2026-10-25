@@ -95,6 +95,7 @@ rawRom:
 //	.incbin "roms/Ninja Warriors, The (J).pce"
 //	.incbin "roms/Outrun (J).pce"
 //	.incbin "roms/Order of the Griffon (U).pce"
+//	.incbin "roms/PadTest.pce"
 //	.incbin "roms/Populous (J).pce"
 //	.incbin "roms/R-Type Complete (U).pce"
 //	.incbin "roms/Salamander (J).pce"

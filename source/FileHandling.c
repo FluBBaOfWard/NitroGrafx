@@ -47,8 +47,10 @@ void applyConfigData(void) {
 	gFlicker     = cfg.flicker & 1;
 	gGammaValue  = cfg.gammaValue & 0x7;
 	gColorValue  = (cfg.gammaValue >> 4) & 0x7;
-	joyCfg       = (joyCfg &~ 0x04000400) | ((cfg.controller & 1) << 10) | ((cfg.controller & 2) << 25); // SwapAB & multitap.
+	joyCfg       = (joyCfg &~ 0xFE000400) | ((cfg.controller & 1) << 10) | ((cfg.controller & 0xE) << 25) | ((cfg.controller & 0x80) << 24); // SwapAB, controller type & multitap.
+	button3      = (cfg.controller >> 4) & 0x3;
 	strlcpy(currentDir, cfg.currentPath, sizeof(currentDir));
+	setJoyMapping();
 	pauseEmulation = emuSettings & AUTOPAUSE_EMULATION;
 }
 
@@ -61,7 +63,7 @@ void updateConfigData(void) {
 	cfg.display     = (gScalingSet & 3) | ((vceState.rgbYCbCr & 1) << 3);
 	cfg.flicker     = gFlicker & 1;
 	cfg.gammaValue  = (gGammaValue & 0x7) | ((gColorValue & 0x7) << 4);
-	cfg.controller  = ((joyCfg >> 10) & 1) | ((joyCfg >> 25) & 2);
+	cfg.controller  = ((joyCfg >> 10) & 1) | ((joyCfg >> 25) & 0x0E) | ((joyCfg >> 24) & 0x80) | ((button3 & 0x03) << 4);
 	strlcpy(cfg.currentPath, currentDir, sizeof(cfg.currentPath));
 }
 

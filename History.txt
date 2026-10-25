@@ -2,6 +2,10 @@ NitroGrafx revision history
 -=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 
+V0.9.2 - 2026-10-25 (FluBBa)
+	Added more controller configurations.
+	Display y-offset also affects unscaled mode.
+
 V0.9.1 - 2026-10-24 (FluBBa)
 	Added PSG sample playing.
 	Added CD-ROM ADPCM.

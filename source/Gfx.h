@@ -19,6 +19,7 @@ extern u8 gColorValue;
 extern u8 gScalingSet;
 extern s8 aspectYStart;
 extern u8 sprCollision;
+extern u32 yStart;
 
 extern u16 pceVRAM[0x8000];
 extern u16 EMUPALBUFF[0x200];

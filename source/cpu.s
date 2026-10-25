@@ -10,6 +10,7 @@
 #include "Shared/nds_asm.h"
 #include "ARMH6280/H6280.i"
 #include "Equates.h"
+#include "Shared/EmuMenu.i"
 
 #define CYCLE_PSL (455)
 
@@ -47,7 +48,7 @@ runStart:
 ;@----------------------------------------------------------------------------
 	ldr r0,=EMUinput
 	ldr r0,[r0]
-	tst r0,#0x300				;@ L or R?
+	tst r0,#ACT_SCRL_DOWN|ACT_SCRL_UP
 	beq skipYPan
 	ldr r1,=gScalingSet
 	ldrb r1,[r1]
@@ -55,9 +56,9 @@ runStart:
 	bne skipYPan
 	ldr r2,=yStart
 	ldr r1,[r2]
-	tst r0,#0x100				;@ R?
+	tst r0,#ACT_SCRL_DOWN
 	addne r1,#1
-	tst r0,#0x200				;@ L?
+	tst r0,#ACT_SCRL_UP
 	subsne r1,#1
 	movmi r1,#0
 	ldr r0,=vdcEndFrameLine
@@ -68,7 +69,7 @@ runStart:
 	str r1,[r2]
 skipYPan:
 
-	bl refreshEMUjoypads		;@ Z=1 if communication ok
+	bl refreshEMUjoypads
 
 	add r0,h6280ptr,#h6280Regs
 	ldmia r0,{h6280nz-h6280pc,h6280zpage}	;@ Restore H6280 state

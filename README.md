@@ -1,4 +1,4 @@
-# NitroGrafx V0.9.1
+# NitroGrafx V0.9.2
 
 <img align="right" width="220" src="./logo.png" alt="The PC-Engine logo" />
 
@@ -19,10 +19,10 @@ evil on PC-Engine.
  zipped files (as long as they use the deflate compression).
 3. Depending on your flashcart you might have to DLDI patch the emulator.
 
-The GUI is accessed by pressing L+R (shoulder buttons) or by touching the
-screen, tabs are changed by pressing the L or R button, going to the left most
-tab exits the GUI. Closing your DS puts the emulator in sleep mode, just open
-it to resume.
+The GUI is accessed by pressing L+R (shoulder buttons, L+Select with 6-button
+pad) or by touching the screen, tabs are changed by pressing the L or R
+button, going to the left most tab exits the GUI. Closing your DS puts the
+emulator in sleep mode, just open it to resume.
 
 When you first run the emulator I suggest you take a peak through the options
 and change the settings to your liking and then save them. To be able to use
@@ -51,10 +51,13 @@ Now load up a game and you should be good to go.
 * Controller:
   * MultiTap: Select if MultiTap is connected.
   * Controller: Select which player is controlled (if MultiTap).
-  * Joypad: Select which kind of controller is connected (2 or 6 Button).
+  * Joypad: Select which kind of controller is connected (3 or 6 Button).
+    * 3 Button alt switches around the buttons so II & I is mapped to Y & B.
+    * 6 Button alt switches around the buttons so I & VI is mapped to L & R.
+  * 3rd Button: You can choose if Select or Run is mapped to NDS Y/X.
   * B Autofire: Select if you want autofire on button B.
   * A Autofire: Select if you want autofire on button A.
-  * Swap A-B: Swap which NDS button is mapped to which PCE button.
+  * Swap I-II: Swap which NDS button is mapped to which PCE button.
   * Use R as FastForward: Select turbo speed as long as R button is held.
 * Display:
   * Display: Here you can select if you want scaled or unscaled screenmode.
@@ -95,10 +98,27 @@ Some dumb info about the emulator...
 
 ## Controls
 
-* NDS B & A buttons are mapped to PC-Engine II & I.
-* NDS Start is mapped to PC-Engine Run.
-* NDS Select is mapped to PC-Engine Select.
-* NDS d-pad is mapped to PC-Engine d-pad.
+* NDS d-pad is mapped to PCE d-pad.
+* NDS B & A buttons are mapped to PCE II & I.
+* NDS Y button is mapped to PCE III.
+* NDS Start is mapped to PCE Run.
+* NDS Select is mapped to PCE Select.
+
+In alt mode:
+
+* NDS Y & B buttons are mapped to PCE II & I.
+* NDS X button is mapped to PCE III.
+
+### 6 button
+
+* NDS L & R are mapped to PCE III & IV
+* NDS Y & X are mapped to PCE V & VI
+
+In alt mode:
+
+* NDS B & A buttons are mapped to PCE III & II.
+* NDS Y & X are mapped to PCE IV & V
+* NDS L & R are mapped to PCE VI & I
 
 ## Games
 

@@ -14,6 +14,7 @@ extern "C" {
 
 extern u32 joyCfg;
 extern u32 EMUinput;
+extern u8 button3;
 
 /**
  * Convert device input keys to target keys.
@@ -21,6 +22,12 @@ extern u32 EMUinput;
  * @return The converted input.
  */
 int convertInput(int input);
+
+/**
+ * Set joy mapping.
+ * @param type default or alternate
+ */
+void setJoyMapping(void);
 
 #ifdef __cplusplus
 } // extern "C"

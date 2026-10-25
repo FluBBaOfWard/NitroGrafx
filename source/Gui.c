@@ -14,7 +14,7 @@
 #include "cpu.h"
 #include "ARMH6280/Version.h"
 
-#define EMUVERSION "V0.9.1 2026-10-24"
+#define EMUVERSION "V0.9.2 2026-10-25"
 
 // Asm functions
 extern void paletteTxAll(void);		// VCE.s
@@ -33,6 +33,8 @@ static void swapABSet(void);
 static const char *getSwapABText(void);
 static void joypadButtonSet(void);
 static const char *getJoypadButtonText(void);
+static void thirdButtonSet(void);
+static const char *getThirdButtonText(void);
 static void rffSet(void);
 static const char *getRFFText(void);
 static void multiTapSet(void);
@@ -69,16 +71,16 @@ const MItem optionItems[] = {
 	{"Display", ui5},
 	{"Machine", ui6},
 	{"Settings", ui7},
-//	{"Descramble ROM", descrambleROM},
 	{"Debug", ui8},
 };
 const MItem ctrlItems[] = {
 	{"MultiTap:  ", multiTapSet, getMultiTapText},
 	{"Controller:", controllerSet, getControllerText},
 	{"Joypad:    ", joypadButtonSet, getJoypadButtonText},
+	{"3rd button:", thirdButtonSet, getThirdButtonText},
 	{"B Autofire:", autoBSet, getAutoBText},
 	{"A Autofire:", autoASet, getAutoAText},
-	{"Swap A-B:  ", swapABSet, getSwapABText},
+	{"Swap I-II: ", swapABSet, getSwapABText},
 	{"Use R as FastForward:", rffSet, getRFFText},
 };
 const MItem displayItems[] = {
@@ -131,7 +133,8 @@ const Menu menu10 = MENU_M("", uiDummy, dummyItems);
 const Menu *const menus[] = {&menu0, &menu1, &menu2, &menu3, &menu4, &menu5, &menu6, &menu7, &menu8, &menu9, &menu10 };
 
 static const char *const ctrlTxt[]={"P1", "P2", "P3", "P4", "P5"};
-static const char *const joypadTxt[]={"2 Button", "6 Button"};
+static const char *const joypadTxt[]={"3 Button", "3 Button alt", "6 Button", "6 Button alt", "Custom1", "Custom2"};
+static const char *const thirdTxt[]={"Off", "Select", "Run"};
 static const char *const dispTxt[]={"Scaled 1:1", "Scaled to fit", "Scaled to aspect"};
 static const char *const machTxt[]={"Auto", "PC-Engine", "CD-ROM", "Super CD-ROM", "Arcade CD-ROM", "Super Grafx", "Super CD-ROM Card", "TurboGrafx-16"};
 static const char *const cntrTxt[]={"US", "Japan"};
@@ -255,7 +258,7 @@ void resetGame() {
 void controllerSet() {				// See io.s: refreshEMUjoypads
 	int i = joyCfg & 0x70000000;
 	i += 0x10000000;
-	if (i > 0x40000000 || !(joyCfg & 0x04000000)) {
+	if (i > 0x40000000 || !(joyCfg & 0x80000000)) {
 		i = 0;
 	}
 	joyCfg = (joyCfg & ~0x70000000) | i;
@@ -266,6 +269,8 @@ const char *getControllerText() {
 
 void swapABSet() {
 	joyCfg ^= 0x400;
+	setJoyMapping();
+	settingsChanged = true;
 }
 const char *getSwapABText() {
 	return autoTxt[(joyCfg >> 10) & 1];
@@ -281,19 +286,37 @@ const char *getRFFText() {
 }
 
 void joypadButtonSet() {			// See io.s: refreshEMUjoypads
-	joyCfg ^= 0x08000000;
+	int i = (joyCfg>>25) & 3;
+	i += 1;
+	if (i > 3) {
+		i = 0;
+	}
+	joyCfg = (joyCfg & ~0x0E000000) | (i<<25);
+	setJoyMapping();
+	settingsChanged = true;
 }
 const char *getJoypadButtonText() {
-	return joypadTxt[(joyCfg >> 27 ) & 1];
+	return joypadTxt[(joyCfg >> 25) & 3];
+}
+void thirdButtonSet() {			// See io.s: refreshEMUjoypads
+	button3 += 1;
+	if (button3 > 2) {
+		button3 = 0;
+	}
+	setJoyMapping();
+	settingsChanged = true;
+}
+const char *getThirdButtonText() {
+	return thirdTxt[button3 & 3];
 }
 
 void multiTapSet() {				// See io.s: refreshEMUjoypads
-	joyCfg ^= 0x04000000;
+	joyCfg ^= 0x80000000;
 	joyCfg &= ~0x70000000;
 	settingsChanged = true;
 }
 const char *getMultiTapText() {
-	return autoTxt[(joyCfg >> 26) & 1];
+	return autoTxt[(joyCfg >> 31) & 1];
 }
 
 void scalingSet(){
@@ -335,6 +358,7 @@ void yOffsetSet() {
 			}
 		}
 		calcVBL();
+		yStart = aspectYStart;
 		refreshSprites();
 		drawMenuText(getYOffsetText(), 14, 0);
 	}
