@@ -14,7 +14,7 @@
 #include "cpu.h"
 #include "ARMH6280/Version.h"
 
-#define EMUVERSION "V0.9.2 2026-10-25"
+#define EMUVERSION "V0.9.2 2026-10-26"
 
 // Asm functions
 extern void paletteTxAll(void);		// VCE.s
@@ -77,9 +77,9 @@ const MItem ctrlItems[] = {
 	{"MultiTap:  ", multiTapSet, getMultiTapText},
 	{"Controller:", controllerSet, getControllerText},
 	{"Joypad:    ", joypadButtonSet, getJoypadButtonText},
-	{"3rd button:", thirdButtonSet, getThirdButtonText},
-	{"B Autofire:", autoBSet, getAutoBText},
-	{"A Autofire:", autoASet, getAutoAText},
+	{"Button III:", thirdButtonSet, getThirdButtonText},
+	{"II Autofire:", autoBSet, getAutoBText},
+	{"I Autofire:", autoASet, getAutoAText},
 	{"Swap I-II: ", swapABSet, getSwapABText},
 	{"Use R as FastForward:", rffSet, getRFFText},
 };

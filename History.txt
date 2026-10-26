@@ -2,7 +2,7 @@ NitroGrafx revision history
 -=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 
-V0.9.2 - 2026-10-25 (FluBBa)
+V0.9.2 - 2026-10-26 (FluBBa)
 	Added more controller configurations.
 	Display y-offset also affects unscaled mode.
 

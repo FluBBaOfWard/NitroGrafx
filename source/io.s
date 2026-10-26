@@ -141,19 +141,8 @@ convertInput:			;@ Convert from device keys to target r0=input/output
 refreshEMUjoypads:			;@ Call every frame
 ;@----------------------------------------------------------------------------
 	stmfd sp!,{r4-r11}
-	ldr r0,EMUinput
-		ldr r1,=frameTotal
-		ldr r1,[r1]
-		movs r1,r1,lsr#2		;@ C=frame&2 (autofire alternates every other frame)
-	mov r1,r0
-		ldr r2,joyCfg
-		andcs r1,r1,r2
-		tstcs r1,r1,lsr#9		;@ R?
-		andcs r1,r1,r2,lsr#16
-	and r1,r1,#0xF
-	and r4,r0,#0xf00
-	orr r1,r1,r4
-	and r0,r0,#0xf0
+	ldr r1,EMUinput
+	and r0,r1,#0xF0
 	adr r3,rlud2urdl
 	ldrb r0,[r3,r0,lsr#4]		;@ UpRightDownLeft
 
@@ -175,6 +164,20 @@ refreshEMUjoypads:			;@ Call every frame
 	orrne r0,r0,#PCE_KEY_V
 	tst r1,r11
 	orrne r0,r0,#PCE_KEY_VI
+
+	ldr r2,=frameTotal
+	ldr r2,[r2]
+	movs r2,r2,lsr#2		;@ C=frame&2 (autofire alternates every other frame)
+	ldr r2,joyCfg
+	mov r1,r1,lsr#4
+	orr r1,r1,r0,lsl#28
+	mov r1,r1,ror#28
+	andcs r1,r1,r2
+	tstcs r1,r1,lsr#9		;@ R?
+	andcs r1,r1,r2,lsr#16
+	and r1,r1,#3
+	bic r0,r0,#3
+	orr r0,r0,r1
 
 	orr r0,r0,#0xFF000
 

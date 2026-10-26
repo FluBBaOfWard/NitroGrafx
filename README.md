@@ -54,9 +54,9 @@ Now load up a game and you should be good to go.
   * Joypad: Select which kind of controller is connected (3 or 6 Button).
     * 3 Button alt switches around the buttons so II & I is mapped to Y & B.
     * 6 Button alt switches around the buttons so I & VI is mapped to L & R.
-  * 3rd Button: You can choose if Select or Run is mapped to NDS Y/X.
-  * B Autofire: Select if you want autofire on button B.
-  * A Autofire: Select if you want autofire on button A.
+  * Button III: You can choose if Select or Run is mapped to NDS Y/X.
+  * II Autofire: Select if you want autofire on button II.
+  * I Autofire: Select if you want autofire on button I.
   * Swap I-II: Swap which NDS button is mapped to which PCE button.
   * Use R as FastForward: Select turbo speed as long as R button is held.
 * Display:
