@@ -112,6 +112,7 @@ rawRom:
 //	.incbin "roms/verificator.pce"
 //	.incbin "roms/Wonder Momo (J).pce"
 //	.incbin "roms/Youkai Douchuuki (J).pce"
+//	.incbin "roms/cputest.pce"
 rawRomEnd:
 isoFile:
 //	.incbin "bloCs.iso"

@@ -25,6 +25,32 @@
 	.syntax unified
 	.arm
 
+#ifdef NDS
+	.section .itcm, "ax", %progbits		;@ For the NDS ARM9
+#elif GBA
+	.section .iwram, "ax", %progbits	;@ For the GBA
+#else
+	.section .text						;@ For everything else
+#endif
+	.align 2
+;@----------------------------------------------------------------------------
+pceFrameRun:
+;@----------------------------------------------------------------------------
+	stmfd sp!,{lr}
+pceCDFrameLoop:
+	bl updateCDROM				;@ Update CD counters and stuff
+pceFrameLoop:
+	ldr r0,scanlineCycles
+	bl h6280RunXCycles
+#ifdef SAMPLE_PLAYING
+	bl soundUpdate
+#endif
+	bl VDCDoScanline
+	cmp r0,#0
+	beq pceCDFrameLoop
+	ldmfd sp!,{pc}
+scanlineCycles:		.long CYCLE_PSL
+;@----------------------------------------------------------------------------
 #ifdef GBA
 	.section .ewram, "ax", %progbits	;@ For the GBA
 #else
@@ -75,20 +101,8 @@ skipYPan:
 	ldmia r0,{h6280nz-h6280pc,h6280zpage}	;@ Restore H6280 state
 
 ;@----------------------------------------
-SGXFrameLoop:
-//	bl VDCDoScanline
+	bl pceFrameRun
 ;@----------------------------------------
-PCEFrameLoop:
-	bl updateCDROM				;@ Update CD counters and stuff
-	ldr r0,scanlineCycles
-	bl h6280RunXCycles
-#ifdef SAMPLE_PLAYING
-	bl soundUpdate
-#endif
-	bl VDCDoScanline
-	cmp r0,#0
-	beq PCEFrameLoop
-;@----------------------------------------------------------------------------
 
 	add r0,h6280ptr,#h6280Regs
 	stmia r0,{h6280nz-h6280pc,h6280zpage}	;@ Save H6280 state
@@ -121,7 +135,6 @@ PCEFrameLoop:
 ;@----------------------------------------------------------------------------
 
 ;@----------------------------------------------------------------------------
-scanlineCycles:		.long CYCLE_PSL
 frameTotal:			;@ Let Gui.c see frame count for savestates
 					.long 0
 waitCountIn:		.byte 0
@@ -139,16 +152,7 @@ stepFrame:					;@ Return after 1 frame
 	add r0,h6280ptr,#h6280Regs
 	ldmia r0,{h6280nz-h6280pc,h6280zpage}	;@ Restore H6280 state
 ;@----------------------------------------------------------------------------
-stepLoop:
-;@----------------------------------------------------------------------------
-	ldr r0,scanlineCycles
-	bl h6280RunXCycles
-#ifdef SAMPLE_PLAYING
-	bl soundUpdate
-#endif
-	bl VDCDoScanline
-	cmp r0,#0
-	beq stepLoop
+	bl pceFrameRun
 ;@----------------------------------------------------------------------------
 	add r0,h6280ptr,#h6280Regs
 	stmia r0,{h6280nz-h6280pc,h6280zpage}	;@ Save H6280 state
@@ -162,7 +166,8 @@ cpuReset:					;@ Called by loadcart/resetGame
 	stmfd sp!,{lr}
 
 	ldr r0,=CYCLE_PSL			;@ 455
-	str r0,scanlineCycles
+	ldr r1,=scanlineCycles
+	str r0,[r1]
 
 //	bl h6280Hacks
 	bl h6280Reset

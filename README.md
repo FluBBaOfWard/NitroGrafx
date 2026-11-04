@@ -124,8 +124,6 @@ In alt mode:
 
 * Chikudenya Toubee, hangs at start.
 * Fighting Run, too many bitplanes.
-* Toy Shop Boys, counting is indefinitive at stage end.
-* Volfied, counting is indefinitive at stage end.
 
 ## Credits
 

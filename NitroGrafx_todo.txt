@@ -2,14 +2,12 @@
 NitroGrafx To Do:
 -----------------
 	Savestates for CD games as well. Write/load every part by itself.
-	Fix decimal mode! Both Toy Shop Boys & Volfied seem to be affected by this.
 	irq2Write should check for IRQ directly after.
 	Add support for multiple files for CD.
 	Add ADPCM fade, bit1 is CD/ADPCM.
 	Exile needs 2kB BRAM only? Add separate save files for each (CD) game.
 	Add support for Teenokoe Memory Bank. See Ares/MesenCE.
 
-	Turbo switches? Gun Boat. http://www.gamefaqs.com/tg16/588987-gunboat/faqs/27685
 	Fix TAM/TMA #$00
 	Check the Games Express games.
 		Should their BIOS lay "over" the normal?
@@ -46,15 +44,12 @@ Sound:
 
 CPU:
 	Make list of all memory reads (mem, ram , io, sram).
-	Decimal mode still broken?
 
 Games:
 	Chikudenya Toubee, hangs at start.
 	Fighting Run, too many bitplanes.
 	Order of The Griffon, selection sprite has wrong h-pos.
-	Toy Shop Boys, counting is indefinitive at stage end. (decimal mode?)
-	Volfied, a strange "pointer" error, when you finish a level, the bonus countdown is infinite
-and the background sine-wave sound stays locked on a single note
+	Volfied, the background sine-wave sound stays locked on a single note
 
 Games Fixed:
 	Air Zonk, no control/no enemies at level start. (VBlank & Raster IRQ)
@@ -79,6 +74,8 @@ Games Fixed:
 	Takeda Shingen, graphics is corrupt. VRAM DMA length is val+1.
 	Tatsujin, sprites freeze after death. SprDMA.
 	Toy Shop Boys, hangs early in game. (VBlank & Raster IRQ)
+	Toy Shop Boys, counting is indefinitive at stage end. (decimal mode?)
+	Volfied, a strange "pointer" error, when you finish a level, the bonus countdown is infinite
 	Turrican, hangs at continue. (Timer/Raster IRQ (cycles minus?)).
 	TV Sports Football, hangs in game. SprDMA.
 	TV Sports Ice Hockey, no sprites. SprDMA.
