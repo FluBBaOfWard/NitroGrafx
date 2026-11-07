@@ -288,8 +288,10 @@ checkMachine:
 	mov r0,#HW_CDROM
 	ldr r1,g_ROM_Size
 	cmp r1,#0x40000				;@ BIOS = 256kB
-	cmpne r1,#0x8000			;@ GE BIOS = 32kB
+//	cmpne r1,#0x8000			;@ GE BIOS = 32kB
 	moveq r0,#HW_SCD_ACDUO
+	cmp r1,#0x80000				;@ BIOS = 512kB
+	moveq r0,#HW_LDROM
 
 setHWBits:
 	strb r0,gMachine
@@ -301,8 +303,16 @@ setHWBits:
 	bx lr
 ;@----------------------------------------------------------------------------
 hwTable:
-	.byte 0, 0, CD_DEVICE, CD_DEVICE+SCD_DEVICE, CD_DEVICE+SCD_DEVICE+AC_CARD
-	.byte SGX_DEVICE, CD_DEVICE+SCD_CARD, CD_DEVICE+SCD_CARD+AC_CARD, SGX_DEVICE+CD_DEVICE+SCD_CARD+AC_CARD
+	.byte 0
+	.byte 0
+	.byte CD_DEVICE
+	.byte CD_DEVICE+SCD_DEVICE
+	.byte CD_DEVICE+SCD_DEVICE+AC_CARD
+	.byte SGX_DEVICE
+	.byte CD_DEVICE+SCD_CARD
+	.byte CD_DEVICE+SCD_CARD+AC_CARD
+	.byte SGX_DEVICE+CD_DEVICE+SCD_CARD+AC_CARD
+	.byte CD_DEVICE+SCD_DEVICE+LD_DEVICE
 	.align 2
 ;@----------------------------------------------------------------------------
 enableCDRAM:

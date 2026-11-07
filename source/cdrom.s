@@ -29,6 +29,8 @@
 	.global cdReset
 	.global CDROM_R
 	.global CDROM_W
+	.global LDROM_R
+	.global LDROM_W
 	.global updateCDROM
 	.global renderADPCM
 
@@ -538,7 +540,7 @@ moreCD_R:					;@ 0x18CX
 ;@	mov r11,r11					;@ No$GBA Debugg
 	and r0,addy,#0x03F8
 	cmp r0,#0xC0
-	bne LD_R
+	bne emptyRead
 
 	ldr r0,=gHwFlags
 	ldrb r0,[r0]
@@ -568,10 +570,8 @@ SCD_U:							;@ Super CDROM card (U)
 LDRegs:
 	.space 0x40
 ;@----------------------------------------------------------------------------
-LD_R:					;@ 0x19XX, Laser Disc
+LDROM_R:				;@ 0x19XX, Laser Disc
 ;@----------------------------------------------------------------------------
-	tst addy,#0x0100
-	beq emptyRead
 	and r1,addy,#0xFF
 	subs r1,r1,#0x20
 	bmi emptyRead
@@ -614,10 +614,8 @@ LD49_R:
 	bx lr
 
 ;@----------------------------------------------------------------------------
-LD_W:					;@ 0x19XX, Laser Disc
+LDROM_W:				;@ 0x19XX, Laser Disc
 ;@----------------------------------------------------------------------------
-	tst addy,#0x0100
-	beq emptyWrite
 	and r1,addy,#0xFF
 	subs r1,r1,#0x20
 	bmi emptyWrite
@@ -662,7 +660,7 @@ moreCD_W:					;@ 0x18C0
 ;@	mov r11,r11					;@ No$GBA Debugg
 	bic r1,addy,#0xF800
 	cmp r1,#0xC0
-	bne LD_W
+	bne emptyWrite
 	ldr r1,=gHwFlags
 	ldrb r1,[r1]
 	tst r1,#SCD_DEVICE

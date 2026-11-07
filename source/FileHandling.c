@@ -49,7 +49,6 @@ void applyConfigData(void) {
 	gColorValue  = (cfg.gammaValue >> 4) & 0x7;
 	joyCfg       = (joyCfg &~ 0xFE000400) | ((cfg.controller & 1) << 10) | ((cfg.controller & 0xE) << 25) | ((cfg.controller & 0x80) << 24); // SwapAB, controller type & multitap.
 	button3      = (cfg.controller >> 4) & 0x3;
-	strlcpy(currentDir, cfg.currentPath, sizeof(currentDir));
 	setJoyMapping();
 	pauseEmulation = emuSettings & AUTOPAUSE_EMULATION;
 }
@@ -64,7 +63,6 @@ void updateConfigData(void) {
 	cfg.flicker     = gFlicker & 1;
 	cfg.gammaValue  = (gGammaValue & 0x7) | ((gColorValue & 0x7) << 4);
 	cfg.controller  = ((joyCfg >> 10) & 1) | ((joyCfg >> 25) & 0x0E) | ((joyCfg >> 24) & 0x80) | ((button3 & 0x03) << 4);
-	strlcpy(cfg.currentPath, currentDir, sizeof(cfg.currentPath));
 }
 
 void initSettings() {
@@ -85,7 +83,7 @@ int loadSettings() {
 		&& (file = fopen(settingName, "r"))) {
 		int len = fread(&cfg, 1, sizeof(ConfigData), file);
 		fclose(file);
-		if (strstr(cfg.magic, "cfg") && len == sizeof(ConfigData)) {
+		if (strstr(cfg.magic, "cfg") && len >= (sizeof(ConfigData)-FILEPATH_MAX_LENGTH)) {
 			applyConfigData();
 			infoOutput("Settings loaded.");
 			return 0;
@@ -162,7 +160,7 @@ void saveBRAM() {
 }
 
 void loadState() {
-	if (!loadDeviceState(folderName)) {
+	if (!loadDeviceState(folderName, false)) {
 		while (EMUinput & KEY_A) {
 			waitVBlank();
 			getInput();
@@ -189,7 +187,7 @@ bool loadGame(const char *gameName) {
 	if (gameName) {
 		cls(0);
 		drawText("   Please wait, loading.", 11, 0);
-		gHwFlags &= ~(SCD_DEVICE|SCD_CARD|AC_CARD|SGX_DEVICE);
+		gHwFlags &= ~(SCD_DEVICE|SCD_CARD|AC_CARD|SGX_DEVICE|LD_DEVICE);
 		g_ROM_Size = loadPCEROM(ROM_Space, gameName, sizeof(ROM_Space));
 		if (g_ROM_Size) {
 			biosLoaded = false;
@@ -211,14 +209,15 @@ bool loadGame(const char *gameName) {
 void selectGame() {
 	pauseEmulation = true;
 	ui10();
-	const char *gameName = browseForFileType(FILEEXTENSIONS".zip");
+	const char *gameName = browseForFileTypeInPath(FILEEXTENSIONS".zip", cfg.currentPath);
+	strlcpy(cfg.currentPath, currentDir, sizeof(cfg.currentPath));
 	if (loadGame(gameName)) {
 		backOutOfMenu();
 	}
 }
 
 void selectBios() {
-	const char *biosName = browseForFileType(FILEEXTENSIONS".zip");
+	const char *biosName = browseForFileTypeInPath(FILEEXTENSIONS".zip", cfg.biosPath);
 	cls(0);
 	if (biosName) {
 		strlcpy(cfg.biosPath, currentDir, sizeof(cfg.biosPath));
@@ -302,7 +301,8 @@ void selectCDROM() {
 
 	pauseEmulation = 1;
 	ui10();
-	const char *cdName = browseForFileType(".iso.cue");
+	const char *cdName = browseForFileTypeInPath(".iso.cue", cfg.currentCDPath);
+	strlcpy(cfg.currentCDPath, currentDir, sizeof(cfg.currentCDPath));
 	if (cdName) {
 		getFileExtension(fileExt, cdName);
 		if (strstr(fileExt, ".cue")) {
@@ -327,7 +327,6 @@ void selectCDROM() {
 				loadUSBIOS();
 			}
 			if (biosLoaded) {
-				g_ROM_Size = sizeof(biosSpace);
 				setEmuSpeed(0);
 				loadCart();
 				if (emuSettings & AUTOLOAD_STATE) {
@@ -335,6 +334,11 @@ void selectCDROM() {
 				}
 				powerIsOn = true;
 				closeMenu();
+				return;
+			}
+			else {
+				infoOutput("Couldn't load BIOS:");
+				infoOutput(cfg.biosPath);
 			}
 		}
 		else {
@@ -343,9 +347,7 @@ void selectCDROM() {
 			cdInserted = 0;
 		}
 	}
-	if (!powerIsOn) {
-		backOutOfMenu();
-	}
+	backOutOfMenu();
 }
 
 //---------------------------------------------------------------------------------

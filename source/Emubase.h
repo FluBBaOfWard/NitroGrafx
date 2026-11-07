@@ -5,6 +5,8 @@
 extern "C" {
 #endif
 
+#include "Shared/FileHelper.h"
+
 typedef struct {				//(config struct)
 	char magic[4];				//="CFG",0
 	int emuSettings;
@@ -17,8 +19,9 @@ typedef struct {				//(config struct)
 	u8 config;					// from cart.s
 	u8 controller;				// from io.s
 	u8 dipSwitch0;				// from io.s
-	char currentPath[256];
-	char biosPath[256];
+	char currentPath[FILEPATH_MAX_LENGTH];
+	char biosPath[FILEPATH_MAX_LENGTH];
+	char currentCDPath[FILEPATH_MAX_LENGTH];
 } ConfigData;
 
 #ifdef __cplusplus

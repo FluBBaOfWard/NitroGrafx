@@ -28,7 +28,7 @@ extern u8 SCD_RAM[0x30000];
 extern u8 PCE_CD_RAM[0x10000];
 extern u8 ACC_RAM[0x200000];
 extern u8 ROM_Space[0x290000];
-extern u8 biosSpace[0x40000];
+extern u8 biosSpace[0x80000];
 extern void *g_BIOSBASE;
 
 void machineInit(void);

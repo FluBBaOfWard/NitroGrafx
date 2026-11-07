@@ -20,6 +20,7 @@
 #define SCD_DEVICE		0x04	// 1=Super CD unit
 #define SCD_CARD		0x08	// 1=Super CD card
 #define AC_CARD			0x10	// 1=Arcade card
+#define LD_DEVICE		0x20	// 1=LDROM unit
 #define SGX_DEVICE		0x40	// 1=Super Grafx unit
 
 

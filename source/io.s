@@ -62,6 +62,14 @@ ioReset:
 	str r1,arcadeReadPtr
 	str r2,arcadeWritePtr
 
+	tst r12,#LD_DEVICE
+	ldreq r1,=emptyRead
+	ldreq r2,=emptyWrite
+	ldrne r1,=LDROM_R
+	ldrne r2,=LDROM_W
+	str r1,ldromReadPtr
+	str r2,ldromWritePtr
+
 	tst r12,#CD_DEVICE
 	ldreq r1,=emptyRead
 	ldreq r2,=emptyWrite
@@ -231,56 +239,90 @@ button3:	.byte 0
 ;@----------------------------------------------------------------------------
 IO_R:						;@ I/O read
 ;@----------------------------------------------------------------------------
-	and r1,addy,#0x1e00
-	ldr pc,[pc,r1,lsr#7]
+	and r1,addy,#0x1f00
+	ldr pc,[pc,r1,lsr#6]
 ;@---------------------------
 	.long 0
 ;@ioReadTbl:
 	.long VDC_R					;@ 0x0000-0x03FF
 	.long VDC_R					;@ 0x0000-0x03FF
+	.long VDC_R					;@ 0x0000-0x03FF
+	.long VDC_R					;@ 0x0000-0x03FF
+	.long VCE_R					;@ 0x0400-0x07FF
+	.long VCE_R					;@ 0x0400-0x07FF
 	.long VCE_R					;@ 0x0400-0x07FF
 	.long VCE_R					;@ 0x0400-0x07FF
 	.long EMPTY_IO_R			;@ 0x0800-0x0BFF
 	.long EMPTY_IO_R			;@ 0x0800-0x0BFF
+	.long EMPTY_IO_R			;@ 0x0800-0x0BFF
+	.long EMPTY_IO_R			;@ 0x0800-0x0BFF
+	.long timerRead				;@ 0x0C00-0x0FFF
+	.long timerRead				;@ 0x0C00-0x0FFF
 	.long timerRead				;@ 0x0C00-0x0FFF
 	.long timerRead				;@ 0x0C00-0x0FFF
 	.long JOYP_R				;@ 0x1000-0x13FF
 	.long JOYP_R				;@ 0x1000-0x13FF
+	.long JOYP_R				;@ 0x1000-0x13FF
+	.long JOYP_R				;@ 0x1000-0x13FF
+	.long irqRead				;@ 0x1400-0x17FF
+	.long irqRead				;@ 0x1400-0x17FF
 	.long irqRead				;@ 0x1400-0x17FF
 	.long irqRead				;@ 0x1400-0x17FF
 cdromReadPtr:
-	.long CDROM_R				;@ 0x1800-0x19FF
+	.long CDROM_R				;@ 0x1800-0x18FF
+ldromReadPtr:
+	.long LDROM_R				;@ 0x1900-0x19FF
 arcadeReadPtr:
-	.long ARCADE_R				;@ 0x1A00-0x1BFF
-	.long emptyRead				;@ 0x1C00-0x1FFF
-	.long emptyRead				;@ 0x1C00-0x1FFF
+	.long ARCADE_R				;@ 0x1A00-0x1AFF
+	.long emptyRead				;@ 0x1B00-0x1FFF
+	.long emptyRead				;@ 0x1B00-0x1FFF
+	.long emptyRead				;@ 0x1B00-0x1FFF
+	.long emptyRead				;@ 0x1B00-0x1FFF
+	.long emptyRead				;@ 0x1B00-0x1FFF
 
 ;@----------------------------------------------------------------------------
 IO_W:						;@ I/O write
 ;@----------------------------------------------------------------------------
-	and r1,addy,#0x1e00
-	ldr pc,[pc,r1,lsr#7]
+	and r1,addy,#0x1f00
+	ldr pc,[pc,r1,lsr#6]
 ;@---------------------------
 	.long 0
 ;@ioWriteTbl:
 	.long VDC_W					;@ 0x0000-0x03FF
 	.long VDC_W					;@ 0x0000-0x03FF
+	.long VDC_W					;@ 0x0000-0x03FF
+	.long VDC_W					;@ 0x0000-0x03FF
+	.long VCE_W					;@ 0x0400-0x07FF
+	.long VCE_W					;@ 0x0400-0x07FF
 	.long VCE_W					;@ 0x0400-0x07FF
 	.long VCE_W					;@ 0x0400-0x07FF
 	.long PSG_0_W				;@ 0x0800-0x0BFF
 	.long PSG_0_W				;@ 0x0800-0x0BFF
+	.long PSG_0_W				;@ 0x0800-0x0BFF
+	.long PSG_0_W				;@ 0x0800-0x0BFF
+	.long timerWrite			;@ 0x0C00-0x0FFF
+	.long timerWrite			;@ 0x0C00-0x0FFF
 	.long timerWrite			;@ 0x0C00-0x0FFF
 	.long timerWrite			;@ 0x0C00-0x0FFF
 	.long JOYP_W				;@ 0x1000-0x13FF
 	.long JOYP_W				;@ 0x1000-0x13FF
+	.long JOYP_W				;@ 0x1000-0x13FF
+	.long JOYP_W				;@ 0x1000-0x13FF
+	.long irqWrite				;@ 0x1400-0x17FF
+	.long irqWrite				;@ 0x1400-0x17FF
 	.long irqWrite				;@ 0x1400-0x17FF
 	.long irqWrite				;@ 0x1400-0x17FF
 cdromWritePtr:
-	.long CDROM_W				;@ 0x1800-0x19FF
+	.long CDROM_W				;@ 0x1800-0x18FF
+ldromWritePtr:
+	.long LDROM_W				;@ 0x1900-0x19FF
 arcadeWritePtr:
-	.long ARCADE_W				;@ 0x1A00-0x1BFF
-	.long emptyWrite			;@ 0x1C00-0x1FFF
-	.long emptyWrite			;@ 0x1C00-0x1FFF
+	.long ARCADE_W				;@ 0x1A00-0x1AFF
+	.long emptyWrite			;@ 0x1B00-0x1FFF
+	.long emptyWrite			;@ 0x1B00-0x1FFF
+	.long emptyWrite			;@ 0x1B00-0x1FFF
+	.long emptyWrite			;@ 0x1B00-0x1FFF
+	.long emptyWrite			;@ 0x1B00-0x1FFF
 
 ;@----------------------------------------------------------------------------
 JOYP_W:						;@ 0x1000-0x13ff
